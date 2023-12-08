@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Dara tree</title>
+</head>
+
+
+</HEAD>
+
+<body>
+  <div class="dara-main">
+    <h2 class="page-header">트리</h2>
+    <div>
+      <table border="1" width="800px;" height="100%">
+        <tr valign="top">
+          <td width="400px">
+            <input type="button" value="aaaa" onclick="init()">
+            ||
+            <input type="button" value="오픈" onclick="treeOpen()">
+            ||
+            <input type="button" value="닫기" onclick="treeClose()">
+
+            <div id="treeDiv" ondragstart="return false;" ondrag="return false;" onselectstart="return false"></div>
+
+            <br />
+
+          </td>
+          <td width="400px">
+            <!--
+              노드명 <input type = "text" id = "name"> <br />
+              링크 <input type = "text" id = "url"> <br />
+              사용여부<input type = "text" id = ""> <br />
+              팝업여부<input type = "text" id = "ccc"> <br />
+              팝업여부<input type = "button" onclick = "saveInfo()" value = "저장"> <br />
+            -->
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+
+</html>
+<style>
+  .form-button {
+    text-align: center;
+  }
+
+  :root {
+    --bg: #ffffff;
+    --bg-color: #070d19;
+
+  }
+
+  body.dark {
+    --bg: #070d19;
+    --bg-color: #ffffff;
+
+  }
+
+  body {
+    background-color: var(--bg);
+  }
+
+  .header {
+    color: var(--bg-color);
+  }
+</style>
+<script type="module">
+
+  const THEME_KEY = "form-theme";
+  const theme = localStorage.getItem(THEME_KEY);
+
+  if (theme) setMainTheme(theme);
+
+  function setMainTheme(theme, persist = false) {
+    const classList = document.body.classList;
+
+    classList.remove("light", "dark");
+
+    classList.add(theme);
+
+    if (persist) {
+      localStorage.setItem(THEME_KEY, theme);
+    }
+  }
+
+  function load() {
+    // theme
+    const toggler = document.querySelectorAll('[name="theme-toggle"]');
+    const theme = localStorage.getItem(THEME_KEY);
+
+    if (toggler) {
+      if (theme === "dark") {
+        document.querySelector('[name="theme-toggle"][value="dark"]').checked = true;
+      }
+
+      toggler.forEach((el) => {
+        el.addEventListener("click", (e) => {
+          setMainTheme(el.value, true);
+        });
+      })
+    }
+  }
+  load();
+
+
+
+
+  function init() {
+
+    var treeItem = [];
+    treeItem.push({ id: 0, pid: '', name: 'My example tree1', url: "detail('2')" });
+    treeItem.push({ id: 1, pid: 0, name: 'pub 1', url: "detail('2')", checked: true });
+    treeItem.push({ id: 3, pid: 1, name: 'pub 1.1', url: "detail('2')" });
+    treeItem.push({ id: 5, pid: 3, name: '5Node 1.1.1', url: "detail('2')" });
+    treeItem.push({ id: 6, pid: 5, name: '6Node 1.1.1.1', url: "detail('2')" });
+    treeItem.push({ id: 14, pid: 3, name: '14Node 1.1.1', url: "detail('2')" });
+    treeItem.push({ id: 15, pid: 14, name: '15Node 1.1.1', url: "detail('2')" });
+    treeItem.push({ id: 16, pid: 14, name: '16Node 1.1.1', url: "detail('2')", childCnt: 1000 });
+    treeItem.push({ id: 4, pid: 0, name: '4Node 3', url: "detail('2')" });
+    treeItem.push({ id: 2, pid: 0, name: '2Node 2', url: "detail('2')" });
+    treeItem.push({ id: 7, pid: 0, name: '7Node 4', url: "detail('2')" });
+    treeItem.push({ id: 9, pid: 0, name: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
+
+
+    const daraTree = new Tree("#treeDiv", {
+      items: treeItem
+      , topMenuView: false
+      , enableIcon: true
+      , openDepth: 2
+      , plugins: {
+        checkbox: {}
+      }
+      , click: function (nodeInfo) {
+        console.log('click', nodeInfo)
+      }
+    }); // 트리 객체 네임  div명
+
+
+  }
+  init();
+
+  function subMenuTreeCall(nodeId) {
+    d.add({ id: 17 + '' + nodeId, pid: nodeId, name: nodeId + '17Node 3', url: "detail('2')", childCnt: 1000 });
+    d.add({ id: 18 + '' + nodeId, pid: nodeId, name: nodeId + '18Node 3', url: "detail('2')" });
+    d.add({ id: 19 + '' + nodeId, pid: nodeId, name: nodeId + '19Node 3', url: "detail('2')" });
+    d.add({ id: 20 + '' + nodeId, pid: nodeId, name: nodeId + '20Node 3', url: "detail('2')", childCnt: 1000 });
+
+    for (var i = 0; i < 500; i++) {
+      if (i % 2 == 0)
+        d.add({ id: (20 + 1 + i) + '' + nodeId, pid: nodeId, name: nodeId + (20 + 1 + i) + '20Node 3', url: "detail('2')", childCnt: 1000 });
+      else
+        d.add({ id: (20 + 1 + i) + '' + nodeId, pid: nodeId, name: nodeId + (20 + 1 + i) + '20Node 3', url: "detail('2')" });
+    }
+    //d.add(20,17,'ddddddddddddddddd',"detail('10')");
+
+    d.open();
+  }
+
+  function treeOpen() {
+    $.pubTree("#treeDiv").allOpen();
+  }
+
+  function treeClose() {
+    $.pubTree("#treeDiv").allClose();
+  }
+
+
+  function detail(obj) {
+    //alert(obj)
+  }
+
+  function saveInfo() {
+
+    $.pubTree("#treeDiv").addNode((pubTreeConfig.allTreeItem.length + 100), pubTreeConfig.selectedNode.id, document.getElementById('name').value, document.getElementById('url').value)
+  }
+
+  function addTest() {
+    $.pubTree("#treeDiv").add({ id: 17, pid: 11, name: '17Node 3', url: "detail('2')" });
+    $.pubTree("#treeDiv").add({ id: 18, pid: 17, name: '18Node 3', url: "detail('2')" });
+    $.pubTree("#treeDiv").add({ id: 19, pid: 17, name: '19Node 3', url: "detail('2')" });
+    $.pubTree("#treeDiv").add({ id: 20, pid: 17, name: '20Node 3', url: "detail('2')" });
+
+    for (var i = 0; i < 1000; i++) {
+      $.pubTree("#treeDiv").add({ id: 20 + 1 + i, pid: 17, name: '20Node 3' + i, url: "detail('2')" });
+    }
+    //d.add(20,17,'ddddddddddddddddd',"detail('10')");
+
+
+    //console.log(pubTreeConfig.treeItem);
+
+    $.pubTree("#treeDiv").open();
+  }
+</script>

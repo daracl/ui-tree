@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Dara tree</title>
+</head>
+
+
+<script defer src="../dist/dara.tree.js"></script>
+</head>
+
+<body>
+    <div class="header">
+        <div class="form-button">
+            <button type="button" onclick="targetObj.addItems()">Add</button>
+            <button type="button" onclick="targetObj.getTargetItems()">getTargetItems</button>
+        </div>
+
+        <div>
+            Theme : <label>Light<input type="radio" name="theme-toggle" value="light" checked="true"></label>
+            <label>Dark<input type="radio" name="theme-toggle" value="dark"></label>
+        </div>
+    </div>
+
+    <div style="padding: 0px 20px">
+        <div id="example1"></div>
+
+        <div id="example2"></div>
+
+    </div>
+</body>
+
+</html>
+<style>
+    .form-button {
+        text-align: center;
+    }
+
+    :root {
+        --bg: #ffffff;
+        --bg-color: #070d19;
+
+    }
+
+    body.dark {
+        --bg: #070d19;
+        --bg-color: #ffffff;
+
+    }
+
+    body {
+        background-color: var(--bg);
+    }
+
+    .header {
+        color: var(--bg-color);
+    }
+</style>
+<script type="module">
+
+    const THEME_KEY = "form-theme";
+    const theme = localStorage.getItem(THEME_KEY);
+
+    if (theme) setMainTheme(theme);
+
+    function setMainTheme(theme, persist = false) {
+        const classList = document.body.classList;
+
+        classList.remove("light", "dark");
+
+        classList.add(theme);
+
+        if (persist) {
+            localStorage.setItem(THEME_KEY, theme);
+        }
+    }
+
+    function load() {
+        // theme
+        const toggler = document.querySelectorAll('[name="theme-toggle"]');
+        const theme = localStorage.getItem(THEME_KEY);
+
+        if (toggler) {
+            if (theme === "dark") {
+                document.querySelector('[name="theme-toggle"][value="dark"]').checked = true;
+            }
+
+            toggler.forEach((el) => {
+                el.addEventListener("click", (e) => {
+                    setMainTheme(el.value, true);
+                });
+            })
+        }
+    }
+    load();
+
+
+    let tmpSourceItem = [], paramSourceItem = [];
+
+    for (let i = 0; i < 10; i++) {
+        tmpSourceItem.push({ viewid: '1000' + i, uname: 'nawefawefawefefefefefefeffawfeamenawefawefawefefefefefefeffawfeame' + i });
+    }
+
+    let paramTargetItem = [];
+    for (let i = 0; i < 10; i++) {
+        paramSourceItem.push({ viewid: '0000' + i, uname: 'aaaa' + i });
+    }
+
+    paramTargetItem.push({ viewid: '00000', uname: 'nawefawefawefefefefefefeffawfeamenawefawefawefefefefefefeffawfeame', pageNo: 0 });
+    for (let i = 0; i < 5; i++) {
+        let pageNum = 0;
+        if (i > 3) {
+            pageNum = 4;
+        }
+        paramTargetItem.push({ viewid: '0000' + i, uname: 'name' + i, pageNo: pageNum });
+    }
+
+
+    tree.setMessage({
+        up: '위',
+        down: '아래',
+        add: '추가',
+        allAdd: '전체추가',
+        remove: '제거',
+        allRemove: '전체제거',
+        maxSizeMsg: "{maxSize} 개 까지 등록 가능합니다.", // 추가 가능한 max size가 넘었을경우 메시지 String
+        duplicate: "이미 등록된 항목이 존재합니다.",
+        addEmptyMessage: "추가할 항목을 선택해주세요.",
+        removeEmptyMessage: "제거할 항목을 선택해주세요.",
+    })
+
+    const example1 = new tree('#example1', {
+        mode: 'double'	// single, double
+        , style: {
+            height: 300
+        }
+        , orientation: 'horizontal' // horizontal , vertical
+        , body: {
+            enableMoveBtn: true	// 이동 버튼 보이기 여부
+            , moveBtnSize: 50	// item move button 영역 width 값
+        }
+        , footer: {
+            enable: true
+        }
+        , usetree: true
+        , useDragMove: true	// drag해서 이동할지 여부.
+        , useDragSort: true // target drag 해서 정렬할지 여부.
+        , enableUpDown: true // updown 버튼 활성화여부.
+
+        , duplicateCheck: true
+        , valueKey: 'viewid'
+        , labelKey: 'uname'
+        , source: {
+            items: paramSourceItem
+            , enableLabel: true
+            , search: {
+                enable: true
+                , callback: (param) => {
+                    console.log(param)
+                }
+            }
+            , completeMove: function (addItems) {
+                console.log('source completeMove fn', JSON.stringify(addItems));
+                return true;
+            }
+            , paging: {
+                enable: true
+                , unitPage: 10
+                , totalCount: 300
+                , currPage: 15
+                , callback: function (clickInfo) {
+                    console.log(clickInfo)
+                }
+            }
+        }
+        , target: {
+            label: 'Target'
+            , enableLabel: true
+            , items: []
+            , limitSize: -1 // 추가 가능한 max size
+            , emptyMessage: 'asdfasdf '
+            , completeMove: function (delItem) {
+                console.log(delItem);
+            }
+            , paging: {
+                enable: true
+                , unitPage: 10
+                , totalCount: 150
+                , currPage: 1
+                // 페이징 없이 카운트만 보일수 있게 처리.
+
+                , callback: function (clickInfo) {
+                    console.log(clickInfo)
+                }
+            }
+        }
+
+    });
+
+
+
+    example1.setTargetItems(paramTargetItem);
+
+    const targetObj = {
+        getTargetItems: () => {
+            console.log(example1.getTargetItems());
+            return;
+        }
+
+        , addItems: () => {
+            example1.setTargetItems(paramTargetItem);
+        }
+    }
+    window.targetObj = targetObj;
+    window.example1 = example1;
+</script>
