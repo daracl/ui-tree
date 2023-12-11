@@ -7,6 +7,8 @@ import domUtils from "./util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import Checkbox from "./plugins/Checkbox";
 import { CHECK_STATE } from "./constants";
+import TreeNodeInfo from "./TreeNodeInfo";
+import nodeUtils from "./util/nodeUtils";
 
 const defaultOptions = {
   style: {
@@ -110,11 +112,12 @@ export default class Daratree {
   }
   initEvt() {
     treeEvent.expanderClick(this, this.mainElement);
-    treeEvent.textClick(this, this.mainElement);
 
     if (this.config.isCheckbox) {
       this.config.checkbox = new Checkbox(this);
     }
+
+    treeEvent.textClick(this, this.mainElement);
   }
 
   public static setMessage(message: Message): void {
@@ -147,12 +150,12 @@ export default class Daratree {
     const pid = node[this.options.itemKey.pid];
     const id = node[this.options.itemKey.id];
 
-    const addNode = this.createNode(pid, node);
+    const addNode = new TreeNodeInfo(node, this);
     const parentNode = this.config.allNode[pid];
 
     if (parentNode) {
-      this.config.allNode[pid].childNodes.push(addNode);
-      addNode.sortOrder = this.config.allNode[pid].childCount = this.config.allNode[pid].childCount + 1;
+      this.config.allNode[pid].addChild(addNode);
+
       if (parentNode.checkState == CHECK_STATE.CHECKED) {
         addNode.checkState = CHECK_STATE.CHECKED;
       }
@@ -167,22 +170,6 @@ export default class Daratree {
     }
 
     this.config.allNode[id] = addNode;
-  }
-
-  private createNode(pid: any, item: any): TreeNode {
-    const childCount = (item.childNodes ?? []).length;
-    return {
-      id: item[this.options.itemKey.id],
-      pid: item[this.options.itemKey.pid],
-      text: item[this.options.itemKey.name],
-      icon: item[this.options.itemKey.icon],
-      checked: item.checked === true ? 1 : 2,
-      orginData: item,
-      childCount: childCount,
-      sortOrder: 0,
-      depth: this.config.allNode[pid] ? this.config.allNode[pid].depth + 1 : 0,
-      childNodes: [],
-    } as TreeNode;
   }
 
   public render() {
@@ -201,8 +188,6 @@ export default class Daratree {
       }
     }
     this.nodeSelect();
-
-    // 이벤트 처리할것.
   }
 
   private nodeSelect() {
@@ -224,6 +209,13 @@ export default class Daratree {
     const paddingLeft = this.options.style.paddingLeft;
     const openDepth = this.options.openDepth;
 
+    let stylePaddingLeft = 0;
+    if (this.options.topMenuView) {
+      stylePaddingLeft = paddingLeft;
+    }
+
+    stylePaddingLeft = stylePaddingLeft + (viewNodes.length > 0 ? (viewNodes[0].depth - 1) * paddingLeft : 0);
+
     for (let i = 0; i < childNodeLength; i++) {
       let treeNode = viewNodes[i];
 
@@ -234,7 +226,7 @@ export default class Daratree {
       if (treeNode.depth == 0) {
         treeHtml.push(
           `<li data-node-id="${treeNode.id}" class="open">
-              <div style="display:${this.options.topMenuView ? "inline" : "none"}">
+              <div class="dt-node" style="display:${this.options.topMenuView ? "inline" : "none"}">
                 ${this.getExpandIconHtml(treeNode)}
                 ${this.getNodeNameHtml(treeNode)}
               </div>
@@ -242,15 +234,13 @@ export default class Daratree {
             </li>`
         );
       } else {
-        let stylePaddingLeft = (treeNode.depth - 1) * paddingLeft;
-
         treeHtml.push(
           `<li data-node-id="${treeNode.id}" class="${openClass}">
             <div class="dt-node" style="padding-left:${stylePaddingLeft}px">
               ${this.getExpandIconHtml(treeNode)}
               ${this.getNodeNameHtml(treeNode)}
             </div>
-            <ul class="dt-children">${treeNode.childCount == 0 ? "" : this.getNodeTemplate(childNodes)}</ul>
+            <ul class="dt-children">${treeNode.childLength() == 0 ? "" : this.getNodeTemplate(childNodes)}</ul>
           </li>`
         );
       }
@@ -260,14 +250,14 @@ export default class Daratree {
   }
 
   private getExpandIconHtml(tNode: TreeNode) {
-    return `<i class="dt-expander ${tNode.childCount > 0 ? "visible" : ""}"></i>`;
+    return `<i class="dt-expander ${tNode.childLength() > 0 ? "visible" : ""}"></i>`;
   }
 
   private getNodeNameHtml(tNode: TreeNode) {
     let icon = tNode.icon;
     let iconHtml = "";
     if (utils.isBlank(icon)) {
-      icon = tNode.childCount == 0 ? "dt-file" : "dt-folder";
+      icon = tNode.childLength() == 0 ? "dt-file" : "dt-folder";
       if (this.options.enableIcon) {
         iconHtml = `<i class="dt-icon ${icon}"></i>`;
       }
@@ -325,4 +315,70 @@ export default class Daratree {
       }
     }
   };
+
+  /**
+   * check 아이템 얻기
+   *
+   * @returns check tree nodes
+   */
+  public getCheckValues() {
+    return this.config.checkbox.getCheckValues();
+  }
+
+  /**
+   * 전체 노드 열기
+   */
+  public allOpen() {
+    for (const node of this.config.rootNodes) {
+      node.open(true);
+    }
+  }
+
+  /**
+   * 전체 노드 닫기
+   */
+  public allClose() {
+    for (const node of this.config.rootNodes) {
+      node.close(true);
+    }
+  }
+
+  /**
+   * 트리 노드 정보 얻기
+   *
+   * @param id tree id
+   * @returns  tree node 정보
+   */
+  public getNodes(id: string | number): TreeNode {
+    return this.config.allNode[id];
+  }
+
+  /**
+   * 선택된 tree node 값 얻기.
+   *
+   * @returns 선택된 tree node
+   */
+  public getSelectNode(): TreeNode {
+    return nodeUtils.elementToTreeNode(this.mainElement.querySelector(".selected"), this);
+  }
+
+  /**
+   * 노드 삭제 하기.
+   *
+   * @param id tree node id
+   * @returns 삭제된 노드 값
+   */
+  public remove(...ids: any[]) {
+    const reval = [];
+    for (const id of ids) {
+      const removeNode = this.config.allNode[id];
+
+      if (removeNode) {
+        reval.push(removeNode.remove());
+      } else {
+        reval.push(`id not found [${id}]`);
+      }
+    }
+    return reval;
+  }
 }

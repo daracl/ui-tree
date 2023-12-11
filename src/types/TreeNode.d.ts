@@ -1,3 +1,7 @@
+export interface OptionCallback {
+  (...params: any[]): any;
+}
+
 export interface TreeNode {
   id: string | number;
   pid: string | number;
@@ -6,9 +10,14 @@ export interface TreeNode {
   checkState?: number;
   target?: string;
   icon?: string;
-  childCount: number;
-  sortOrder: number;
   depth: number;
   childNodes: TreeNode[];
   orginData: any;
+
+  moveChild: OptionCallback;
+  open: OptionCallback;
+  close: OptionCallback;
+  remove: OptionCallback;
+
+  childLength: OptionCallback;
 }

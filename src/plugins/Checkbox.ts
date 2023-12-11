@@ -22,34 +22,86 @@ export default class Checkbox {
     this.initEvt();
   }
 
-  initCheck() {}
+  initCheck() {
+    for (const node of this.daraTree.config.rootNodes) {
+      this.initChildNodeCheck(node);
+    }
+  }
+
+  /**
+   * init child node check
+   * @param node treenode
+   */
+  private initChildNodeCheck(node: TreeNode) {
+    if (node.checkState == CHECK_STATE.CHECKED) {
+      this.parentNodeCheck(node);
+      this.childCheck(node, CHECK_STATE.CHECKED);
+    } else if (node.childNodes.length > 0) {
+      for (const childNode of node.childNodes) {
+        this.initChildNodeCheck(childNode);
+      }
+    }
+  }
+
+  /**
+   * parent node check box 처리
+   * @param node treenode
+   */
+  private parentNodeCheck(node: TreeNode) {
+    const parentNode = this.daraTree.config.allNode[node.pid];
+
+    if (parentNode) {
+      let indeterminateCount = 0;
+      let unCheckCount = 0;
+      for (const childNode of parentNode.childNodes) {
+        if (childNode.checkState == CHECK_STATE.UNCHECKED) {
+          ++unCheckCount;
+        } else if (childNode.checkState == CHECK_STATE.INDETERMINATE) {
+          ++indeterminateCount;
+        }
+      }
+
+      if (indeterminateCount + unCheckCount > 0) {
+        if (unCheckCount == parentNode.childNodes.length) {
+          this.setCheckBox(parentNode.id, CHECK_STATE.UNCHECKED);
+        } else {
+          this.setCheckBox(parentNode.id, CHECK_STATE.INDETERMINATE);
+        }
+      } else {
+        this.setCheckBox(parentNode.id, CHECK_STATE.CHECKED);
+      }
+
+      this.parentNodeCheck(parentNode);
+    }
+  }
 
   initEvt() {
-    domUtils.eventOn(this.daraTree.mainElement, "click", ".dt-checkbox", (e: Event, ele: Element) => {
+    domUtils.eventOn(this.daraTree.mainElement, "click", ".dt-text-content>.dt-checkbox", (e: Event, ele: Element) => {
       const checkboxEle = ele.closest(".dt-checkbox");
 
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
       if (checkboxEle) {
-        const nodeId = nodeUtils.elementToNodeId(ele);
+        const nodeInfo = nodeUtils.elementToTreeNode(ele, this.daraTree);
 
-        const nodeInfo = this.daraTree.config.allNode[nodeId];
-
-        if (nodeInfo.checkState == CHECK_STATE.UNCHECKED) {
+        if (nodeInfo.checkState == CHECK_STATE.CHECKED) {
           this.childCheck(nodeInfo, CHECK_STATE.UNCHECKED);
-          this.setCheckBox(nodeId, CHECK_STATE.UNCHECKED);
         } else {
           this.childCheck(nodeInfo, CHECK_STATE.CHECKED);
-          this.setCheckBox(nodeId, CHECK_STATE.CHECKED);
         }
+
+        this.parentNodeCheck(nodeInfo);
       }
     });
   }
 
-  public childCheck(parentNode: TreeNode, state: number) {
-    for (let node of parentNode.childNodes) {
-      this.setCheckBox(node.id, state);
+  public childCheck(node: TreeNode, state: number) {
+    this.setCheckBox(node.id, state);
 
-      if (node.childNodes.length > 0) {
-        this.childCheck(node, state);
+    if (node.childNodes.length > 0) {
+      for (let childNode of node.childNodes) {
+        this.childCheck(childNode, state);
       }
     }
   }
@@ -81,6 +133,28 @@ export default class Checkbox {
         default:
           return;
       }
+    }
+  }
+
+  public getCheckValues() {
+    let checkNodeValues = [] as any[];
+
+    for (const node of this.daraTree.config.rootNodes) {
+      _getCheckValue(checkNodeValues, node);
+    }
+
+    return checkNodeValues;
+  }
+}
+
+function _getCheckValue(checkNodeValues: any[], node: any) {
+  if (node.checkState != CHECK_STATE.UNCHECKED) {
+    checkNodeValues.push(node);
+  }
+
+  if (node.childNodes.length > 0) {
+    for (const childNode of node.childNodes) {
+      _getCheckValue(checkNodeValues, childNode);
     }
   }
 }

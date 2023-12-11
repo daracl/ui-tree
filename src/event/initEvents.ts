@@ -14,9 +14,7 @@ export default {
       domUtils.removeClass(treeContext.mainElement.querySelectorAll(".dt-text-content"), "selected");
       domUtils.addClass(ele, "selected");
 
-      const id = nodeUtils.elementToNodeId(ele);
-
-      const nodeInfo = treeContext.config.allNode[id];
+      const nodeInfo = nodeUtils.elementToTreeNode(ele, treeContext);
 
       if (treeContext.options.click) {
         treeContext.options.click.call(null, { node: nodeInfo, evt: e });

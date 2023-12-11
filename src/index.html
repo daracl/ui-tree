@@ -9,7 +9,7 @@
 
 </HEAD>
 
-<body>
+<body onload="load()">
   <div class="dara-main">
     <h2 class="page-header">트리</h2>
     <div>
@@ -21,6 +21,8 @@
             <input type="button" value="오픈" onclick="treeOpen()">
             ||
             <input type="button" value="닫기" onclick="treeClose()">
+            ||
+            <input type="button" value="선택 노드 삭제" onclick="removeSelectNode()">
 
             <div id="treeDiv" ondragstart="return false;" ondrag="return false;" onselectstart="return false"></div>
 
@@ -68,7 +70,7 @@
     color: var(--bg-color);
   }
 </style>
-<script type="module">
+<script>
 
   const THEME_KEY = "form-theme";
   const theme = localStorage.getItem(THEME_KEY);
@@ -103,19 +105,19 @@
         });
       })
     }
+
+    init()
   }
-  load();
 
-
-
+  var treeObj;
 
   function init() {
 
     var treeItem = [];
     treeItem.push({ id: 0, pid: '', name: 'My example tree1', url: "detail('2')" });
-    treeItem.push({ id: 1, pid: 0, name: 'pub 1', url: "detail('2')", checked: true });
+    treeItem.push({ id: 1, pid: 0, name: 'pub 1', url: "detail('2')" });
     treeItem.push({ id: 3, pid: 1, name: 'pub 1.1', url: "detail('2')" });
-    treeItem.push({ id: 5, pid: 3, name: '5Node 1.1.1', url: "detail('2')" });
+    treeItem.push({ id: 5, pid: 3, name: '5Node 1.1.1', url: "detail('2')", checked: true });
     treeItem.push({ id: 6, pid: 5, name: '6Node 1.1.1.1', url: "detail('2')" });
     treeItem.push({ id: 14, pid: 3, name: '14Node 1.1.1', url: "detail('2')" });
     treeItem.push({ id: 15, pid: 14, name: '15Node 1.1.1', url: "detail('2')" });
@@ -125,12 +127,12 @@
     treeItem.push({ id: 7, pid: 0, name: '7Node 4', url: "detail('2')" });
     treeItem.push({ id: 9, pid: 0, name: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
 
-
-    const daraTree = new Tree("#treeDiv", {
+    treeObj = new Tree("#treeDiv", {
       items: treeItem
       , topMenuView: false
       , enableIcon: true
-      , openDepth: 2
+      , openDepth: -1
+      , topMenuView1: true
       , plugins: {
         checkbox: {}
       }
@@ -141,7 +143,9 @@
 
 
   }
-  init();
+
+
+  window.treeObj = treeObj;
 
   function subMenuTreeCall(nodeId) {
     d.add({ id: 17 + '' + nodeId, pid: nodeId, name: nodeId + '17Node 3', url: "detail('2')", childCnt: 1000 });
@@ -161,16 +165,17 @@
   }
 
   function treeOpen() {
-    $.pubTree("#treeDiv").allOpen();
+    window.treeObj.allOpen();
   }
 
   function treeClose() {
-    $.pubTree("#treeDiv").allClose();
+    window.treeObj.allClose();
   }
 
 
-  function detail(obj) {
-    //alert(obj)
+  function removeSelectNode(obj) {
+    const selectNode = treeObj.getSelectNode();
+    if (selectNode) treeObj.remove(selectNode.id);
   }
 
   function saveInfo() {

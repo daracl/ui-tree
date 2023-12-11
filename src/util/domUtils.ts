@@ -66,7 +66,9 @@ export default {
       }
     });
   },
-  removeClass(el: Element | string | NodeList, styleClassName: string) {
+  removeClass(el: Element | string | NodeList | null, styleClassName: string) {
+    if (el == null) return el;
+
     const classNames = styleClassName.replaceAll(/\s+/g, " ").split(" ");
     $querySelector(el).forEach((el1) => {
       for (let className of classNames) {
