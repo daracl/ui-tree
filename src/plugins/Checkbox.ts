@@ -7,10 +7,11 @@ import { TreeNode } from "@t/TreeNode";
 import { CHECK_STATE } from "../constants";
 
 /**
- * Daratree class
+ * tree node Checkbox
  *
- * @class Daratree
- * @typedef {Daratree}
+ * @export
+ * @class Checkbox
+ * @typedef {Checkbox}
  */
 export default class Checkbox {
   private daraTree;
@@ -76,14 +77,12 @@ export default class Checkbox {
   }
 
   initEvt() {
-    domUtils.eventOn(this.daraTree.mainElement, "click", ".dt-text-content>.dt-checkbox", (e: Event, ele: Element) => {
-      const checkboxEle = ele.closest(".dt-checkbox");
-
+    domUtils.eventOn(this.daraTree.mainElement, "click", ".dt-checkbox", (e: Event, checkboxEle: Element) => {
       e.preventDefault();
       e.stopImmediatePropagation();
 
       if (checkboxEle) {
-        const nodeInfo = nodeUtils.elementToTreeNode(ele, this.daraTree);
+        const nodeInfo = nodeUtils.elementToTreeNode(checkboxEle, this.daraTree);
 
         if (nodeInfo.checkState == CHECK_STATE.CHECKED) {
           this.childCheck(nodeInfo, CHECK_STATE.UNCHECKED);

@@ -12,7 +12,8 @@ export interface TreeNode {
   icon?: string;
   depth: number;
   childNodes: TreeNode[];
-  orginData: any;
+  orgin: any;
+  _cud: "C" | "U" | "D";
 
   moveChild: OptionCallback;
   open: OptionCallback;
@@ -20,4 +21,6 @@ export interface TreeNode {
   remove: OptionCallback;
 
   childLength: OptionCallback;
+  click: OptionCallback;
+  doubleClick: OptionCallback;
 }

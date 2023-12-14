@@ -2,12 +2,12 @@
 
 @import "./theme/variable-dark";
 
-ul.dara-tree {
+.dara-tree {
   white-space: nowrap;
-  padding: 0px;
-  margin: 0px;
+
   color: var(--body-color);
   background: var(--body-bg);
+  position: relative;
 
   * {
     -webkit-box-sizing: content-box !important;
@@ -15,10 +15,26 @@ ul.dara-tree {
     box-sizing: content-box !important;
   }
 
+  ul.dt-container {
+    padding: 0px;
+    margin: 0px;
+  }
+
   li {
     list-style-type: none;
     margin: 0px;
     padding: 0px;
+  }
+
+  .drag-helper {
+    position: absolute;
+    z-index: 1000;
+    display: none;
+    height: 24px;
+
+    &.dt-drag {
+      display: inline-block;
+    }
   }
 
   .tree-empty-area {
@@ -77,6 +93,14 @@ ul.dara-tree {
         color: var(--item-select-font-color);
         background-color: var(--item-select-bg-color);
       }
+
+      &.edit > span {
+        display: none;
+      }
+
+      .dt-input {
+        width: 100px;
+      }
     }
 
     .dt-expander {
@@ -129,67 +153,5 @@ ul.dara-tree {
     }
   }
 
-  /*--------------------icon --------------------*/
-  /*
-  .dara-tree-icon {
-    width: 16px;
-    height: 16px;
-    margin: 0px 2px;
-    vertical-align: middle;
-    display: inline-block;
-    z-index: 1;
-
-    &.dara-tree-root {
-      background: url("./images/tree/base.gif");
-    }
-
-    &.dara-tree-folder {
-      background: url("./images/tree/folder.gif");
-    }
-
-    &.dara-tree-node {
-      background: url("./images/tree/page.gif");
-    }
-    &.dara-tree-empty {
-      background: url("./images/tree/empty.gif");
-    }
-    &.dara-tree-line {
-      background: url("./images/tree/line.gif");
-    }
-    &.dara-tree-join {
-      background:url('./images/tree/join.gif');
-    }
-    &.dara-tree-joinbottom {
-      background:url('../images/tree/joinBottom.gif');
-    }
-    &.dara-tree-oc {
-      background: url("./images/tree/plus.gif");
-    }
-
-    &.dara-tree-ocbottom {
-      background: url("./images/tree/plusbottom.gif");
-    }
-
-    &.dara-tree-nloc {
-      background: url("./images/tree/nolines_plus.gif");
-    }
-  }
-
-  [data-tree-id].open > &.dara-tree-folder {
-    background: url("./images/tree/folderopen.gif");
-  }
-
-  [data-tree-id].open > &.dara-tree-oc {
-    background: url("./images/tree/minus.gif");
-  }
-
-  [data-tree-id].open > &.dara-tree-ocbottom {
-    background: url("./images/tree/minusbottom.gif");
-  }
-
-  [data-tree-id].open > &.dara-tree-nloc {
-    background: url("./images/tree/nolines_minus.gif");
-  }
-  */
   /*--------------------icon --------------------*/
 }

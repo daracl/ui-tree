@@ -14,7 +14,7 @@ export default {
     return itemEle.closest("[data-node-id]");
   },
 
-  nodeIdToElement(treeElement: Element, id: string | number): Element | null {
+  nodeIdToElement(treeElement: Element, id: any): Element | null {
     return treeElement.querySelector(`[data-node-id="${id}"]`);
   },
 

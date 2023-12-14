@@ -5,7 +5,9 @@ export interface OptionCallback {
 export interface Plugins {
   checkbox?: object;
   dnd?: object;
-  edit?: object;
+  edit?: {
+    width: string;
+  };
   contextmenu?: object;
 }
 
@@ -22,7 +24,7 @@ export interface Options {
   itemKey: {
     id: string;
     pid: string;
-    name: string;
+    text: string;
     icon: string;
   };
   plugins?: Plugins;

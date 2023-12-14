@@ -1,4 +1,5 @@
 import { Options } from "@t/Options";
+import { ConfigInfo } from "@t/ConfigInfo";
 import utils from "./util/utils";
 import treeEvent from "./event/initEvents";
 import { Message } from "@t/Message";
@@ -9,6 +10,7 @@ import Checkbox from "./plugins/Checkbox";
 import { CHECK_STATE } from "./constants";
 import TreeNodeInfo from "./TreeNodeInfo";
 import nodeUtils from "./util/nodeUtils";
+import Dnd from "./plugins/Dnd";
 
 const defaultOptions = {
   style: {
@@ -19,7 +21,7 @@ const defaultOptions = {
   itemKey: {
     id: "id",
     pid: "pid",
-    name: "name",
+    text: "text",
     icon: "icon",
   },
   plugins: {},
@@ -55,7 +57,7 @@ export default class Daratree {
 
   public mainElement: HTMLElement;
 
-  public config: any;
+  public config: ConfigInfo;
 
   constructor(selector: string, options: Options, message: Message) {
     const mainElement = document.querySelector<HTMLElement>(selector);
@@ -70,7 +72,8 @@ export default class Daratree {
 
     if (this.options.style) {
       let style = [];
-      style.push(mainElement.getAttribute("style") + ";");
+      let orginStyle = mainElement.getAttribute("style");
+      style.push(orginStyle ? orginStyle + ";" : "");
       if (this.options.style.width) style.push(`width:${this.options.style.width};`);
       if (this.options.style.height) style.push(`height:${this.options.style.height};`);
 
@@ -88,29 +91,29 @@ export default class Daratree {
 
     allInstance[selector] = this;
   }
-  initConfig() {
+
+  private initConfig() {
     this.config = {
       allNode: {},
-      selected: null,
       selectedNode: null,
-      selectedFound: false,
-      completed: false,
-      rootNodes: [],
-      topMenuView: false,
-      checkbox: {},
-    };
-
-    this.config.isCheckbox = !utils.isUndefined(this.options.plugins["checkbox"]);
-    this.config.isDnd = !utils.isUndefined(this.options.plugins["dnd"]);
-    this.config.isContextmenu = !utils.isUndefined(this.options.plugins["contextmenu"]);
-    this.config.isEdit = !utils.isUndefined(this.options.plugins["edit"]);
+      rootNodes: [] as any[],
+      isCheckbox: !utils.isUndefined(this.options.plugins["checkbox"]),
+      isDnd: !utils.isUndefined(this.options.plugins["dnd"]),
+      isContextmenu: !utils.isUndefined(this.options.plugins["contextmenu"]),
+      isEdit: !utils.isUndefined(this.options.plugins["edit"]),
+    } as ConfigInfo;
   }
 
   public init() {
     this.request();
     this.initEvt();
   }
-  initEvt() {
+
+  private initEvt() {
+    if (this.config.isDnd) {
+      this.config.dnd = new Dnd(this);
+    }
+
     treeEvent.expanderClick(this, this.mainElement);
 
     if (this.config.isCheckbox) {
@@ -128,33 +131,62 @@ export default class Daratree {
     const opts = this.options;
 
     const callbackResponse = (items: any[]) => {
-      this.treeGrid(items);
+      this.addNode(items);
     };
 
     if (utils.isFunction(opts.source)) {
       opts.source(this.config.selectedNode, callbackResponse);
     } else if (utils.isArray(opts.items)) {
-      this.treeGrid(opts.items);
+      this.addNode(opts.items);
     }
   }
 
-  public treeGrid(nodes: any[]) {
-    for (const node of nodes) {
-      this.addNode(node);
-    }
-
-    this.render();
+  public refresh(id: any) {
+    //TODO
+    console.log(id);
   }
 
-  public addNode(node: any) {
-    const pid = node[this.options.itemKey.pid];
+  /**
+   * tree node 추가.
+   *
+   * @param nodeItem {object|array} add node items
+   * @param parentId {any} parent id
+   * @param options {Object} add options
+   */
+  public addNode(nodeItem: any[] | any, parentId?: any, options?: any) {
+    let nodeArr = [];
+    if (!utils.isArray(nodeItem)) {
+      nodeArr.push(nodeItem);
+    } else {
+      nodeArr = nodeItem;
+    }
+
+    for (const node of nodeArr) {
+      this.treeGrid(node, parentId);
+    }
+
+    this.render(parentId);
+  }
+
+  public createNode(nodeInfo: any) {
+    nodeInfo = nodeInfo ?? {};
+    nodeInfo["_cud"] = "C";
+    nodeInfo[this.options.itemKey.pid] = nodeInfo.pid ?? nodeInfo[this.options.itemKey.pid] ?? (this.config.selectedNode ? this.config.selectedNode.id : "");
+    nodeInfo[this.options.itemKey.id] = nodeInfo.id ?? nodeInfo[this.options.itemKey.id] ?? utils.generateUUID();
+    nodeInfo[this.options.itemKey.text] = nodeInfo.text ?? nodeInfo[this.options.itemKey.text] ?? "New Node";
+
+    this.addNode(nodeInfo);
+  }
+
+  private treeGrid(node: any, parentId?: any) {
+    const pid = parentId ?? node[this.options.itemKey.pid];
     const id = node[this.options.itemKey.id];
 
-    const addNode = new TreeNodeInfo(node, this);
+    const addNode = new TreeNodeInfo(node, pid, this);
     const parentNode = this.config.allNode[pid];
 
     if (parentNode) {
-      this.config.allNode[pid].addChild(addNode);
+      parentNode.addChild(addNode);
 
       if (parentNode.checkState == CHECK_STATE.CHECKED) {
         addNode.checkState = CHECK_STATE.CHECKED;
@@ -172,32 +204,25 @@ export default class Daratree {
     this.config.allNode[id] = addNode;
   }
 
-  public render() {
-    const sNode = this.config.selectedNode;
-    const allNode = this.config.allNode;
-
-    if (sNode == null) {
+  private render(id?: any) {
+    if (utils.isBlank(id) && this.config.selectedNode == null) {
       // init load
-      this.mainElement.innerHTML = `<ul id="${this.prefix}" class="dara-tree" ondrag="return false">
+      this.mainElement.innerHTML = `<ul id="${this.prefix}" class="dt-container">
         ${this.getNodeTemplate(this.config.rootNodes)}
         </ul>`;
     } else {
-      const selectElemnt = this.mainElement.querySelector(`[data-node-id="${sNode.id}"]>.dt-children`);
-      if (selectElemnt) {
-        selectElemnt.innerHTML = this.getNodeTemplate(allNode[sNode.id].childNodes);
-      }
-    }
-    this.nodeSelect();
-  }
+      let selectedNode = this.config.allNode[id] ?? this.config.selectedNode;
 
-  private nodeSelect() {
-    const sNode = this.config.selectedNode;
-    if (sNode != null && sNode != "") {
-      const selectNode = document.getElementById(sNode.id + "_a");
-      if (selectNode) {
-        selectNode.className = "style2";
+      const childNodeElemnt = this.mainElement.querySelector(`[data-node-id="${selectedNode.id}"]>.dt-children`);
+      if (childNodeElemnt) {
+        childNodeElemnt.innerHTML = this.getNodeTemplate(selectedNode.childNodes);
       }
-      return sNode;
+
+      const parentElement = this.mainElement.querySelector(`[data-node-id="${selectedNode.id}"]>.dt-node`);
+      if (parentElement) {
+        parentElement.innerHTML = this.nodeContentHtml(selectedNode);
+        this.setSelectNode(selectedNode.id);
+      }
     }
   }
 
@@ -227,8 +252,7 @@ export default class Daratree {
         treeHtml.push(
           `<li data-node-id="${treeNode.id}" class="open">
               <div class="dt-node" style="display:${this.options.topMenuView ? "inline" : "none"}">
-                ${this.getExpandIconHtml(treeNode)}
-                ${this.getNodeNameHtml(treeNode)}
+                ${this.nodeContentHtml(treeNode)}
               </div>
               <ul id="c_${treeNode.id}" class="dt-children">${this.getNodeTemplate(childNodes)}</ul>
             </li>`
@@ -237,8 +261,7 @@ export default class Daratree {
         treeHtml.push(
           `<li data-node-id="${treeNode.id}" class="${openClass}">
             <div class="dt-node" style="padding-left:${stylePaddingLeft}px">
-              ${this.getExpandIconHtml(treeNode)}
-              ${this.getNodeNameHtml(treeNode)}
+              ${this.nodeContentHtml(treeNode)}
             </div>
             <ul class="dt-children">${treeNode.childLength() == 0 ? "" : this.getNodeTemplate(childNodes)}</ul>
           </li>`
@@ -247,6 +270,10 @@ export default class Daratree {
     }
 
     return treeHtml.join("");
+  }
+
+  private nodeContentHtml(tNode: TreeNode) {
+    return this.getExpandIconHtml(tNode) + this.getNodeNameHtml(tNode);
   }
 
   private getExpandIconHtml(tNode: TreeNode) {
@@ -270,7 +297,7 @@ export default class Daratree {
       checkboxHtml = `<label class="dt-checkbox"><span class="dt-icon checkbox"></span></label>`;
     }
 
-    return `<a href ="javascript:" class="dt-text-content">${checkboxHtml}${iconHtml}${tNode.text}</a>`;
+    return `${checkboxHtml}<a href ="javascript:" class="dt-text-content">${iconHtml}<span>${tNode.text}</span></a>`;
   }
 
   public getPrefix() {
@@ -349,8 +376,24 @@ export default class Daratree {
    * @param id tree id
    * @returns  tree node 정보
    */
-  public getNodes(id: string | number): TreeNode {
+  public getNodes(id: any): TreeNode {
     return this.config.allNode[id];
+  }
+
+  /**
+   * 노드 선택하기
+   *
+   * @param id tree id
+   */
+  public setSelectNode(id: any) {
+    domUtils.removeClass(this.mainElement.querySelectorAll(".dt-text-content"), "selected");
+
+    const nodeElement = nodeUtils.nodeIdToElement(this.mainElement, id);
+
+    if (nodeElement) {
+      this.config.selectedNode = this.config.allNode[id];
+      domUtils.addClass(nodeElement.querySelector(".dt-text-content"), "selected");
+    }
   }
 
   /**

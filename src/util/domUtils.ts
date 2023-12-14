@@ -1,5 +1,6 @@
 import utils from "./utils";
 
+const EVENT_HANDLER_MAP = new Map();
 export default {
   /**
    * @method getItemVal
@@ -52,8 +53,8 @@ export default {
     }
   },
 
-  addClass(el: Element | string | NodeList | null, styleClassName: string) {
-    if (el == null) return el;
+  addClass(el: Element | string | NodeList | null | undefined, styleClassName: string) {
+    if (!el) return el;
 
     const classNames = styleClassName.replaceAll(/\s+/g, " ").split(" ");
 
@@ -82,21 +83,59 @@ export default {
     return divEle.innerText;
   },
 
-  eventOn(el: Element | string | NodeList | null, type: string, selector?: any, listener?: any) {
+  isInputField(tagName: string): boolean {
+    return tagName.search(/(input|select|textarea)/i) > -1;
+  },
+
+  setAttribute(el: Element, attrs: any) {
+    for (let key in attrs) {
+      el.setAttribute(key, attrs[key]);
+    }
+  },
+  eventOff(el: Element | string | NodeList | null | Document, type: string) {
     if (el == null) return el;
+
+    const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
+
+    const elements = $querySelector(el);
+
+    const evtInfo = EVENT_HANDLER_MAP.get(el);
+    for (const eventType of eventTypes) {
+      elements.forEach((el) => {
+        el.removeEventListener(eventType, evtInfo[eventType]);
+      });
+
+      delete evtInfo[eventType];
+    }
+    if (Object.keys(evtInfo).length < 1) {
+      EVENT_HANDLER_MAP.delete(el);
+    }
+  },
+
+  eventOn(el: Element | string | NodeList | null | Document, type: string, selector?: any, listener?: any) {
+    if (el == null) return el;
+
+    const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
 
     const elements = $querySelector(el);
 
     if (!utils.isString(selector)) {
       listener = selector;
-      elements.forEach((el) => {
-        el.addEventListener(type, (e) => {
-          if (listener(e, el) === false) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-          }
+
+      const fn = (e: Event) => {
+        if (listener(e, el) === false) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      };
+
+      for (const eventType of eventTypes) {
+        addEventInfo(el, eventType, fn);
+
+        elements.forEach((el) => {
+          el.addEventListener(eventType, fn);
         });
-      });
+      }
 
       return this;
     }
@@ -114,13 +153,27 @@ export default {
       }
     };
 
-    elements.forEach((el) => {
-      el.addEventListener(type, fn);
-    });
+    for (const eventType of eventTypes) {
+      addEventInfo(el, eventType, fn);
+      elements.forEach((el) => {
+        el.addEventListener(eventType, fn);
+      });
+    }
   },
 };
 
-function $querySelector(el: Element | string | NodeList): Element[] {
+function addEventInfo(el: any, eventType: string, listener: any) {
+  if (!EVENT_HANDLER_MAP.has(el)) {
+    EVENT_HANDLER_MAP.set(el, {});
+  }
+  EVENT_HANDLER_MAP.get(el)[eventType] = listener;
+}
+
+function $querySelector(el: Element | string | NodeList | Document): any[] {
+  if (el instanceof Document) {
+    return [document];
+  }
+
   if (el instanceof Element) {
     return [el];
   }
