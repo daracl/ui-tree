@@ -142,14 +142,22 @@ export default {
 
     const fn = (e: Event) => {
       const evtTarget = e.target as Element;
-
       const selectorEle = evtTarget.closest(selector);
 
-      if (selectorEle) {
-        if (listener(e, selectorEle) === false) {
-          e.stopImmediatePropagation();
-          e.preventDefault();
+      if (!selectorEle) return;
+
+      let containsFlag = false;
+      for (const el of elements) {
+        if (el.contains(selectorEle)) {
+          containsFlag = true;
         }
+      }
+
+      if (!containsFlag) return;
+
+      if (listener(e, selectorEle) === false) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
       }
     };
 
@@ -159,6 +167,13 @@ export default {
         el.addEventListener(eventType, fn);
       });
     }
+  },
+
+  getEventPosition(e: any) {
+    const evtTouche = e.touches;
+    const evt = evtTouche && evtTouche[0] ? evtTouche[0] : e;
+
+    return { x: evt.pageX, y: evt.pageY };
   },
 };
 

@@ -40,6 +40,12 @@ interface ComponentMap {
 // all instance
 const allInstance: ComponentMap = {};
 
+// dnd default option
+const dndDefaultOptions = {
+  marginTop: 10,
+  marginLeft: 10,
+};
+
 /**
  * Daratree class
  *
@@ -98,10 +104,16 @@ export default class Daratree {
       selectedNode: null,
       rootNodes: [] as any[],
       isCheckbox: !utils.isUndefined(this.options.plugins["checkbox"]),
-      isDnd: !utils.isUndefined(this.options.plugins["dnd"]),
+      isDnd: false,
       isContextmenu: !utils.isUndefined(this.options.plugins["contextmenu"]),
       isEdit: !utils.isUndefined(this.options.plugins["edit"]),
+      isNodeDrag: false,
     } as ConfigInfo;
+
+    if (!utils.isUndefined(this.options.plugins["dnd"])) {
+      this.config.isDnd = true;
+      this.options.plugins["dnd"] = utils.objectMerge({}, dndDefaultOptions, this.options.plugins["dnd"]);
+    }
   }
 
   public init() {
@@ -260,7 +272,7 @@ export default class Daratree {
       } else {
         treeHtml.push(
           `<li data-node-id="${treeNode.id}" class="${openClass}">
-            <div class="dt-node" style="padding-left:${stylePaddingLeft}px">
+            <div class="dt-node" style="padding-left:${stylePaddingLeft}px" draggable="true">
               ${this.nodeContentHtml(treeNode)}
             </div>
             <ul class="dt-children">${treeNode.childLength() == 0 ? "" : this.getNodeTemplate(childNodes)}</ul>

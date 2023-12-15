@@ -24,4 +24,5 @@ export interface ConfigInfo {
   isDnd: boolean;
   isContextmenu: boolean;
   isEdit: boolean;
+  isNodeDrag: boolean;
 }

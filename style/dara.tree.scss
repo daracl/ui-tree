@@ -2,6 +2,17 @@
 
 @import "./theme/variable-dark";
 
+.dt-drag-helper {
+  position: absolute;
+  z-index: 1000;
+  display: none;
+  height: 24px;
+
+  &.dt-drag {
+    display: inline-block;
+  }
+}
+
 .dara-tree {
   white-space: nowrap;
 
@@ -24,17 +35,6 @@
     list-style-type: none;
     margin: 0px;
     padding: 0px;
-  }
-
-  .drag-helper {
-    position: absolute;
-    z-index: 1000;
-    display: none;
-    height: 24px;
-
-    &.dt-drag {
-      display: inline-block;
-    }
   }
 
   .tree-empty-area {
@@ -68,7 +68,6 @@
 
   .dt-children {
     display: none;
-    position: relative;
     padding: 0px;
     margin: 0px;
   }
