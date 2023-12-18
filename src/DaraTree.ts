@@ -14,8 +14,8 @@ import Dnd from "./plugins/Dnd";
 
 const defaultOptions = {
   style: {
-    width: "auto",
-    height: "100%",
+    width: "",
+    height: "",
     paddingLeft: 12,
   },
   itemKey: {
@@ -44,6 +44,8 @@ const allInstance: ComponentMap = {};
 const dndDefaultOptions = {
   marginTop: 10,
   marginLeft: 10,
+  inside: "last",
+  drop: (item: any) => {},
 };
 
 /**
@@ -55,6 +57,7 @@ const dndDefaultOptions = {
 export default class Daratree {
   public options;
 
+  private orginStyle;
   private orginStyleClass;
 
   private selector: string;
@@ -78,10 +81,20 @@ export default class Daratree {
 
     if (this.options.style) {
       let style = [];
-      let orginStyle = mainElement.getAttribute("style");
-      style.push(orginStyle ? orginStyle + ";" : "");
-      if (this.options.style.width) style.push(`width:${this.options.style.width};`);
-      if (this.options.style.height) style.push(`height:${this.options.style.height};`);
+
+      let addStyle = (this.orginStyle = mainElement.getAttribute("style")) || "";
+      if (this.options.style.width) {
+        addStyle = addStyle.replace(/(width:).+?(;[\s]?|$)/g, "");
+
+        style.push(`width:${this.options.style.width};`);
+      }
+      if (this.options.style.height) {
+        addStyle = addStyle.replace(/(height:).+?(;[\s]?|$)/g, "");
+
+        style.push(`height:${this.options.style.height};`);
+      }
+
+      style.push(addStyle ? addStyle + ";" : "");
 
       mainElement.setAttribute("style", style.join(""));
     }

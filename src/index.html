@@ -10,7 +10,7 @@
 </HEAD>
 
 <body onload="load()">
-  <div class="dara-main">
+  <div class="dara-main" style="height:700px;">
     <h2 class="page-header">트리</h2>
     <div>
       <table border="1" width="800px;" height="100%">
@@ -28,9 +28,7 @@
             ||
             <input type="button" value="신규 노트" onclick="createNode()">
 
-
-
-            <div id="treeDiv"></div>
+            <div id="treeDiv" style="overflow:auto;height:200px"></div>
 
             <br />
 
@@ -131,10 +129,16 @@
     treeItem.push({ id: 4, pid: 0, text: '4Node 3', url: "detail('2')" });
     treeItem.push({ id: 2, pid: 0, text: '2Node 2', url: "detail('2')" });
     treeItem.push({ id: 7, pid: 0, text: '7Node 4', url: "detail('2')" });
+    treeItem.push({ id: 41, pid: 0, text: '4Node 3', url: "detail('2')" });
+    treeItem.push({ id: 21, pid: 0, text: '2Node 2', url: "detail('2')" });
+    treeItem.push({ id: 712, pid: 0, text: '7Node 4', url: "detail('2')" });
     treeItem.push({ id: 9, pid: 0, text: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
 
     treeObj = new Tree("#treeDiv", {
       items: treeItem
+      , style: {
+        height: '200px'
+      }
       , topMenuView: false
       , enableIcon: true
       , openDepth: -1
@@ -142,7 +146,11 @@
       , plugins: {
         checkbox: {}
         , edit: {}
-        , dnd: {}
+        , dnd: {
+          drop: (item) => {
+            console.log('item ', item);
+          }
+        }
       }
       , click: function (nodeInfo) {
         console.log('click', nodeInfo)

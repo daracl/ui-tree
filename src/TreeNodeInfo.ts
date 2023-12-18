@@ -3,6 +3,7 @@ import { TreeNode } from "@t/TreeNode";
 
 import DaraTree from "./DaraTree";
 import nodeUtils from "./util/nodeUtils";
+import { MOVE_POSITION } from "./constants";
 
 /**
  * Daratree class
@@ -40,8 +41,6 @@ export default class TreeNodeInfo implements TreeNode {
     this.depth = daraTree.config.allNode[this.pid] ? daraTree.config.allNode[this.pid].depth + 1 : 0;
     this.orgin = item;
   }
-
-  public moveChild() {}
 
   /**
    * 자식 노드 추가.
@@ -121,6 +120,59 @@ export default class TreeNodeInfo implements TreeNode {
       text: this.text,
       depth: this.depth,
     };
+  }
+
+  public move(position: string, moveNodeId: any) {
+    const movePid = this.daraTree.config.allNode[moveNodeId].pid;
+    const moveParentNode = this.daraTree.config.allNode[movePid];
+    const childNodes = moveParentNode.childNodes;
+
+    const parentNode = this.daraTree.config.allNode[this.pid];
+
+    if (parentNode) {
+      parentNode.childNodes.splice(
+        parentNode.childNodes.findIndex((element: any) => element.id == this.id),
+        1
+      );
+    }
+
+    this.pid = movePid;
+
+    if (MOVE_POSITION.PREV == position) {
+      for (let i = 0; i < childNodes.length; i++) {
+        const node = childNodes[i];
+        if (node.id == moveNodeId) {
+          if (i == 0) {
+            childNodes.unshift(this);
+          } else {
+            childNodes.splice(i - 1, 0, this);
+          }
+        }
+      }
+
+      return;
+    }
+
+    if (MOVE_POSITION.NEXT == position) {
+      for (let i = 0; i < childNodes.length; i++) {
+        const node = childNodes[i];
+        if (node.id == moveNodeId) {
+          childNodes.splice(i, 0, this);
+        }
+      }
+
+      return;
+    }
+
+    if (MOVE_POSITION.CHILD == position) {
+      if (this.daraTree.options.plugins["dnd"].inside == "first") {
+        childNodes.unshift(this);
+      } else {
+        childNodes.push(this);
+      }
+
+      return;
+    }
   }
 
   /**

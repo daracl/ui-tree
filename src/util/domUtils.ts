@@ -175,6 +175,10 @@ export default {
 
     return { x: evt.pageX, y: evt.pageY };
   },
+
+  getWinScrollTop(): number {
+    return window.pageYOffset || document.documentElement.scrollTop;
+  },
 };
 
 function addEventInfo(el: any, eventType: string, listener: any) {

@@ -15,7 +15,7 @@ export interface TreeNode {
   orgin: any;
   _cud: "C" | "U" | "D";
 
-  moveChild: OptionCallback;
+  move: OptionCallback;
   open: OptionCallback;
   close: OptionCallback;
   remove: OptionCallback;
