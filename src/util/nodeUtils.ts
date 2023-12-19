@@ -19,6 +19,17 @@ export default {
   },
 
   /**
+   * text-content padding 값 구하기.
+   *
+   * @param depth {number}
+   * @param daraTree {DataTree}
+   * @returns padding value
+   */
+  textContentPadding(depth: number, daraTree: DaraTree): number {
+    return daraTree.config.startPaddingLeft + (depth - 1) * daraTree.options.style.paddingLeft;
+  },
+
+  /**
    * node id 구하기.
    *
    * @param itemEle {Element} node

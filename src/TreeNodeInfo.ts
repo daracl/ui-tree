@@ -64,10 +64,10 @@ export default class TreeNodeInfo implements TreeNode {
    *
    * @param childOpenFlag 자식 노드 열기 여부
    */
-  public open(childOpenFlag: boolean) {
+  public open(childOpenFlag?: boolean) {
     domUtils.addClass(nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id), "open");
 
-    if (childOpenFlag) {
+    if (childOpenFlag === true) {
       for (const node of this.childNodes) {
         node.open(childOpenFlag);
       }
@@ -79,12 +79,12 @@ export default class TreeNodeInfo implements TreeNode {
    *
    * @param childCloseFlag 자식 닫을지 여부
    */
-  public close(childCloseFlag: boolean) {
+  public close(childCloseFlag?: boolean) {
     if (this.daraTree.options.topMenuView || this.depth > 0) {
       domUtils.removeClass(nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id), "open");
     }
 
-    if (childCloseFlag) {
+    if (childCloseFlag === true) {
       for (const node of this.childNodes) {
         node.close(childCloseFlag);
       }
@@ -96,11 +96,12 @@ export default class TreeNodeInfo implements TreeNode {
    *
    * @returns 삭제된 node
    */
-  public remove() {
-    for (let i = this.childLength() - 1; i >= 0; i--) {
-      this.childNodes[i].remove();
+  public remove(childRemoveFlag?: boolean) {
+    if (childRemoveFlag === true) {
+      for (let i = this.childLength() - 1; i >= 0; i--) {
+        this.childNodes[i].remove();
+      }
     }
-
     nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id)?.remove();
 
     const parentNode = this.daraTree.config.allNode[this.pid];
@@ -123,56 +124,63 @@ export default class TreeNodeInfo implements TreeNode {
   }
 
   public move(position: string, moveNodeId: any) {
-    const movePid = this.daraTree.config.allNode[moveNodeId].pid;
-    const moveParentNode = this.daraTree.config.allNode[movePid];
-    const childNodes = moveParentNode.childNodes;
+    this.remove(); // 현재 노드 삭제.
 
-    const parentNode = this.daraTree.config.allNode[this.pid];
+    if (MOVE_POSITION.PREV == position || MOVE_POSITION.NEXT == position) {
+      const movePid = this.daraTree.config.allNode[moveNodeId].pid;
+      const moveParentNode = this.daraTree.config.allNode[movePid];
+      const childNodes = moveParentNode.childNodes;
 
-    if (parentNode) {
-      parentNode.childNodes.splice(
-        parentNode.childNodes.findIndex((element: any) => element.id == this.id),
-        1
-      );
-    }
+      this.pid = movePid;
+      this.depth = moveParentNode.depth + 1;
 
-    this.pid = movePid;
+      if (MOVE_POSITION.PREV == position) {
+        for (let i = 0; i < childNodes.length; i++) {
+          const node = childNodes[i];
+          if (node.id == moveNodeId) {
+            childNodes.splice(i, 0, this);
 
-    if (MOVE_POSITION.PREV == position) {
-      for (let i = 0; i < childNodes.length; i++) {
-        const node = childNodes[i];
-        if (node.id == moveNodeId) {
-          if (i == 0) {
-            childNodes.unshift(this);
-          } else {
-            childNodes.splice(i - 1, 0, this);
+            break;
+          }
+        }
+      } else {
+        for (let i = 0; i < childNodes.length; i++) {
+          const node = childNodes[i];
+          if (node.id == moveNodeId) {
+            childNodes.splice(i + 1, 0, this);
+            break;
           }
         }
       }
+    } else if (MOVE_POSITION.CHILD == position) {
+      const moveNodeInfo = this.daraTree.config.allNode[moveNodeId];
+      const childNodes = this.daraTree.config.allNode[moveNodeId].childNodes;
 
-      return;
-    }
+      this.pid = moveNodeId;
 
-    if (MOVE_POSITION.NEXT == position) {
-      for (let i = 0; i < childNodes.length; i++) {
-        const node = childNodes[i];
-        if (node.id == moveNodeId) {
-          childNodes.splice(i, 0, this);
-        }
-      }
-
-      return;
-    }
-
-    if (MOVE_POSITION.CHILD == position) {
       if (this.daraTree.options.plugins["dnd"].inside == "first") {
         childNodes.unshift(this);
       } else {
         childNodes.push(this);
       }
 
-      return;
+      this.depth = moveNodeInfo.depth + 1;
     }
+
+    this.setChildNodeDepth();
+    this.daraTree.config.allNode[this.id] = this;
+    this.daraTree.refresh(this.pid);
+  }
+
+  /**
+   * 자식 노드 depth 수정.
+   */
+  setChildNodeDepth() {
+    this.childNodes.forEach((item) => {
+      item.depth = this.depth + 1;
+
+      item.setChildNodeDepth();
+    });
   }
 
   /**
@@ -192,11 +200,33 @@ export default class TreeNodeInfo implements TreeNode {
     this.daraTree.config.selectedNode = this;
 
     if (this.daraTree.options.click) {
-      this.daraTree.options.click.call(null, { node: this, evt: e });
+      this.daraTree.options.click.call(null, { item: this, evt: e });
     }
   }
 
+  /**
+   * 폴더 열기 닫기
+   *
+   */
+  public folderToggle() {
+    domUtils.toggleClass(nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id), "open");
+  }
+
   public doubleClick(e: any) {
+    if (!this.daraTree.config.isEdit) {
+      this.folderToggle();
+    }
+    if (this.daraTree.options.dblclick) {
+      if (
+        this.daraTree.options.dblclick({
+          item: this,
+          evt: e,
+        }) === false
+      ) {
+        return;
+      }
+    }
+
     if (this.daraTree.config.isEdit) {
       this.setEdit();
     }

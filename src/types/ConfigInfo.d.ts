@@ -13,12 +13,15 @@ interface TreeNodeMap {
  * options
  */
 export interface ConfigInfo {
+  startPaddingLeft: number;
+  dndLinePadding: number;
   allNode: TreeNodeMap;
   selectedNode: any;
   completed: false;
   rootNodes: any[];
   checkbox: Checkbox;
   dnd: Dnd;
+  isFocus: boolean;
 
   isCheckbox: boolean;
   isDnd: boolean;

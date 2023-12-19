@@ -28,7 +28,6 @@ const defaultOptions = {
   enableIcon: true,
   items: [],
   openDepth: 1,
-  toggle: (nodeItem) => {},
   click: (nodeItem) => {},
   dblclick: (nodeItem) => {},
 } as Options;
@@ -46,6 +45,7 @@ const dndDefaultOptions = {
   marginLeft: 10,
   inside: "last",
   drop: (item: any) => {},
+  start: (item: any) => {},
 };
 
 /**
@@ -113,8 +113,10 @@ export default class Daratree {
 
   private initConfig() {
     this.config = {
+      startPaddingLeft: this.options.topMenuView ? this.options.style.paddingLeft : 0,
       allNode: {},
       selectedNode: null,
+      isFocus: false,
       rootNodes: [] as any[],
       isCheckbox: !utils.isUndefined(this.options.plugins["checkbox"]),
       isDnd: false,
@@ -126,6 +128,9 @@ export default class Daratree {
     if (!utils.isUndefined(this.options.plugins["dnd"])) {
       this.config.isDnd = true;
       this.options.plugins["dnd"] = utils.objectMerge({}, dndDefaultOptions, this.options.plugins["dnd"]);
+
+      this.config.dndLinePadding = (this.config.isCheckbox ? 24 : 0) + (this.options.enableIcon ? 23 : 0);
+      this.config.dndLinePadding = this.config.dndLinePadding == 0 ? 20 : this.config.dndLinePadding;
     }
   }
 
@@ -135,11 +140,13 @@ export default class Daratree {
   }
 
   private initEvt() {
+    treeEvent.focus(this);
+
+    treeEvent.expanderClick(this, this.mainElement);
+
     if (this.config.isDnd) {
       this.config.dnd = new Dnd(this);
     }
-
-    treeEvent.expanderClick(this, this.mainElement);
 
     if (this.config.isCheckbox) {
       this.config.checkbox = new Checkbox(this);
@@ -167,8 +174,7 @@ export default class Daratree {
   }
 
   public refresh(id: any) {
-    //TODO
-    console.log(id);
+    this.render(id);
   }
 
   /**
@@ -256,15 +262,9 @@ export default class Daratree {
     viewNodes = viewNodes ?? this.config.rootNodes;
     const childNodeLength = viewNodes.length;
 
-    const paddingLeft = this.options.style.paddingLeft;
     const openDepth = this.options.openDepth;
 
-    let stylePaddingLeft = 0;
-    if (this.options.topMenuView) {
-      stylePaddingLeft = paddingLeft;
-    }
-
-    stylePaddingLeft = stylePaddingLeft + (viewNodes.length > 0 ? (viewNodes[0].depth - 1) * paddingLeft : 0);
+    let stylePaddingLeft = childNodeLength > 0 ? nodeUtils.textContentPadding(viewNodes[0].depth, this) : 0;
 
     for (let i = 0; i < childNodeLength; i++) {
       let treeNode = viewNodes[i];
@@ -357,7 +357,7 @@ export default class Daratree {
   }
 
   public destroy = () => {
-    this.mainElement.className = this.orginStyleClass;
+    domUtils.setAttribute(this.mainElement, { class: this.orginStyleClass, style: this.orginStyle });
     this.mainElement.replaceChildren();
 
     for (const key in this) {
@@ -424,10 +424,18 @@ export default class Daratree {
   /**
    * 선택된 tree node 값 얻기.
    *
-   * @returns 선택된 tree node
+   * @returns {TreeNode} 선택된 tree node
    */
   public getSelectNode(): TreeNode {
     return nodeUtils.elementToTreeNode(this.mainElement.querySelector(".selected"), this);
+  }
+
+  /**
+   *
+   * @returns {TreeNode[]} check된 tree node 값
+   */
+  public getCheckNodes(): TreeNode[] {
+    return this.config.checkbox.getCheckValues();
   }
 
   /**

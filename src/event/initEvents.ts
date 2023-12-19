@@ -5,7 +5,10 @@ import DaraTree from "../DaraTree";
 export default {
   expanderClick(treeContext: DaraTree, el: Element | string | NodeList) {
     domUtils.eventOn(el, "click", ".dt-expander", (e: Event, ele: Element) => {
-      domUtils.toggleClass(nodeUtils.nodeLiElement(ele), "open");
+      nodeUtils.elementToTreeNode(ele, treeContext).folderToggle();
+
+      console.log("treeContext.config.isFocus : ", treeContext.config.isFocus);
+      return false;
     });
   },
 
@@ -50,6 +53,38 @@ export default {
       }
 
       //console.log("double Clicked!");
+    });
+  },
+
+  keydown(treeContext: DaraTree) {
+    domUtils.eventOn(document, "keydown", (e: any) => {
+      if (!treeContext.config.isFocus) return;
+
+      if (domUtils.isInputField((e.target as HTMLElement).tagName)) {
+        return true;
+      }
+
+      if (e.metaKey || e.ctrlKey) {
+        // copy
+      }
+    });
+  },
+
+  focus(treeContext: DaraTree) {
+    domUtils.eventOn(treeContext.mainElement, "mousedown", (e: any) => {
+      treeContext.config.isFocus = true;
+      console.log("mousedown");
+    });
+
+    domUtils.eventOn(document, "blur", (e: any) => {
+      const evtTarget = e.target as Element;
+      const selectorEle = evtTarget.closest("#" + treeContext.getPrefix());
+
+      console.log("blur ");
+
+      if (!selectorEle) {
+        treeContext.config.isFocus = false;
+      }
     });
   },
 };

@@ -10,6 +10,16 @@
 
   &.dt-drag {
     display: inline-block;
+
+    &:before {
+      content: "\2716 ";
+      color: #f83628;
+    }
+  }
+
+  &.allowed:before {
+    content: "\2714 " !important;
+    color: #04aa6d;
   }
 }
 
@@ -149,11 +159,9 @@
     display: none;
     border: 0px;
     border-top: 2px solid #58ffa1;
-    left: 0px;
+    right: 0px;
     z-index: 100;
     margin: 0px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   li.open {

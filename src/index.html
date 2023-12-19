@@ -4,6 +4,8 @@
 <head>
   <meta charset="utf-8" />
   <title>Dara tree</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css" />
 </head>
 
 
@@ -140,20 +142,29 @@
         height: '200px'
       }
       , topMenuView: false
-      , enableIcon: true
+      , enableIcon: false
       , openDepth: -1
       , topMenuView1: true
       , plugins: {
         checkbox: {}
-        , edit: {}
+        , edit1: {}
         , dnd: {
           drop: (item) => {
             console.log('item ', item);
+          }
+          , start1: (eventObj) => {
+            //console.log(eventObj.item)
+            if (eventObj.item.depth > 2)
+              return false;
           }
         }
       }
       , click: function (nodeInfo) {
         console.log('click', nodeInfo)
+      }
+      , dblclick: function (nodeInfo) {
+        console.log('dblclick', nodeInfo)
+        //return false;
       }
     });
   }

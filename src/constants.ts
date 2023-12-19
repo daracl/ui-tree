@@ -10,4 +10,5 @@ export const MOVE_POSITION = {
   PREV: "prev",
   CHILD: "child",
   NEXT: "next",
+  IGNORE: "",
 } as const;

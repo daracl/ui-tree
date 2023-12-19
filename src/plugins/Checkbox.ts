@@ -136,7 +136,7 @@ export default class Checkbox {
   }
 
   public getCheckValues() {
-    let checkNodeValues = [] as any[];
+    let checkNodeValues = [] as TreeNode[];
 
     for (const node of this.daraTree.config.rootNodes) {
       _getCheckValue(checkNodeValues, node);
@@ -146,7 +146,7 @@ export default class Checkbox {
   }
 }
 
-function _getCheckValue(checkNodeValues: any[], node: any) {
+function _getCheckValue(checkNodeValues: TreeNode[], node: any) {
   if (node.checkState != CHECK_STATE.UNCHECKED) {
     checkNodeValues.push(node);
   }

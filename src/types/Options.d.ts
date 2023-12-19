@@ -30,8 +30,8 @@ export interface Options {
   plugins?: Plugins;
   items: Array;
   openDepth: number;
-  toggle: OptionCallback | undefined;
-  click: OptionCallback | undefined;
-  dblclick: OptionCallback | undefined;
+  click: OptionCallback | undefined; // click callback
+  dblclick: OptionCallback | undefined; // double click callback
   source: OptionCallback | undefined;
+  getIcon: OptionCallback | undefined; // node icon class
 }
