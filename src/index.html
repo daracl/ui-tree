@@ -48,6 +48,15 @@
       </table>
     </div>
   </div>
+  <div class="my-div" tabindex="0" onblur="handleBlur()">
+    Click here and then click outside to trigger blur event
+  </div>
+
+  <script>
+    function handleBlur() {
+      console.log('The div lost focus');
+    }
+  </script>
 </body>
 
 </html>
@@ -136,7 +145,7 @@
     treeItem.push({ id: 712, pid: 0, text: '7Node 4', url: "detail('2')" });
     treeItem.push({ id: 9, pid: 0, text: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
 
-    treeObj = new Tree("#treeDiv", {
+    treeObj = new dara.Tree("#treeDiv", {
       items: treeItem
       , style: {
         height: '200px'
@@ -147,7 +156,7 @@
       , topMenuView1: true
       , plugins: {
         checkbox: {}
-        , edit1: {}
+        , edit: {}
         , dnd: {
           drop: (item) => {
             console.log('item ', item);

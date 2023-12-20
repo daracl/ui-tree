@@ -3,12 +3,13 @@ export interface OptionCallback {
 }
 
 export interface Plugins {
-  checkbox?: object;
-  dnd?: object;
+  checkbox?: any;
+  dnd?: any;
   edit?: {
     width: string;
   };
-  contextmenu?: object;
+  contextmenu?: any;
+  keydown: any;
 }
 
 /**

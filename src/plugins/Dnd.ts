@@ -1,8 +1,9 @@
 import nodeUtils from "src/util/nodeUtils";
-import DaraTree from "../DaraTree";
+import Tree from "../Tree";
 import domUtils from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import { MOVE_POSITION } from "src/constants";
+import eventUtils from "src/util/eventUtils";
 
 /**
  * tree node drag & drop
@@ -12,7 +13,7 @@ import { MOVE_POSITION } from "src/constants";
  * @typedef {Dnd}
  */
 export default class Dnd {
-  private daraTree;
+  private tree;
   private dragHelper: HTMLElement;
   private helperLine: HTMLElement;
   private initFlag: boolean = false;
@@ -31,42 +32,42 @@ export default class Dnd {
   private overElementOffsetTop: number = 0;
   private dragPostion: string = "";
 
-  constructor(daraTree: DaraTree) {
-    this.daraTree = daraTree;
-    this.helperTop = daraTree.options.plugins["dnd"].marginTop;
-    this.helperLeft = daraTree.options.plugins["dnd"].marginLeft;
+  constructor(tree: Tree) {
+    this.tree = tree;
+    this.helperTop = tree.options.plugins["dnd"].marginTop;
+    this.helperLeft = tree.options.plugins["dnd"].marginLeft;
 
     this.initEvt();
   }
 
   initEvt() {
-    domUtils.eventOn(this.daraTree.mainElement, "mousedown", ".dt-node", (e: any, ele: Element) => {
-      const evtPos = domUtils.getEventPosition(e);
+    eventUtils.eventOn(this.tree.mainElement, "mousedown", ".dt-node", (e: any, ele: Element) => {
+      const evtPos = eventUtils.getEventPosition(e);
 
       this.dragElement = ele as HTMLElement;
-      this.dragNode = nodeUtils.elementToTreeNode(ele, this.daraTree);
+      this.dragNode = nodeUtils.elementToTreeNode(ele, this.tree);
 
       this.overElementTop = evtPos.y;
       this.mouseOverEle = this.dragElement;
       this.enterNode = this.dragNode;
 
-      domUtils.eventOn(document, "dragstart", (startEvt: any) => {
-        if (!this.daraTree.config.isNodeDrag) {
+      eventUtils.eventOn(document, "dragstart", (startEvt: any) => {
+        if (!this.tree.config.isNodeDrag) {
           if (!this.initFlag) {
             this.initFlag = true;
-            this.nodeHeight = (this.dragElement as HTMLElement).offsetHeight;
+            this.nodeHeight = this.dragElement.offsetHeight;
             this.lineViewHeight = (this.nodeHeight * 30) / 100;
             this.createHelperElement();
           }
 
-          this.daraTree.config.isNodeDrag = true;
+          this.tree.config.isNodeDrag = true;
           this.dragHelper.textContent = this.dragNode.text;
           domUtils.addClass(this.dragHelper, "dt-drag");
         }
 
-        if (this.daraTree.options.plugins["dnd"].start) {
+        if (this.tree.options.plugins["dnd"].start) {
           if (
-            this.daraTree.options.plugins["dnd"].start({
+            this.tree.options.plugins["dnd"].start({
               item: this.dragNode,
               evt: startEvt,
             }) === false
@@ -75,11 +76,11 @@ export default class Dnd {
           }
         }
 
-        domUtils.eventOn(document, "touchmove mousemove", (e: any) => {
+        eventUtils.eventOn(document, "touchmove mousemove", (e: any) => {
           this.mousemove(e);
         });
 
-        domUtils.eventOn(document, "touchend mouseup", (e: any) => {
+        eventUtils.eventOn(document, "touchend mouseup", (e: any) => {
           this.mouseup(e);
           return false;
         });
@@ -87,8 +88,8 @@ export default class Dnd {
       });
     });
 
-    domUtils.eventOn(this.daraTree.mainElement, "mouseover", ".dt-node", (e: any, ele: Element) => {
-      if (!this.daraTree.config.isNodeDrag) return;
+    eventUtils.eventOn(this.tree.mainElement, "mouseover", ".dt-node", (e: any, ele: Element) => {
+      if (!this.tree.config.isNodeDrag) return;
 
       if (this.mouseOverEle == ele) return;
 
@@ -96,11 +97,11 @@ export default class Dnd {
       this.overElementOffsetTop = this.mouseOverEle.offsetTop - 1;
       this.overElementTop = domUtils.getWinScrollTop() + ele.getBoundingClientRect().top;
 
-      this.enterNode = nodeUtils.elementToTreeNode(ele, this.daraTree);
+      this.enterNode = nodeUtils.elementToTreeNode(ele, this.tree);
     });
 
-    domUtils.eventOn(this.daraTree.mainElement, "mouseleave", (e: any, ele: Element) => {
-      if (!this.daraTree.config.isNodeDrag) return;
+    eventUtils.eventOn(this.tree.mainElement, "mouseleave", (e: any, ele: Element) => {
+      if (!this.tree.config.isNodeDrag) return;
       this.mouseOverEle = null;
       this.setNotAllowed();
     });
@@ -111,7 +112,7 @@ export default class Dnd {
   }
 
   showHelperLine() {
-    this.helperLine.style.width = `calc(100% - ${nodeUtils.textContentPadding(this.enterNode.depth, this.daraTree) + this.daraTree.config.dndLinePadding}px)`;
+    this.helperLine.style.width = `calc(100% - ${nodeUtils.textContentPadding(this.enterNode.depth, this.tree) + this.tree.config.dndLinePadding}px)`;
     this.helperLine.style.display = "block";
   }
 
@@ -126,7 +127,7 @@ export default class Dnd {
     const helperLine = document.createElement("hr");
     domUtils.setAttribute(helperLine, { class: "dt-drop-helper", style: "" });
 
-    this.daraTree.mainElement.appendChild(helperLine);
+    this.tree.mainElement.appendChild(helperLine);
     this.helperLine = helperLine;
   }
 
@@ -137,9 +138,9 @@ export default class Dnd {
    * @returns
    */
   private mousemove(e: any) {
-    const evtPos = domUtils.getEventPosition(e);
-    const moveX = evtPos.x + this.helperLeft; //+ this.daraTree.mainElement.offsetLeft;
-    const moveY = evtPos.y + this.helperTop; //+ this.daraTree.mainElement.offsetTop;
+    const evtPos = eventUtils.getEventPosition(e);
+    const moveX = evtPos.x + this.helperLeft; //+ this.tree.mainElement.offsetLeft;
+    const moveY = evtPos.y + this.helperTop; //+ this.tree.mainElement.offsetTop;
 
     this.dragHelper.style.top = moveY + "px";
     this.dragHelper.style.left = moveX + "px";
@@ -157,7 +158,7 @@ export default class Dnd {
         this.setNotAllowed();
         return;
       }
-      parentEnterNode = this.daraTree.config.allNode[parentEnterNode.pid];
+      parentEnterNode = this.tree.config.allNode[parentEnterNode.pid];
     }
 
     if (this.overElementTop + this.lineViewHeight >= evtPos.y) {
@@ -177,8 +178,6 @@ export default class Dnd {
       }
       this.hideHelperLine();
     }
-
-    //console.log(this.overElementTop, evtPos.y, lineView);
   }
   setDragHelper(position: string) {
     if (this.dragPostion != position) {
@@ -189,20 +188,20 @@ export default class Dnd {
   }
 
   public mouseup(e: any) {
-    this.daraTree.config.isNodeDrag = false;
+    this.tree.config.isNodeDrag = false;
     this.mouseOverEle = null;
     this.hideHelperLine();
     domUtils.removeClass(this.dragHelper, "dt-drag");
-    domUtils.eventOff(document, "touchmove mousemove dragstart mouseup touchend mouseup");
+    eventUtils.eventOff(document, "touchmove mousemove dragstart mouseup touchend mouseup");
 
     if (this.dragPostion == MOVE_POSITION.IGNORE) return;
 
     const dragNode = this.dragNode;
     const dropNode = this.enterNode;
     const position = this.dragPostion;
-    if (this.daraTree.options.plugins["dnd"].drop) {
+    if (this.tree.options.plugins["dnd"].drop) {
       if (
-        this.daraTree.options.plugins["dnd"].drop({
+        this.tree.options.plugins["dnd"].drop({
           item: dragNode,
           dropItem: dropNode,
           position: this.dragPostion,

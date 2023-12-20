@@ -1,15 +1,18 @@
 import domUtils from "./util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 
-import DaraTree from "./DaraTree";
+import Tree from "./Tree";
 import nodeUtils from "./util/nodeUtils";
 import { MOVE_POSITION } from "./constants";
+import eventUtils from "./util/eventUtils";
 
 /**
- * Daratree class
+ *TreeNodeInfo
  *
- * @class Daratree
- * @typedef {Daratree}
+ * @export
+ * @class TreeNodeInfo
+ * @typedef {TreeNodeInfo}
+ * @implements {TreeNode}
  */
 export default class TreeNodeInfo implements TreeNode {
   public orgin;
@@ -25,20 +28,22 @@ export default class TreeNodeInfo implements TreeNode {
   public childNodes = [] as TreeNode[];
   public _cud;
 
-  private readonly daraTree;
+  public isEdit: boolean = false;
 
-  constructor(item: any, parentId: any, daraTree: DaraTree) {
-    this.daraTree = daraTree;
+  private readonly tree;
 
-    this.id = item[daraTree.options.itemKey.id];
+  constructor(item: any, parentId: any, tree: Tree) {
+    this.tree = tree;
+
+    this.id = item[tree.options.itemKey.id];
     this.pid = parentId;
-    this.text = item[daraTree.options.itemKey.text];
+    this.text = item[tree.options.itemKey.text];
     this.url = item.url;
     this.checkState = item.checked === true ? 1 : 2;
     this.target = item.target;
     this._cud = item["_cud"] ?? "";
-    this.icon = item[daraTree.options.itemKey.icon];
-    this.depth = daraTree.config.allNode[this.pid] ? daraTree.config.allNode[this.pid].depth + 1 : 0;
+    this.icon = item[tree.options.itemKey.icon];
+    this.depth = tree.config.allNode[this.pid] ? tree.config.allNode[this.pid].depth + 1 : 0;
     this.orgin = item;
   }
 
@@ -48,7 +53,7 @@ export default class TreeNodeInfo implements TreeNode {
    * @param item tree node
    */
   public addChild(item: TreeNode) {
-    if (this.daraTree.config.allNode[item.id]) {
+    if (this.tree.config.allNode[item.id]) {
       this.childNodes.splice(
         this.childNodes.findIndex((element: any) => element.id == this.id),
         1,
@@ -65,7 +70,7 @@ export default class TreeNodeInfo implements TreeNode {
    * @param childOpenFlag 자식 노드 열기 여부
    */
   public open(childOpenFlag?: boolean) {
-    domUtils.addClass(nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id), "open");
+    domUtils.addClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
 
     if (childOpenFlag === true) {
       for (const node of this.childNodes) {
@@ -80,8 +85,8 @@ export default class TreeNodeInfo implements TreeNode {
    * @param childCloseFlag 자식 닫을지 여부
    */
   public close(childCloseFlag?: boolean) {
-    if (this.daraTree.options.topMenuView || this.depth > 0) {
-      domUtils.removeClass(nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id), "open");
+    if (this.tree.options.topMenuView || this.depth > 0) {
+      domUtils.removeClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
     }
 
     if (childCloseFlag === true) {
@@ -102,9 +107,10 @@ export default class TreeNodeInfo implements TreeNode {
         this.childNodes[i].remove();
       }
     }
-    nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id)?.remove();
 
-    const parentNode = this.daraTree.config.allNode[this.pid];
+    nodeUtils.nodeIdToElement(this.tree.mainElement, this.id)?.remove();
+
+    const parentNode = this.tree.config.allNode[this.pid];
 
     if (parentNode) {
       parentNode.childNodes.splice(
@@ -113,7 +119,7 @@ export default class TreeNodeInfo implements TreeNode {
       );
     }
 
-    delete this.daraTree.config.allNode[this.id];
+    delete this.tree.config.allNode[this.id];
 
     return {
       id: this.id,
@@ -123,53 +129,49 @@ export default class TreeNodeInfo implements TreeNode {
     };
   }
 
+  /**
+   * 노드 이동
+   *
+   * @param position {String} move position
+   * @param moveNodeId move node id
+   */
   public move(position: string, moveNodeId: any) {
     this.remove(); // 현재 노드 삭제.
 
-    if (MOVE_POSITION.PREV == position || MOVE_POSITION.NEXT == position) {
-      const movePid = this.daraTree.config.allNode[moveNodeId].pid;
-      const moveParentNode = this.daraTree.config.allNode[movePid];
-      const childNodes = moveParentNode.childNodes;
+    const allNode = this.tree.config.allNode;
+    const moveNodeInfo = allNode[moveNodeId];
+    const moveParentNode = allNode[moveNodeInfo.pid];
+    const childNodes = moveParentNode.childNodes;
 
-      this.pid = movePid;
-      this.depth = moveParentNode.depth + 1;
+    switch (position) {
+      case MOVE_POSITION.PREV:
+      case MOVE_POSITION.NEXT: {
+        this.pid = moveNodeInfo.pid;
+        this.depth = moveParentNode.depth + 1;
 
-      if (MOVE_POSITION.PREV == position) {
-        for (let i = 0; i < childNodes.length; i++) {
-          const node = childNodes[i];
-          if (node.id == moveNodeId) {
-            childNodes.splice(i, 0, this);
-
-            break;
-          }
-        }
-      } else {
-        for (let i = 0; i < childNodes.length; i++) {
-          const node = childNodes[i];
-          if (node.id == moveNodeId) {
-            childNodes.splice(i + 1, 0, this);
-            break;
-          }
-        }
+        const index = childNodes.findIndex((node: TreeNode) => node.id === moveNodeId);
+        const insertIndex = position === MOVE_POSITION.PREV ? index : index + 1;
+        childNodes.splice(insertIndex, 0, this);
+        break;
       }
-    } else if (MOVE_POSITION.CHILD == position) {
-      const moveNodeInfo = this.daraTree.config.allNode[moveNodeId];
-      const childNodes = this.daraTree.config.allNode[moveNodeId].childNodes;
+      case MOVE_POSITION.CHILD: {
+        this.pid = moveNodeId;
+        this.depth = moveNodeInfo.depth + 1;
 
-      this.pid = moveNodeId;
-
-      if (this.daraTree.options.plugins["dnd"].inside == "first") {
-        childNodes.unshift(this);
-      } else {
-        childNodes.push(this);
+        if (this.tree.options.plugins["dnd"].inside === "first") {
+          childNodes.unshift(this);
+        } else {
+          childNodes.push(this);
+        }
+        break;
       }
-
-      this.depth = moveNodeInfo.depth + 1;
+      default:
+        throw new Error(`Invalid position: ${position}`);
     }
 
     this.setChildNodeDepth();
-    this.daraTree.config.allNode[this.id] = this;
-    this.daraTree.refresh(this.pid);
+    allNode[this.id] = this;
+    this.tree.refresh(this.pid);
   }
 
   /**
@@ -192,15 +194,16 @@ export default class TreeNodeInfo implements TreeNode {
     return this.childNodes.length;
   }
 
+  /**
+   * node click
+   *
+   * @param e {Event} event
+   */
   public click(e: any) {
-    domUtils.removeClass(this.daraTree.mainElement.querySelectorAll(".dt-text-content"), "selected");
+    this.select();
 
-    domUtils.addClass(nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id)?.querySelector(".dt-text-content"), "selected");
-
-    this.daraTree.config.selectedNode = this;
-
-    if (this.daraTree.options.click) {
-      this.daraTree.options.click.call(null, { item: this, evt: e });
+    if (this.tree.options.click) {
+      this.tree.options.click.call(null, { item: this, evt: e });
     }
   }
 
@@ -209,16 +212,21 @@ export default class TreeNodeInfo implements TreeNode {
    *
    */
   public folderToggle() {
-    domUtils.toggleClass(nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id), "open");
+    domUtils.toggleClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
   }
 
+  /**
+   *double click
+   *
+   * @param e {Event} event
+   */
   public doubleClick(e: any) {
-    if (!this.daraTree.config.isEdit) {
+    if (!this.tree.config.isEdit) {
       this.folderToggle();
     }
-    if (this.daraTree.options.dblclick) {
+    if (this.tree.options.dblclick) {
       if (
-        this.daraTree.options.dblclick({
+        this.tree.options.dblclick({
           item: this,
           evt: e,
         }) === false
@@ -227,27 +235,33 @@ export default class TreeNodeInfo implements TreeNode {
       }
     }
 
-    if (this.daraTree.config.isEdit) {
-      this.setEdit();
-    }
+    this.setEdit();
   }
-  private setEdit() {
+  /**
+   * node text edit
+   */
+  public setEdit() {
+    if (!this.tree.config.isEdit || this.isEdit) return;
+
+    this.isEdit = true;
+
     // 이전에 활성화된 input 영역 삭제.
-    this.daraTree.mainElement.querySelectorAll(".dt-text-content.edit").forEach((el: Element) => {
+    this.tree.mainElement.querySelectorAll(".dt-text-content.edit").forEach((el: Element) => {
       el.querySelector(".dt-input")?.remove();
       domUtils.removeClass(el, "edit");
     });
 
     let attrs = { type: "text", class: "dt-input" } as any;
 
-    if (this.daraTree.options.plugins["edit"] && this.daraTree.options.plugins["edit"].width) {
-      attrs["style"] = `width:${this.daraTree.options.plugins["edit"].width}`;
+    const editWidth = this.tree.options.plugins?.edit?.width;
+    if (editWidth) {
+      attrs["style"] = `width:${editWidth}`;
     }
 
     const inputElement = document.createElement("input");
     domUtils.setAttribute(inputElement, attrs);
 
-    const nodeElement = nodeUtils.nodeIdToElement(this.daraTree.mainElement, this.id);
+    const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
     const contElement = nodeElement?.querySelector(".dt-text-content");
     if (contElement) {
       contElement.appendChild(inputElement);
@@ -256,7 +270,8 @@ export default class TreeNodeInfo implements TreeNode {
       const orginText = this.text;
       inputElement.value = orginText;
 
-      domUtils.eventOn(inputElement, "blur", (e: Event) => {
+      eventUtils.eventOn(inputElement, "blur", (e: Event) => {
+        this.isEdit = false;
         const spanEle = contElement.querySelector("span");
         if (spanEle) {
           this.text = inputElement.value;
@@ -273,6 +288,17 @@ export default class TreeNodeInfo implements TreeNode {
       setTimeout(function () {
         inputElement.focus();
       }, 1);
+    }
+  }
+
+  public select() {
+    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-text-content.selected"), "selected");
+
+    const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
+
+    if (nodeElement) {
+      this.tree.config.selectedNode = this;
+      domUtils.addClass(nodeElement.querySelector(".dt-text-content"), "selected");
     }
   }
 }

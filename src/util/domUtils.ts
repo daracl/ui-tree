@@ -1,25 +1,26 @@
 import utils from "./utils";
 
-const EVENT_HANDLER_MAP = new Map();
+type ElementType = Element | string | NodeList | Document | null | undefined;
+
 export default {
   /**
    * @method getItemVal
    * @param itemEle {Element} value를 구할 element
    * @description value 구하기.
    */
-  before(el: Element | string | NodeList, renderElements: Element | string) {
+  before(el: ElementType, renderElements: Element | string) {
     insertAdjacentHTML($querySelector(el), "beforebegin", renderElements);
   },
-  after(el: Element | string | NodeList, renderElements: Element | string) {
+  after(el: ElementType, renderElements: Element | string) {
     insertAdjacentHTML($querySelector(el), "afterend", renderElements);
   },
-  prepend(el: Element | string | NodeList, renderElements: Element | string) {
+  prepend(el: ElementType, renderElements: Element | string) {
     insertAdjacentHTML($querySelector(el), "afterbegin", renderElements);
   },
-  append(el: Element | string | NodeList, renderElements: Element | string) {
+  append(el: ElementType, renderElements: Element | string) {
     insertAdjacentHTML($querySelector(el), "beforeend", renderElements);
   },
-  empty(el: Element | string | NodeList | null, html?: string) {
+  empty(el: ElementType, html?: string) {
     if (el == null) return el;
 
     $querySelector(el).forEach((el1) => {
@@ -30,7 +31,7 @@ export default {
       }
     });
   },
-  hasClass(el: Element | string | NodeList, styleClassName: string) {
+  hasClass(el: ElementType, styleClassName: string) {
     for (let el1 of $querySelector(el)) {
       if (el1.classList.contains(styleClassName)) {
         return true;
@@ -40,7 +41,7 @@ export default {
     return false;
   },
 
-  toggleClass(el: Element | string | NodeList | null, styleClassName: string) {
+  toggleClass(el: ElementType, styleClassName: string) {
     if (el == null) return;
 
     for (let el1 of $querySelector(el)) {
@@ -53,7 +54,7 @@ export default {
     }
   },
 
-  addClass(el: Element | string | NodeList | null | undefined, styleClassName: string) {
+  addClass(el: ElementType, styleClassName: string) {
     if (!el) return el;
 
     const classNames = styleClassName.replaceAll(/\s+/g, " ").split(" ");
@@ -67,15 +68,16 @@ export default {
       }
     });
   },
-  removeClass(el: Element | string | NodeList | null, styleClassName: string) {
+  removeClass(el: ElementType, styleClassName: string) {
     if (el == null) return el;
 
     const classNames = styleClassName.replaceAll(/\s+/g, " ").split(" ");
-    $querySelector(el).forEach((el1) => {
-      for (let className of classNames) {
+    for (let className of classNames) {
+      $querySelector(el).forEach((el1) => {
+        console.log(el, className);
         el1.classList.remove(className);
-      }
-    });
+      });
+    }
   },
   htmlToText(htmlText: string): string {
     let divEle = document.createElement("div");
@@ -92,103 +94,15 @@ export default {
       el.setAttribute(key, attrs[key]);
     }
   },
-  eventOff(el: Element | string | NodeList | null | Document, type: string) {
-    if (el == null) return el;
-
-    const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
-
-    const elements = $querySelector(el);
-
-    const evtInfo = EVENT_HANDLER_MAP.get(el);
-    for (const eventType of eventTypes) {
-      elements.forEach((el) => {
-        el.removeEventListener(eventType, evtInfo[eventType]);
-      });
-
-      delete evtInfo[eventType];
-    }
-    if (Object.keys(evtInfo).length < 1) {
-      EVENT_HANDLER_MAP.delete(el);
-    }
-  },
-
-  eventOn(el: Element | string | NodeList | null | Document, type: string, selector?: any, listener?: any) {
-    if (el == null) return el;
-
-    const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
-
-    const elements = $querySelector(el);
-
-    if (!utils.isString(selector)) {
-      listener = selector;
-
-      const fn = (e: Event) => {
-        if (listener(e, el) === false) {
-          e.stopImmediatePropagation();
-          e.preventDefault();
-        }
-      };
-
-      for (const eventType of eventTypes) {
-        addEventInfo(el, eventType, fn);
-
-        elements.forEach((el) => {
-          el.addEventListener(eventType, fn);
-        });
-      }
-
-      return this;
-    }
-
-    const fn = (e: Event) => {
-      const evtTarget = e.target as Element;
-      const selectorEle = evtTarget.closest(selector);
-
-      if (!selectorEle) return;
-
-      let containsFlag = false;
-      for (const el of elements) {
-        if (el.contains(selectorEle)) {
-          containsFlag = true;
-        }
-      }
-
-      if (!containsFlag) return;
-
-      if (listener(e, selectorEle) === false) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-      }
-    };
-
-    for (const eventType of eventTypes) {
-      addEventInfo(el, eventType, fn);
-      elements.forEach((el) => {
-        el.addEventListener(eventType, fn);
-      });
-    }
-  },
-
-  getEventPosition(e: any) {
-    const evtTouche = e.touches;
-    const evt = evtTouche && evtTouche[0] ? evtTouche[0] : e;
-
-    return { x: evt.pageX, y: evt.pageY };
-  },
 
   getWinScrollTop(): number {
     return window.pageYOffset || document.documentElement.scrollTop;
   },
 };
 
-function addEventInfo(el: any, eventType: string, listener: any) {
-  if (!EVENT_HANDLER_MAP.has(el)) {
-    EVENT_HANDLER_MAP.set(el, {});
-  }
-  EVENT_HANDLER_MAP.get(el)[eventType] = listener;
-}
+function $querySelector(el: ElementType): any[] {
+  if (!el) [];
 
-function $querySelector(el: Element | string | NodeList | Document): any[] {
   if (el instanceof Document) {
     return [document];
   }
@@ -199,17 +113,21 @@ function $querySelector(el: Element | string | NodeList | Document): any[] {
   let nodeList;
   if (el instanceof NodeList) {
     nodeList = el;
-  } else {
+  } else if (typeof el === "string") {
     nodeList = document.querySelectorAll(el);
   }
 
-  const reval: Element[] = [];
+  if (nodeList) {
+    const reval: Element[] = [];
 
-  for (let node of nodeList) {
-    reval.push(node as Element);
+    for (let node of nodeList) {
+      reval.push(node as Element);
+    }
+
+    return reval;
   }
 
-  return reval;
+  return [];
 }
 
 function insertAdjacentHTML(elements: Element[], insertPosition: InsertPosition, renderElements: Element | string) {

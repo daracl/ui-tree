@@ -11,6 +11,7 @@ import { CHECK_STATE } from "./constants";
 import TreeNodeInfo from "./TreeNodeInfo";
 import nodeUtils from "./util/nodeUtils";
 import Dnd from "./plugins/Dnd";
+import Keydown from "./plugins/Keydown";
 
 const defaultOptions = {
   style: {
@@ -24,7 +25,9 @@ const defaultOptions = {
     text: "text",
     icon: "icon",
   },
-  plugins: {},
+  plugins: {
+    keydown: {},
+  },
   enableIcon: true,
   items: [],
   openDepth: 1,
@@ -33,7 +36,7 @@ const defaultOptions = {
 } as Options;
 
 interface ComponentMap {
-  [key: string]: Daratree;
+  [key: string]: Tree;
 }
 
 // all instance
@@ -48,13 +51,15 @@ const dndDefaultOptions = {
   start: (item: any) => {},
 };
 
+const keydownDefaultOptions = {};
+
 /**
- * Daratree class
+ * Tree class
  *
- * @class Daratree
- * @typedef {Daratree}
+ * @class Tree
+ * @typedef {Tree}
  */
-export default class Daratree {
+export default class Tree {
   public options;
 
   private orginStyle;
@@ -122,6 +127,7 @@ export default class Daratree {
       isDnd: false,
       isContextmenu: !utils.isUndefined(this.options.plugins["contextmenu"]),
       isEdit: !utils.isUndefined(this.options.plugins["edit"]),
+      isKeydown: !utils.isUndefined(this.options.plugins["keydown"]),
       isNodeDrag: false,
     } as ConfigInfo;
 
@@ -132,6 +138,10 @@ export default class Daratree {
       this.config.dndLinePadding = (this.config.isCheckbox ? 24 : 0) + (this.options.enableIcon ? 23 : 0);
       this.config.dndLinePadding = this.config.dndLinePadding == 0 ? 20 : this.config.dndLinePadding;
     }
+
+    if (this.config.isKeydown) {
+      this.options.plugins["keydown"] = utils.objectMerge({}, keydownDefaultOptions, this.options.plugins["keydown"]);
+    }
   }
 
   public init() {
@@ -140,7 +150,9 @@ export default class Daratree {
   }
 
   private initEvt() {
-    treeEvent.focus(this);
+    if (this.config.isKeydown) {
+      this.config.keydown = new Keydown(this);
+    }
 
     treeEvent.expanderClick(this, this.mainElement);
 
@@ -238,7 +250,7 @@ export default class Daratree {
   private render(id?: any) {
     if (utils.isBlank(id) && this.config.selectedNode == null) {
       // init load
-      this.mainElement.innerHTML = `<ul id="${this.prefix}" class="dt-container">
+      this.mainElement.innerHTML = `<ul id="${this.prefix}" class="dt-container" tabindex="-1">
         ${this.getNodeTemplate(this.config.rootNodes)}
         </ul>`;
     } else {
@@ -411,13 +423,10 @@ export default class Daratree {
    * @param id tree id
    */
   public setSelectNode(id: any) {
-    domUtils.removeClass(this.mainElement.querySelectorAll(".dt-text-content"), "selected");
+    const node = this.config.allNode[id];
 
-    const nodeElement = nodeUtils.nodeIdToElement(this.mainElement, id);
-
-    if (nodeElement) {
-      this.config.selectedNode = this.config.allNode[id];
-      domUtils.addClass(nodeElement.querySelector(".dt-text-content"), "selected");
+    if (node) {
+      node.select();
     }
   }
 

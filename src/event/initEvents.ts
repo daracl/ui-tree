@@ -1,10 +1,11 @@
 import domUtils from "src/util/domUtils";
 import nodeUtils from "src/util/nodeUtils";
-import DaraTree from "../DaraTree";
+import Tree from "../Tree";
+import eventUtils from "src/util/eventUtils";
 
 export default {
-  expanderClick(treeContext: DaraTree, el: Element | string | NodeList) {
-    domUtils.eventOn(el, "click", ".dt-expander", (e: Event, ele: Element) => {
+  expanderClick(treeContext: Tree, el: Element | string | NodeList) {
+    eventUtils.eventOn(el, "click", ".dt-expander", (e: Event, ele: Element) => {
       nodeUtils.elementToTreeNode(ele, treeContext).folderToggle();
 
       console.log("treeContext.config.isFocus : ", treeContext.config.isFocus);
@@ -12,7 +13,7 @@ export default {
     });
   },
 
-  textClick(treeContext: DaraTree, el: Element | string | NodeList) {
+  textClick(treeContext: Tree, el: Element | string | NodeList) {
     let clickCount = 0;
     let clickTimer: any;
     let clickDelay = 300;
@@ -29,7 +30,7 @@ export default {
       clickTimer = setTimeout(resetClick, clickDelay);
     };
 
-    domUtils.eventOn(el, "mousedown", ".dt-text-content", (e: MouseEvent, ele: Element) => {
+    eventUtils.eventOn(el, "mousedown", ".dt-text-content", (e: MouseEvent, ele: Element) => {
       if (e.button === 2 || e.which === 3) {
         clickTimer = null;
         return true;
@@ -53,38 +54,6 @@ export default {
       }
 
       //console.log("double Clicked!");
-    });
-  },
-
-  keydown(treeContext: DaraTree) {
-    domUtils.eventOn(document, "keydown", (e: any) => {
-      if (!treeContext.config.isFocus) return;
-
-      if (domUtils.isInputField((e.target as HTMLElement).tagName)) {
-        return true;
-      }
-
-      if (e.metaKey || e.ctrlKey) {
-        // copy
-      }
-    });
-  },
-
-  focus(treeContext: DaraTree) {
-    domUtils.eventOn(treeContext.mainElement, "mousedown", (e: any) => {
-      treeContext.config.isFocus = true;
-      console.log("mousedown");
-    });
-
-    domUtils.eventOn(document, "blur", (e: any) => {
-      const evtTarget = e.target as Element;
-      const selectorEle = evtTarget.closest("#" + treeContext.getPrefix());
-
-      console.log("blur ");
-
-      if (!selectorEle) {
-        treeContext.config.isFocus = false;
-      }
     });
   },
 };

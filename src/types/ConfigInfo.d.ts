@@ -1,5 +1,6 @@
 import Checkbox from "src/plugins/Checkbox";
 import Dnd from "src/plugins/Dnd";
+import Keydown from "src/plugins/Keydown";
 
 export interface OptionCallback {
   (...params: any[]): any;
@@ -21,8 +22,9 @@ export interface ConfigInfo {
   rootNodes: any[];
   checkbox: Checkbox;
   dnd: Dnd;
+  keydown: Keydown;
   isFocus: boolean;
-
+  isKeydown: boolean;
   isCheckbox: boolean;
   isDnd: boolean;
   isContextmenu: boolean;

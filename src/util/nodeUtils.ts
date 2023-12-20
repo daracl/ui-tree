@@ -1,5 +1,5 @@
 import { TreeNode } from "@t/TreeNode";
-import DaraTree from "src/DaraTree";
+import Tree from "src/Tree";
 
 export default {
   /**
@@ -22,11 +22,11 @@ export default {
    * text-content padding 값 구하기.
    *
    * @param depth {number}
-   * @param daraTree {DataTree}
+   * @param tree {DataTree}
    * @returns padding value
    */
-  textContentPadding(depth: number, daraTree: DaraTree): number {
-    return daraTree.config.startPaddingLeft + (depth - 1) * daraTree.options.style.paddingLeft;
+  textContentPadding(depth: number, tree: Tree): number {
+    return tree.config.startPaddingLeft + (depth - 1) * tree.options.style.paddingLeft;
   },
 
   /**
@@ -35,7 +35,7 @@ export default {
    * @param itemEle {Element} node
    * @returns nodeid
    */
-  elementToTreeNode(itemEle: Element | null, treeContext: DaraTree) {
+  elementToTreeNode(itemEle: Element | null, treeContext: Tree) {
     if (itemEle == null) return;
     let nodeEle;
     if (itemEle.hasAttribute("data-node-id")) {
@@ -45,5 +45,9 @@ export default {
     }
 
     return treeContext.config.allNode[nodeEle?.getAttribute("data-node-id") ?? ""];
+  },
+
+  getNodeIdx(childNodes: TreeNode[], id: any) {
+    return childNodes.findIndex((element: any) => element.id == id);
   },
 };

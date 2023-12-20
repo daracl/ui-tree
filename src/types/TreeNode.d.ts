@@ -25,4 +25,6 @@ export interface TreeNode {
   doubleClick: OptionCallback;
 
   setChildNodeDepth: OptionCallback;
+
+  select: OptionCallback;
 }

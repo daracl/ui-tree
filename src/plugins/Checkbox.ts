@@ -1,10 +1,9 @@
-import { Options } from "@t/Options";
-import utils from "../util/utils";
 import nodeUtils from "src/util/nodeUtils";
-import DaraTree from "../DaraTree";
+import Tree from "../Tree";
 import domUtils from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import { CHECK_STATE } from "../constants";
+import eventUtils from "src/util/eventUtils";
 
 /**
  * tree node Checkbox
@@ -14,17 +13,17 @@ import { CHECK_STATE } from "../constants";
  * @typedef {Checkbox}
  */
 export default class Checkbox {
-  private daraTree;
+  private tree;
 
-  constructor(daraTree: DaraTree) {
-    this.daraTree = daraTree;
+  constructor(tree: Tree) {
+    this.tree = tree;
 
     this.initCheck();
     this.initEvt();
   }
 
   initCheck() {
-    for (const node of this.daraTree.config.rootNodes) {
+    for (const node of this.tree.config.rootNodes) {
       this.initChildNodeCheck(node);
     }
   }
@@ -49,7 +48,7 @@ export default class Checkbox {
    * @param node treenode
    */
   private parentNodeCheck(node: TreeNode) {
-    const parentNode = this.daraTree.config.allNode[node.pid];
+    const parentNode = this.tree.config.allNode[node.pid];
 
     if (parentNode) {
       let indeterminateCount = 0;
@@ -77,12 +76,12 @@ export default class Checkbox {
   }
 
   initEvt() {
-    domUtils.eventOn(this.daraTree.mainElement, "click", ".dt-checkbox", (e: Event, checkboxEle: Element) => {
+    eventUtils.eventOn(this.tree.mainElement, "click", ".dt-checkbox", (e: Event, checkboxEle: Element) => {
       e.preventDefault();
       e.stopImmediatePropagation();
 
       if (checkboxEle) {
-        const nodeInfo = nodeUtils.elementToTreeNode(checkboxEle, this.daraTree);
+        const nodeInfo = nodeUtils.elementToTreeNode(checkboxEle, this.tree);
 
         if (nodeInfo.checkState == CHECK_STATE.CHECKED) {
           this.childCheck(nodeInfo, CHECK_STATE.UNCHECKED);
@@ -113,8 +112,8 @@ export default class Checkbox {
    * @returns nodeid
    */
   public setCheckBox(id: string | number, state: number) {
-    const ele = this.daraTree.mainElement.querySelector(`[data-node-id="${id}"] .dt-checkbox`);
-    const node = this.daraTree.config.allNode[id];
+    const ele = this.tree.mainElement.querySelector(`[data-node-id="${id}"] .dt-checkbox`);
+    const node = this.tree.config.allNode[id];
 
     if (ele) {
       node.checkState = state;
@@ -138,7 +137,7 @@ export default class Checkbox {
   public getCheckValues() {
     let checkNodeValues = [] as TreeNode[];
 
-    for (const node of this.daraTree.config.rootNodes) {
+    for (const node of this.tree.config.rootNodes) {
       _getCheckValue(checkNodeValues, node);
     }
 
