@@ -5,6 +5,7 @@ import Tree from "./Tree";
 import nodeUtils from "./util/nodeUtils";
 import { MOVE_POSITION } from "./constants";
 import eventUtils from "./util/eventUtils";
+import utils from "./util/utils";
 
 /**
  *TreeNodeInfo
@@ -29,6 +30,7 @@ export default class TreeNodeInfo implements TreeNode {
   public _cud;
 
   public isEdit: boolean = false;
+  public isOpen: boolean = false;
 
   private readonly tree;
 
@@ -71,6 +73,7 @@ export default class TreeNodeInfo implements TreeNode {
    */
   public open(childOpenFlag?: boolean) {
     domUtils.addClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
+    this.isOpen = true;
 
     if (childOpenFlag === true) {
       for (const node of this.childNodes) {
@@ -85,7 +88,8 @@ export default class TreeNodeInfo implements TreeNode {
    * @param childCloseFlag 자식 닫을지 여부
    */
   public close(childCloseFlag?: boolean) {
-    if (this.tree.options.topMenuView || this.depth > 0) {
+    if (this.tree.config.rootDepth <= this.depth) {
+      this.isOpen = false;
       domUtils.removeClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
     }
 
@@ -103,7 +107,7 @@ export default class TreeNodeInfo implements TreeNode {
    */
   public remove(childRemoveFlag?: boolean) {
     if (childRemoveFlag === true) {
-      for (let i = this.childLength() - 1; i >= 0; i--) {
+      for (let i = this.getChildLength() - 1; i >= 0; i--) {
         this.childNodes[i].remove();
       }
     }
@@ -139,23 +143,29 @@ export default class TreeNodeInfo implements TreeNode {
     this.remove(); // 현재 노드 삭제.
 
     const allNode = this.tree.config.allNode;
-    const moveNodeInfo = allNode[moveNodeId];
-    const moveParentNode = allNode[moveNodeInfo.pid];
-    const childNodes = moveParentNode.childNodes;
+
+    let childNodes = [];
 
     switch (position) {
       case MOVE_POSITION.PREV:
       case MOVE_POSITION.NEXT: {
-        this.pid = moveNodeInfo.pid;
-        this.depth = moveParentNode.depth + 1;
+        let moveNodeInfo = allNode[allNode[moveNodeId].pid]; // parent node
+        childNodes = moveNodeInfo.childNodes;
+
+        this.pid = moveNodeInfo.id;
+        this.depth = moveNodeInfo.depth + 1;
 
         const index = childNodes.findIndex((node: TreeNode) => node.id === moveNodeId);
         const insertIndex = position === MOVE_POSITION.PREV ? index : index + 1;
         childNodes.splice(insertIndex, 0, this);
+
         break;
       }
       case MOVE_POSITION.CHILD: {
-        this.pid = moveNodeId;
+        const moveNodeInfo = this.tree.config.allNode[moveNodeId];
+        childNodes = this.tree.config.allNode[moveNodeId].childNodes;
+
+        this.pid = moveNodeInfo.id;
         this.depth = moveNodeInfo.depth + 1;
 
         if (this.tree.options.plugins["dnd"].inside === "first") {
@@ -171,6 +181,7 @@ export default class TreeNodeInfo implements TreeNode {
 
     this.setChildNodeDepth();
     allNode[this.id] = this;
+
     this.tree.refresh(this.pid);
   }
 
@@ -190,7 +201,7 @@ export default class TreeNodeInfo implements TreeNode {
    *
    * @returns 자식노드 갯수
    */
-  public childLength() {
+  public getChildLength() {
     return this.childNodes.length;
   }
 
@@ -212,7 +223,11 @@ export default class TreeNodeInfo implements TreeNode {
    *
    */
   public folderToggle() {
-    domUtils.toggleClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
+    if (this.isOpen) {
+      this.close();
+    } else {
+      this.open();
+    }
   }
 
   /**
@@ -243,17 +258,23 @@ export default class TreeNodeInfo implements TreeNode {
   public setEdit() {
     if (!this.tree.config.isEdit || this.isEdit) return;
 
-    this.isEdit = true;
-
     // 이전에 활성화된 input 영역 삭제.
     this.tree.mainElement.querySelectorAll(".dt-text-content.edit").forEach((el: Element) => {
       el.querySelector(".dt-input")?.remove();
       domUtils.removeClass(el, "edit");
     });
 
+    const editOptions = this.tree.options.plugins.edit;
+
+    if (editOptions.before && editOptions.before({ item: this }) === false) {
+      return;
+    }
+
+    this.isEdit = true;
+
     let attrs = { type: "text", class: "dt-input" } as any;
 
-    const editWidth = this.tree.options.plugins?.edit?.width;
+    const editWidth = editOptions.width;
     if (editWidth) {
       attrs["style"] = `width:${editWidth}`;
     }
@@ -270,17 +291,41 @@ export default class TreeNodeInfo implements TreeNode {
       const orginText = this.text;
       inputElement.value = orginText;
 
+      eventUtils.eventOn(inputElement, "keyup", (e: Event) => {
+        const key = eventUtils.getEventKey(e);
+
+        if (key == "enter") {
+          inputElement.blur();
+          return;
+        }
+      });
+
       eventUtils.eventOn(inputElement, "blur", (e: Event) => {
+        let changeText = inputElement.value;
+        if (editOptions.after) {
+          const afterVal = editOptions.after({ item: this, orginText: orginText, text: changeText });
+          if (afterVal === false) {
+            setTimeout(function () {
+              inputElement.focus();
+            }, 1);
+            return;
+          }
+          if (!utils.isBlank(afterVal)) {
+            changeText = afterVal;
+          }
+        }
+
         this.isEdit = false;
         const spanEle = contElement.querySelector("span");
         if (spanEle) {
-          this.text = inputElement.value;
+          this.text = changeText;
           spanEle.textContent = this.text;
 
           if (orginText != this.text) {
             this._cud = "U";
           }
         }
+        eventUtils.eventOff(inputElement, "blur keyup");
         domUtils.removeClass(contElement, "edit");
         inputElement.remove();
       });
@@ -291,6 +336,9 @@ export default class TreeNodeInfo implements TreeNode {
     }
   }
 
+  /**
+   * node 선택
+   */
   public select() {
     domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-text-content.selected"), "selected");
 
@@ -299,6 +347,22 @@ export default class TreeNodeInfo implements TreeNode {
     if (nodeElement) {
       this.tree.config.selectedNode = this;
       domUtils.addClass(nodeElement.querySelector(".dt-text-content"), "selected");
+      const scrollTop = this.tree.mainElement.scrollTop;
+      const offsetTop = (nodeElement as HTMLElement).offsetTop;
+      const height = this.tree.mainElement.offsetHeight;
+      const eleHeight = (nodeElement.querySelector(".dt-text-content") as HTMLElement).offsetHeight;
+
+      if (height < offsetTop + eleHeight) {
+        this.tree.mainElement.scrollTop = scrollTop + eleHeight + 2;
+      } else if (scrollTop > offsetTop) {
+        this.tree.mainElement.scrollTop = scrollTop - (eleHeight + 2);
+      }
+      if (this.tree.options.selectNode) {
+        this.tree.options.selectNode({
+          item: this,
+          element: nodeElement,
+        });
+      }
     }
   }
 }

@@ -150,13 +150,21 @@
       , style: {
         height: '200px'
       }
-      , topMenuView: false
+      , enableRootNode1: true
       , enableIcon: false
       , openDepth: -1
-      , topMenuView1: true
       , plugins: {
         checkbox: {}
-        , edit: {}
+        , edit: {
+          before: (item) => {
+            console.log(item)
+            //return false;
+          }
+          , after: (item) => {
+            console.log(item)
+            //return 'asdfawef';
+          }
+        }
         , dnd: {
           drop: (item) => {
             console.log('item ', item);
@@ -174,6 +182,9 @@
       , dblclick: function (nodeInfo) {
         console.log('dblclick', nodeInfo)
         //return false;
+      }
+      , selectNode: (item) => {
+        console.log(item);
       }
     });
   }

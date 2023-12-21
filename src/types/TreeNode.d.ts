@@ -20,11 +20,13 @@ export interface TreeNode {
   close: OptionCallback;
   remove: OptionCallback;
 
-  childLength: OptionCallback;
+  getChildLength: OptionCallback;
   click: OptionCallback;
   doubleClick: OptionCallback;
 
   setChildNodeDepth: OptionCallback;
 
   select: OptionCallback;
+
+  isOpen: boolean;
 }

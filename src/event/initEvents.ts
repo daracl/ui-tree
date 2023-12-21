@@ -7,8 +7,6 @@ export default {
   expanderClick(treeContext: Tree, el: Element | string | NodeList) {
     eventUtils.eventOn(el, "click", ".dt-expander", (e: Event, ele: Element) => {
       nodeUtils.elementToTreeNode(ele, treeContext).folderToggle();
-
-      console.log("treeContext.config.isFocus : ", treeContext.config.isFocus);
       return false;
     });
   },

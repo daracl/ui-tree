@@ -74,7 +74,6 @@ export default {
     const classNames = styleClassName.replaceAll(/\s+/g, " ").split(" ");
     for (let className of classNames) {
       $querySelector(el).forEach((el1) => {
-        console.log(el, className);
         el1.classList.remove(className);
       });
     }

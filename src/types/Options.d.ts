@@ -7,6 +7,8 @@ export interface Plugins {
   dnd?: any;
   edit?: {
     width: string;
+    before: OptionCallback;
+    after: OptionCallback;
   };
   contextmenu?: any;
   keydown: any;
@@ -22,6 +24,7 @@ export interface Options {
     paddingLeft: number;
   };
   enableIcon?: boolean;
+  enableRootNode?: boolean;
   itemKey: {
     id: string;
     pid: string;
@@ -35,4 +38,5 @@ export interface Options {
   dblclick: OptionCallback | undefined; // double click callback
   source: OptionCallback | undefined;
   getIcon: OptionCallback | undefined; // node icon class
+  selectNode: OptionCallback | undefined; // node icon class
 }

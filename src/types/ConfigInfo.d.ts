@@ -19,6 +19,7 @@ export interface ConfigInfo {
   allNode: TreeNodeMap;
   selectedNode: any;
   completed: false;
+  rootDepth: number;
   rootNodes: any[];
   checkbox: Checkbox;
   dnd: Dnd;

@@ -19,6 +19,7 @@ const defaultOptions = {
     height: "",
     paddingLeft: 12,
   },
+  enableRootNode: false,
   itemKey: {
     id: "id",
     pid: "pid",
@@ -43,7 +44,7 @@ interface ComponentMap {
 const allInstance: ComponentMap = {};
 
 // dnd default option
-const dndDefaultOptions = {
+const DND_DEFAULT_OPTIONS = {
   marginTop: 10,
   marginLeft: 10,
   inside: "last",
@@ -51,7 +52,14 @@ const dndDefaultOptions = {
   start: (item: any) => {},
 };
 
-const keydownDefaultOptions = {};
+// keydown default option
+const KEYDOWN_DEFAULT_OPTIONS = {};
+
+// edit default option
+const EDIT_DEFAULT_OPTIONS = {
+  before: false,
+  after: false,
+};
 
 /**
  * Tree class
@@ -118,7 +126,8 @@ export default class Tree {
 
   private initConfig() {
     this.config = {
-      startPaddingLeft: this.options.topMenuView ? this.options.style.paddingLeft : 0,
+      startPaddingLeft: this.options.enableRootNode ? this.options.style.paddingLeft : 0,
+      rootDepth: this.options.enableRootNode ? 0 : 1,
       allNode: {},
       selectedNode: null,
       isFocus: false,
@@ -126,21 +135,27 @@ export default class Tree {
       isCheckbox: !utils.isUndefined(this.options.plugins["checkbox"]),
       isDnd: false,
       isContextmenu: !utils.isUndefined(this.options.plugins["contextmenu"]),
-      isEdit: !utils.isUndefined(this.options.plugins["edit"]),
-      isKeydown: !utils.isUndefined(this.options.plugins["keydown"]),
+      isEdit: false,
+      isKeydown: true,
       isNodeDrag: false,
     } as ConfigInfo;
 
-    if (!utils.isUndefined(this.options.plugins["dnd"])) {
+    if (this.options.plugins["dnd"]) {
       this.config.isDnd = true;
-      this.options.plugins["dnd"] = utils.objectMerge({}, dndDefaultOptions, this.options.plugins["dnd"]);
+      this.options.plugins["dnd"] = utils.objectMerge({}, DND_DEFAULT_OPTIONS, this.options.plugins["dnd"]);
 
       this.config.dndLinePadding = (this.config.isCheckbox ? 24 : 0) + (this.options.enableIcon ? 23 : 0);
       this.config.dndLinePadding = this.config.dndLinePadding == 0 ? 20 : this.config.dndLinePadding;
     }
 
-    if (this.config.isKeydown) {
-      this.options.plugins["keydown"] = utils.objectMerge({}, keydownDefaultOptions, this.options.plugins["keydown"]);
+    if (this.options.plugins["keydown"]) {
+      this.config.isKeydown = true;
+      this.options.plugins["keydown"] = utils.objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, this.options.plugins["keydown"]);
+    }
+
+    if (this.options.plugins["edit"]) {
+      this.config.isEdit = true;
+      this.options.plugins["edit"] = utils.objectMerge({}, EDIT_DEFAULT_OPTIONS, this.options.plugins["edit"]);
     }
   }
 
@@ -282,13 +297,18 @@ export default class Tree {
       let treeNode = viewNodes[i];
 
       let childNodes = treeNode.childNodes;
-
-      const openClass = openDepth == -1 || openDepth >= treeNode.depth ? "open" : "";
+      let openClass = "";
+      if (treeNode.isOpen || openDepth == -1 || openDepth >= treeNode.depth) {
+        if (treeNode.getChildLength() > 0) {
+          openClass = "open";
+          treeNode.isOpen = true;
+        }
+      }
 
       if (treeNode.depth == 0) {
         treeHtml.push(
           `<li data-node-id="${treeNode.id}" class="open">
-              <div class="dt-node" style="display:${this.options.topMenuView ? "inline" : "none"}">
+              <div class="dt-node" style="display:${this.options.enableRootNode ? "inline" : "none"}">
                 ${this.nodeContentHtml(treeNode)}
               </div>
               <ul id="c_${treeNode.id}" class="dt-children">${this.getNodeTemplate(childNodes)}</ul>
@@ -300,7 +320,7 @@ export default class Tree {
             <div class="dt-node" style="padding-left:${stylePaddingLeft}px" draggable="true">
               ${this.nodeContentHtml(treeNode)}
             </div>
-            <ul class="dt-children">${treeNode.childLength() == 0 ? "" : this.getNodeTemplate(childNodes)}</ul>
+            <ul class="dt-children">${treeNode.getChildLength() == 0 ? "" : this.getNodeTemplate(childNodes)}</ul>
           </li>`
         );
       }
@@ -314,14 +334,14 @@ export default class Tree {
   }
 
   private getExpandIconHtml(tNode: TreeNode) {
-    return `<i class="dt-expander ${tNode.childLength() > 0 ? "visible" : ""}"></i>`;
+    return `<i class="dt-expander ${tNode.getChildLength() > 0 ? "visible" : ""}"></i>`;
   }
 
   private getNodeNameHtml(tNode: TreeNode) {
     let icon = tNode.icon;
     let iconHtml = "";
     if (utils.isBlank(icon)) {
-      icon = tNode.childLength() == 0 ? "dt-file" : "dt-folder";
+      icon = tNode.getChildLength() == 0 ? "dt-file" : "dt-folder";
       if (this.options.enableIcon) {
         iconHtml = `<i class="dt-icon ${icon}"></i>`;
       }
