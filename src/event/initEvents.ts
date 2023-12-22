@@ -9,6 +9,11 @@ export default {
       nodeUtils.elementToTreeNode(ele, treeContext).folderToggle();
       return false;
     });
+
+    eventUtils.eventOn(treeContext.mainElement, "focusout", (e: Event, ele: Element) => {
+      domUtils.removeClass(treeContext.mainElement.querySelectorAll(".dt-text-content.focus"), "focus");
+      treeContext.config.focusNode = null;
+    });
   },
 
   textClick(treeContext: Tree, el: Element | string | NodeList) {
@@ -39,6 +44,8 @@ export default {
       }
 
       const nodeInfo = nodeUtils.elementToTreeNode(ele, treeContext);
+
+      if (!nodeInfo) return;
 
       if (clickCount > 0 && clickNode.id == nodeInfo.id) {
         nodeInfo.doubleClick(e);

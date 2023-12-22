@@ -35,8 +35,7 @@ export default {
    * @param itemEle {Element} node
    * @returns nodeid
    */
-  elementToTreeNode(itemEle: Element | null, treeContext: Tree) {
-    if (itemEle == null) return;
+  elementToTreeNode(itemEle: Element, treeContext: Tree): TreeNode {
     let nodeEle;
     if (itemEle.hasAttribute("data-node-id")) {
       nodeEle = itemEle;

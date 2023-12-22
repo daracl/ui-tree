@@ -79,6 +79,9 @@
 
   .dt-children {
     display: none;
+    //visibility: hidden;
+    //opacity: 0;
+    //height: 0px;
     padding: 0px;
     margin: 0px;
   }
@@ -102,6 +105,11 @@
       &.selected {
         color: var(--item-select-font-color);
         background-color: var(--item-select-bg-color);
+      }
+
+      &.focus {
+        color: var(--item-focus-font-color);
+        background-color: var(--item-focus-bg-color);
       }
 
       &.edit > span {
@@ -171,6 +179,9 @@
     }
     > .dt-children {
       display: block;
+      //visibility: visible;
+      //opacity: 1;
+      //height: 100%;
     }
   }
 

@@ -150,7 +150,7 @@
       , style: {
         height: '200px'
       }
-      , enableRootNode1: true
+      , enableRootNode: true
       , enableIcon: false
       , openDepth: -1
       , plugins: {
@@ -169,12 +169,8 @@
           drop: (item) => {
             console.log('item ', item);
           }
-          , start1: (eventObj) => {
-            //console.log(eventObj.item)
-            if (eventObj.item.depth > 2)
-              return false;
-          }
         }
+        , ajax: '/data/tree-node.json'
       }
       , click: function (nodeInfo) {
         console.log('click', nodeInfo)

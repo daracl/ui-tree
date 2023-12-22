@@ -23,7 +23,7 @@ export default class Checkbox {
   }
 
   initCheck() {
-    for (const node of this.tree.config.rootNodes) {
+    for (const node of this.tree.config.rootNode.childNodes) {
       this.initChildNodeCheck(node);
     }
   }
@@ -137,7 +137,7 @@ export default class Checkbox {
   public getCheckValues() {
     let checkNodeValues = [] as TreeNode[];
 
-    for (const node of this.tree.config.rootNodes) {
+    for (const node of this.tree.config.rootNode.childNodes) {
       _getCheckValue(checkNodeValues, node);
     }
 

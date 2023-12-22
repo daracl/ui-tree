@@ -114,6 +114,8 @@ export default class TreeNodeInfo implements TreeNode {
 
     nodeUtils.nodeIdToElement(this.tree.mainElement, this.id)?.remove();
 
+    this.tree.config.ajax.delete(this);
+
     const parentNode = this.tree.config.allNode[this.pid];
 
     if (parentNode) {
@@ -328,6 +330,8 @@ export default class TreeNodeInfo implements TreeNode {
         eventUtils.eventOff(inputElement, "blur keyup");
         domUtils.removeClass(contElement, "edit");
         inputElement.remove();
+
+        this.tree.config.ajax.modify(this);
       });
 
       setTimeout(function () {
@@ -340,6 +344,7 @@ export default class TreeNodeInfo implements TreeNode {
    * node 선택
    */
   public select() {
+    this.focusOut();
     domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-text-content.selected"), "selected");
 
     const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
@@ -347,16 +352,9 @@ export default class TreeNodeInfo implements TreeNode {
     if (nodeElement) {
       this.tree.config.selectedNode = this;
       domUtils.addClass(nodeElement.querySelector(".dt-text-content"), "selected");
-      const scrollTop = this.tree.mainElement.scrollTop;
-      const offsetTop = (nodeElement as HTMLElement).offsetTop;
-      const height = this.tree.mainElement.offsetHeight;
-      const eleHeight = (nodeElement.querySelector(".dt-text-content") as HTMLElement).offsetHeight;
 
-      if (height < offsetTop + eleHeight) {
-        this.tree.mainElement.scrollTop = scrollTop + eleHeight + 2;
-      } else if (scrollTop > offsetTop) {
-        this.tree.mainElement.scrollTop = scrollTop - (eleHeight + 2);
-      }
+      setScrollTop(this.tree.mainElement, nodeElement);
+
       if (this.tree.options.selectNode) {
         this.tree.options.selectNode({
           item: this,
@@ -364,5 +362,52 @@ export default class TreeNodeInfo implements TreeNode {
         });
       }
     }
+  }
+
+  /**
+   * node 선택
+   */
+  public focus() {
+    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-text-content.focus"), "focus");
+
+    const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
+
+    if (nodeElement) {
+      this.tree.config.focusNode = this;
+      domUtils.addClass(nodeElement.querySelector(".dt-text-content"), "focus");
+
+      setScrollTop(this.tree.mainElement, nodeElement);
+
+      if (this.tree.options.focusNode) {
+        this.tree.options.focusNode({
+          item: this,
+          element: nodeElement,
+        });
+      }
+    }
+  }
+
+  public focusOut() {
+    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-text-content.focus"), "focus");
+    this.tree.config.focusNode = null;
+  }
+}
+
+/**
+ * 스크롤 위치 이동.
+ *
+ * @param mainElement {HTMLElement} main element
+ * @param nodeElement {HTMLElement} 스크롤 이동할 element
+ */
+function setScrollTop(mainElement: HTMLElement, nodeElement: Element) {
+  const scrollTop = mainElement.scrollTop;
+  const offsetTop = (nodeElement as HTMLElement).offsetTop;
+  const height = mainElement.offsetHeight;
+  const eleHeight = (nodeElement.querySelector(".dt-text-content") as HTMLElement).offsetHeight;
+
+  if (scrollTop + height < offsetTop + eleHeight) {
+    mainElement.scrollTop = offsetTop + eleHeight - height;
+  } else if (scrollTop > offsetTop) {
+    mainElement.scrollTop = offsetTop;
   }
 }

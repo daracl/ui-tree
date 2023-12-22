@@ -1,13 +1,15 @@
 import Checkbox from "src/plugins/Checkbox";
 import Dnd from "src/plugins/Dnd";
 import Keydown from "src/plugins/Keydown";
+import { TreeNode } from "./TreeNode";
+import Ajax from "src/plugins/Ajax";
 
 export interface OptionCallback {
   (...params: any[]): any;
 }
 
 interface TreeNodeMap {
-  [key: string | number]: TreeNode;
+  [key: string | number]: TreeNodeInfo;
 }
 
 /**
@@ -18,12 +20,14 @@ export interface ConfigInfo {
   dndLinePadding: number;
   allNode: TreeNodeMap;
   selectedNode: any;
+  focusNode: any;
   completed: false;
   rootDepth: number;
-  rootNodes: any[];
+  rootNode: TreeNode;
   checkbox: Checkbox;
   dnd: Dnd;
   keydown: Keydown;
+  ajax: Ajax;
   isFocus: boolean;
   isKeydown: boolean;
   isCheckbox: boolean;
@@ -31,4 +35,5 @@ export interface ConfigInfo {
   isContextmenu: boolean;
   isEdit: boolean;
   isNodeDrag: boolean;
+  isAjax: boolean;
 }

@@ -15,6 +15,10 @@ export interface TreeNode {
   orgin: any;
   _cud: "C" | "U" | "D";
 
+  isOpen: boolean;
+
+  addChild: OptionCallback;
+
   move: OptionCallback;
   open: OptionCallback;
   close: OptionCallback;
@@ -27,6 +31,7 @@ export interface TreeNode {
   setChildNodeDepth: OptionCallback;
 
   select: OptionCallback;
+  focus: OptionCallback;
 
-  isOpen: boolean;
+  folderToggle: OptionCallback;
 }

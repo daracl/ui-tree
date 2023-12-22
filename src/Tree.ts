@@ -12,12 +12,17 @@ import TreeNodeInfo from "./TreeNodeInfo";
 import nodeUtils from "./util/nodeUtils";
 import Dnd from "./plugins/Dnd";
 import Keydown from "./plugins/Keydown";
+import Ajax from "./plugins/Ajax";
 
 const defaultOptions = {
   style: {
     width: "",
     height: "",
     paddingLeft: 12,
+  },
+  rootNode: {
+    id: "",
+    text: "Root",
   },
   enableRootNode: false,
   itemKey: {
@@ -59,6 +64,10 @@ const KEYDOWN_DEFAULT_OPTIONS = {};
 const EDIT_DEFAULT_OPTIONS = {
   before: false,
   after: false,
+};
+
+const AJAX_DEFAULT_OPTIONS = {
+  url: { search: "" },
 };
 
 /**
@@ -130,15 +139,19 @@ export default class Tree {
       rootDepth: this.options.enableRootNode ? 0 : 1,
       allNode: {},
       selectedNode: null,
+      focusNode: null,
       isFocus: false,
-      rootNodes: [] as any[],
+      rootNode: {},
       isCheckbox: !utils.isUndefined(this.options.plugins["checkbox"]),
       isDnd: false,
       isContextmenu: !utils.isUndefined(this.options.plugins["contextmenu"]),
       isEdit: false,
       isKeydown: true,
       isNodeDrag: false,
+      isAjax: false,
     } as ConfigInfo;
+
+    this.config.rootNode = new TreeNodeInfo(utils.objectMerge({}, this.options.rootNode), "$$root", this);
 
     if (this.options.plugins["dnd"]) {
       this.config.isDnd = true;
@@ -157,11 +170,28 @@ export default class Tree {
       this.config.isEdit = true;
       this.options.plugins["edit"] = utils.objectMerge({}, EDIT_DEFAULT_OPTIONS, this.options.plugins["edit"]);
     }
+
+    const ajaxOpt = this.options.plugins.ajax;
+    if (ajaxOpt) {
+      this.config.isAjax = true;
+
+      if (utils.isString(ajaxOpt)) {
+        this.options.plugins["ajax"] = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, { url: { search: ajaxOpt } });
+      } else if (utils.isString(ajaxOpt?.url)) {
+        this.options.plugins["ajax"] = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, { url: { search: ajaxOpt?.url } });
+      } else {
+        this.options.plugins["ajax"] = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, ajaxOpt);
+      }
+
+      this.config.ajax = new Ajax(this);
+    } else {
+      this.config.ajax = new Ajax(this);
+    }
   }
 
   public init() {
-    this.request();
     this.initEvt();
+    this.request();
   }
 
   private initEvt() {
@@ -189,12 +219,8 @@ export default class Tree {
   public request() {
     const opts = this.options;
 
-    const callbackResponse = (items: any[]) => {
-      this.addNode(items);
-    };
-
-    if (utils.isFunction(opts.source)) {
-      opts.source(this.config.selectedNode, callbackResponse);
+    if (this.config.isAjax) {
+      this.config.ajax.search(this.config.selectedNode);
     } else if (utils.isArray(opts.items)) {
       this.addNode(opts.items);
     }
@@ -234,6 +260,8 @@ export default class Tree {
     nodeInfo[this.options.itemKey.text] = nodeInfo.text ?? nodeInfo[this.options.itemKey.text] ?? "New Node";
 
     this.addNode(nodeInfo);
+
+    this.config.ajax.create(nodeInfo);
   }
 
   private treeGrid(node: any, parentId?: any) {
@@ -250,11 +278,11 @@ export default class Tree {
         addNode.checkState = CHECK_STATE.CHECKED;
       }
     } else {
-      this.config.rootNodes.push(addNode);
+      this.config.rootNode.addChild(addNode);
     }
 
-    if (node.childNodes && node.childNodes.length > 0) {
-      for (const childNode of node.childNodes) {
+    if (node.children && node.children.length > 0) {
+      for (const childNode of node.children) {
         this.addNode(childNode);
       }
     }
@@ -266,7 +294,7 @@ export default class Tree {
     if (utils.isBlank(id) && this.config.selectedNode == null) {
       // init load
       this.mainElement.innerHTML = `<ul id="${this.prefix}" class="dt-container" tabindex="-1">
-        ${this.getNodeTemplate(this.config.rootNodes)}
+        ${this.getNodeTemplate(this.config.rootNode.childNodes)}
         </ul>`;
     } else {
       let selectedNode = this.config.allNode[id] ?? this.config.selectedNode;
@@ -286,7 +314,7 @@ export default class Tree {
 
   private getNodeTemplate(viewNodes: TreeNode[]): string {
     const treeHtml = [];
-    viewNodes = viewNodes ?? this.config.rootNodes;
+    viewNodes = viewNodes ?? this.config.rootNode.childNodes;
     const childNodeLength = viewNodes.length;
 
     const openDepth = this.options.openDepth;
@@ -354,7 +382,7 @@ export default class Tree {
       checkboxHtml = `<label class="dt-checkbox"><span class="dt-icon checkbox"></span></label>`;
     }
 
-    return `${checkboxHtml}<a href ="javascript:" class="dt-text-content">${iconHtml}<span>${tNode.text}</span></a>`;
+    return `${checkboxHtml}<span class="dt-text-content">${iconHtml}<span>${tNode.text}</span></span>`;
   }
 
   public getPrefix() {
@@ -413,7 +441,7 @@ export default class Tree {
    * 전체 노드 열기
    */
   public allOpen() {
-    for (const node of this.config.rootNodes) {
+    for (const node of this.config.rootNode.childNodes) {
       node.open(true);
     }
   }
@@ -422,7 +450,7 @@ export default class Tree {
    * 전체 노드 닫기
    */
   public allClose() {
-    for (const node of this.config.rootNodes) {
+    for (const node of this.config.rootNode.childNodes) {
       node.close(true);
     }
   }
@@ -455,8 +483,11 @@ export default class Tree {
    *
    * @returns {TreeNode} 선택된 tree node
    */
-  public getSelectNode(): TreeNode {
-    return nodeUtils.elementToTreeNode(this.mainElement.querySelector(".selected"), this);
+  public getSelectNode(): TreeNode | undefined {
+    const selectElement = this.mainElement.querySelector(".selected");
+    if (selectElement) {
+      return nodeUtils.elementToTreeNode(selectElement, this);
+    }
   }
 
   /**

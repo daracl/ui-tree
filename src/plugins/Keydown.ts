@@ -1,6 +1,5 @@
 import Tree from "../Tree";
 import { TreeNode } from "@t/TreeNode";
-import domUtils from "src/util/domUtils";
 
 import eventUtils from "src/util/eventUtils";
 import nodeUtils from "src/util/nodeUtils";
@@ -23,40 +22,37 @@ export default class Keydown {
 
   initEvt() {
     eventUtils.eventOn(this.tree.mainElement, "keydown", (e: any) => {
-      const selectNode = this.tree.config.selectedNode;
+      const focusNode = this.tree.config.focusNode || this.tree.config.selectedNode;
 
-      if (selectNode == null) return;
+      if (focusNode == null) return;
 
       const key = eventUtils.getEventKey(e);
 
       if (key == "f2") {
-        selectNode.setEdit();
+        focusNode.setEdit();
         return;
       }
 
       if (key == "delete") {
-        selectNode.remove();
+        focusNode.remove();
         return;
       }
 
       if (key == "enter") {
-        //node hovered 로 처리 하고 enter 처리 할것.
-        //
+        focusNode.select();
+        return;
       }
 
       if (key.startsWith("arrow")) {
         if (key == "arrowdown") {
-          this.arrowDown(selectNode);
+          this.arrowDown(focusNode);
         } else if (key == "arrowup") {
-          this.arrowUp(selectNode);
+          this.arrowUp(focusNode);
         } else if (key == "arrowleft") {
-          this.arrowLeft(selectNode);
+          this.arrowLeft(focusNode);
         } else if (key == "arrowright") {
-          this.arrowRight(selectNode);
+          this.arrowRight(focusNode);
         }
-        this.tree.mainElement.removeAttribute("tabindex");
-        this.tree.mainElement.setAttribute("tabindex", "0");
-        this.tree.mainElement.focus();
 
         return false;
       }
@@ -66,84 +62,88 @@ export default class Keydown {
   /**
    * 방향키 아래 -> 오픈된 노드중에 하위 노드 선택
    *
-   * @param selectNode {TreeNode} 선택된 노드
+   * @param focusNode {TreeNode} 선택된 노드
    * @returns {void}
    */
-  public arrowDown(selectNode: TreeNode) {
-    const nextNode = findNextNode(selectNode, this.tree, true);
+  public arrowDown(focusNode: TreeNode) {
+    const nextNode = findNextNode(focusNode, this.tree, true);
 
-    nextNode?.select();
+    nextNode?.focus();
   }
 
   /**
    * 방향키 위로 -> 오픈된 노드중에 상위 노드 선택
    *
-   * @param selectNode {TreeNode} 선택된 노드
+   * @param focusNode {TreeNode} 선택된 노드
    * @returns {void}
    */
-  public arrowUp(selectNode: TreeNode) {
-    const parentNode = this.tree.config.allNode[selectNode.pid];
+  public arrowUp(focusNode: TreeNode) {
+    if (this.tree.config.rootDepth == 0 && this.tree.config.rootDepth == focusNode.depth) {
+      return;
+    }
+
+    const parentNode = this.tree.config.allNode[focusNode.pid];
 
     const childNodes = parentNode.childNodes;
-    const nodeIdx = nodeUtils.getNodeIdx(childNodes, selectNode.id);
+    const nodeIdx = nodeUtils.getNodeIdx(childNodes, focusNode.id);
 
     if (nodeIdx != 0) {
-      findPrevNode(childNodes[nodeIdx - 1])?.select();
+      findPrevNode(childNodes[nodeIdx - 1])?.focus();
     } else {
-      if (this.tree.config.rootDepth > parentNode.depth) {
+      if (0 == nodeIdx && this.tree.config.rootDepth == focusNode.depth) {
         return;
       }
-      parentNode.select();
+      parentNode.focus();
     }
   }
 
   /**
    * 방향키 왼쪽 -> 오픈된 노드를 닫기 처리 한다.
    *
-   * @param selectNode {TreeNode} 선택된 노드
+   * @param focusNode {TreeNode} 선택된 노드
    * @returns {void}
    */
-  public arrowLeft(selectNode: TreeNode) {
-    if (selectNode.childNodes.length > 0) {
-      if (selectNode.isOpen) {
-        selectNode.close();
+  public arrowLeft(focusNode: TreeNode) {
+    if (focusNode.childNodes.length > 0) {
+      if (focusNode.isOpen) {
+        focusNode.close();
         return;
       }
     }
 
-    if (selectNode.depth == 0) {
+    if (focusNode.depth == 0) {
       return;
     }
 
-    const parentNode = this.tree.config.allNode[selectNode.pid];
+    const parentNode = this.tree.config.allNode[focusNode.pid];
 
     if (this.tree.config.rootDepth > parentNode.depth) {
       return;
     }
 
-    parentNode.select();
+    parentNode.focus();
   }
 
   /**
    * 방향키 오른쪽 -> 오픈된 노드를 열기 처리 한다.
    *
-   * @param selectNode {TreeNode} 선택된 노드
+   * @param focusNode {TreeNode} 선택된 노드
    * @returns {void}
    */
-  public arrowRight(selectNode: TreeNode) {
-    const childNodes = selectNode.childNodes;
+  public arrowRight(focusNode: TreeNode) {
+    const childNodes = focusNode.childNodes;
 
     if (childNodes.length > 0) {
-      if (selectNode.isOpen) {
-        childNodes[0].select();
+      if (focusNode.isOpen) {
+        childNodes[0].focus();
       } else {
-        selectNode.open();
+        focusNode.open();
       }
     }
   }
 
-  public getSelectIdx(selectNode: TreeNode) {
-    return nodeUtils.getNodeIdx(this.tree.config.allNode[selectNode.pid].childNodes, selectNode.id);
+  public getSelectIdx(focusNode: TreeNode) {
+    return nodeUtils.getNodeIdx(this.tree.config.allNode[focusNode.pid].childNodes, focusNode.id);
   }
 }
 
@@ -154,7 +154,7 @@ function findPrevNode(prevNode: TreeNode) {
     return prevNode;
   }
 
-  for (var i = childNodes.length - 1; i >= 0; i--) {
+  for (let i = childNodes.length - 1; i >= 0; i--) {
     const node = childNodes[i];
     if (node.isOpen) {
       if (node.childNodes.length > 0) {
@@ -166,20 +166,20 @@ function findPrevNode(prevNode: TreeNode) {
   }
 }
 
-function findNextNode(selectNode: TreeNode, tree: Tree, firstFlag: boolean) {
-  if (firstFlag && selectNode.isOpen && selectNode.getChildLength() > 0) {
-    return selectNode.childNodes[0];
+function findNextNode(focusNode: TreeNode, tree: Tree, firstFlag: boolean) {
+  if (firstFlag && focusNode.isOpen && focusNode.getChildLength() > 0) {
+    return focusNode.childNodes[0];
   } else {
-    const parentNode = tree.config.allNode[selectNode.pid];
+    const parentNode = tree.config.allNode[focusNode.pid];
     const childNodes = parentNode.childNodes;
     const childLength = childNodes.length - 1;
-    let nodeIdx = nodeUtils.getNodeIdx(childNodes, selectNode.id);
+    let nodeIdx = nodeUtils.getNodeIdx(childNodes, focusNode.id);
 
     if (childLength > nodeIdx) {
       return childNodes[nodeIdx + 1];
     }
 
-    if (childLength == nodeIdx && tree.config.rootDepth > parentNode.depth) {
+    if (childLength == nodeIdx && tree.config.rootDepth == parentNode.depth) {
       return;
     }
 
