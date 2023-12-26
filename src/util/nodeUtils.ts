@@ -49,4 +49,14 @@ export default {
   getNodeIdx(childNodes: TreeNode[], id: any) {
     return childNodes.findIndex((element: any) => element.id == id);
   },
+
+  getParameterNode(node: TreeNode) {
+    return {
+      id: node.id,
+      pid: node.pid,
+      text: node.text,
+      depth: node.depth,
+      origin: node.orgin,
+    };
+  },
 };

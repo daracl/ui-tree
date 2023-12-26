@@ -16,6 +16,8 @@ export interface TreeNode {
   _cud: "C" | "U" | "D";
 
   isOpen: boolean;
+  isLoaded: boolean;
+  isFolder: boolean;
 
   addChild: OptionCallback;
 

@@ -1,10 +1,47 @@
-import nodeUtils from "src/util/nodeUtils";
 import Tree from "../Tree";
-import domUtils from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
-import { MOVE_POSITION } from "src/constants";
-import eventUtils from "src/util/eventUtils";
 import { ajax } from "src/util/ajaxUtils";
+import domUtils from "src/util/domUtils";
+import nodeUtils from "src/util/nodeUtils";
+import utils from "src/util/utils";
+
+const AJAX_DEFAULT_OPTIONS = {
+  url: { search: "" },
+  beforesend: _beforesend,
+  completed: _completed,
+};
+
+function _beforesend(opts: any) {
+  const node = opts.$node;
+
+  let nodeElement;
+  if (node) {
+    nodeElement = opts.$mainElement.querySelector(`[data-node-id="${node.id}"] > .dt-node`) as HTMLElement;
+  }
+
+  if (!nodeElement) {
+    nodeElement = opts.$mainElement;
+  }
+
+  domUtils.append(nodeElement, '<div class="dt-loader"><div class="spinner"></div></div>');
+}
+
+function _completed(result: any) {
+  const opts = result.options;
+  const node = opts.$node;
+
+  let nodeElement;
+
+  if (node) {
+    nodeElement = opts.$mainElement.querySelector(`[data-node-id="${node.id}"] > .dt-node`) as HTMLElement;
+  }
+
+  if (!nodeElement) {
+    nodeElement = opts.$mainElement;
+  }
+
+  nodeElement.querySelector(".dt-loader")?.remove();
+}
 
 /**
  * ajax
@@ -15,7 +52,7 @@ import { ajax } from "src/util/ajaxUtils";
 export default class Ajax {
   private tree;
   private url: any;
-  private opt: any;
+  private opts: any;
   private successCallback: any;
   private errorCallback: any;
   private getParameter: any;
@@ -24,28 +61,51 @@ export default class Ajax {
   constructor(tree: Tree) {
     this.tree = tree;
 
-    if (!tree.config.isAjax) return;
+    if (utils.isUndefined(tree.options.plugins.ajax)) {
+      return;
+    }
+
+    const ajaxOpt = tree.options.plugins.ajax;
+    tree.config.isAjax = true;
 
     this.initFlag = true;
+    let opts: any;
 
-    const ajaxOpt = this.tree.options.plugins.ajax;
+    if (utils.isString(ajaxOpt)) {
+      opts = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, { url: { search: ajaxOpt } });
+    } else if (utils.isString(ajaxOpt?.url)) {
+      opts = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, { url: { search: ajaxOpt?.url } });
+    } else {
+      opts = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, ajaxOpt);
+    }
 
-    this.url = ajaxOpt.url;
+    opts.$mainElement = tree.mainElement;
+    this.url = opts.url;
 
-    delete ajaxOpt.url;
-
-    this.successCallback = ajaxOpt.success || this.defaultSuccessCallback;
-    this.errorCallback = ajaxOpt.error || this.defaultErrorCallback;
-    this.getParameter = ajaxOpt.getParam || this.defaultGetParam;
-
-    this.opt = ajaxOpt;
+    this.successCallback = opts.success || this.defaultSuccessCallback;
+    this.errorCallback = opts.error || this.defaultErrorCallback;
+    this.getParameter = opts.getParam || this.defaultGetParam;
+    this.opts = opts;
   }
 
   public search(node: TreeNode) {
     if (!this.initFlag) return;
 
-    this.opt.data = this.getParameter(node);
-    ajax(this.url.search, this.opt)
+    node.isLoaded = true;
+
+    console.log("node.isLoaded ", node.isLoaded);
+
+    const paramNode = nodeUtils.getParameterNode(node);
+
+    if (this.opts.searchNode) {
+      this.opts.searchNode(paramNode);
+      return;
+    }
+
+    this.opts.$node = node;
+    this.opts.data = this.getParameter(paramNode);
+
+    ajax(this.url.search, this.opts)
       .then((response) => {
         this.successCallback(response, "search");
       })
@@ -55,10 +115,18 @@ export default class Ajax {
   }
 
   public create(node: TreeNode) {
-    if (!this.initFlag && this.url.create) return;
+    if (!this.initFlag || utils.isUndefined(this.url.create)) return;
 
-    this.opt.data = this.getParameter(node);
-    ajax(this.url.create, this.opt)
+    const paramNode = nodeUtils.getParameterNode(node);
+
+    if (this.opts.createNode) {
+      this.opts.createNode(paramNode);
+      return;
+    }
+
+    this.opts.$node = node;
+    this.opts.data = this.getParameter(paramNode);
+    ajax(this.url.create, this.opts)
       .then((response) => {
         this.successCallback(response, "create");
       })
@@ -68,10 +136,18 @@ export default class Ajax {
   }
 
   public modify(node: TreeNode) {
-    if (!this.initFlag && this.url.modify) return;
+    if (!this.initFlag || utils.isUndefined(this.url.modify)) return;
 
-    this.opt.data = this.getParameter(node);
-    ajax(this.url.modify, this.opt)
+    const paramNode = nodeUtils.getParameterNode(node);
+
+    if (this.opts.modifyNode) {
+      this.opts.modifyNode(paramNode);
+      return;
+    }
+
+    this.opts.$node = node;
+    this.opts.data = this.getParameter(paramNode);
+    ajax(this.url.modify, this.opts)
       .then((response) => {
         this.successCallback(response, "modify");
       })
@@ -81,10 +157,18 @@ export default class Ajax {
   }
 
   public delete(node: TreeNode) {
-    if (!this.initFlag && this.url.delete) return;
+    if (!this.initFlag || utils.isUndefined(this.url.delete)) return;
 
-    this.opt.data = this.getParameter(node);
-    ajax(this.url.delete, this.opt)
+    const paramNode = nodeUtils.getParameterNode(node);
+
+    if (this.opts.deleteNode) {
+      this.opts.deleteNode(paramNode);
+      return;
+    }
+
+    this.opts.$node = node;
+    this.opts.data = this.getParameter(paramNode);
+    ajax(this.url.delete, this.opts)
       .then((response) => {
         this.successCallback(response, "delete");
       })
@@ -98,7 +182,7 @@ export default class Ajax {
   }
 
   private defaultErrorCallback(response: any) {
-    this.tree.addNode(response);
+    console.log("tree ajax error : ", response);
   }
 
   private defaultGetParam(node: TreeNode) {

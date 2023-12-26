@@ -48,26 +48,10 @@ interface ComponentMap {
 // all instance
 const allInstance: ComponentMap = {};
 
-// dnd default option
-const DND_DEFAULT_OPTIONS = {
-  marginTop: 10,
-  marginLeft: 10,
-  inside: "last",
-  drop: (item: any) => {},
-  start: (item: any) => {},
-};
-
-// keydown default option
-const KEYDOWN_DEFAULT_OPTIONS = {};
-
 // edit default option
 const EDIT_DEFAULT_OPTIONS = {
   before: false,
   after: false,
-};
-
-const AJAX_DEFAULT_OPTIONS = {
-  url: { search: "" },
 };
 
 /**
@@ -138,55 +122,31 @@ export default class Tree {
       startPaddingLeft: this.options.enableRootNode ? this.options.style.paddingLeft : 0,
       rootDepth: this.options.enableRootNode ? 0 : 1,
       allNode: {},
+      openNodeId: null,
       selectedNode: null,
       focusNode: null,
       isFocus: false,
       rootNode: {},
       isCheckbox: !utils.isUndefined(this.options.plugins["checkbox"]),
-      isDnd: false,
+      isDnd: !utils.isUndefined(this.options.plugins["dnd"]),
       isContextmenu: !utils.isUndefined(this.options.plugins["contextmenu"]),
       isEdit: false,
-      isKeydown: true,
+      isKeydown: !utils.isUndefined(this.options.plugins["keydown"]),
       isNodeDrag: false,
       isAjax: false,
     } as ConfigInfo;
 
-    this.config.rootNode = new TreeNodeInfo(utils.objectMerge({}, this.options.rootNode), "$$root", this);
-
-    if (this.options.plugins["dnd"]) {
-      this.config.isDnd = true;
-      this.options.plugins["dnd"] = utils.objectMerge({}, DND_DEFAULT_OPTIONS, this.options.plugins["dnd"]);
-
-      this.config.dndLinePadding = (this.config.isCheckbox ? 24 : 0) + (this.options.enableIcon ? 23 : 0);
-      this.config.dndLinePadding = this.config.dndLinePadding == 0 ? 20 : this.config.dndLinePadding;
-    }
-
-    if (this.options.plugins["keydown"]) {
-      this.config.isKeydown = true;
-      this.options.plugins["keydown"] = utils.objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, this.options.plugins["keydown"]);
-    }
+    this.config.rootNode = new TreeNodeInfo(utils.objectMerge({}, this.options.rootNode), "$$root$$", this);
+    this.config.allNode[this.config.rootNode.id] = this.config.rootNode;
+    this.config.selectedNode = this.config.rootNode;
+    this.config.openNodeId = this.config.rootNode.id;
 
     if (this.options.plugins["edit"]) {
       this.config.isEdit = true;
       this.options.plugins["edit"] = utils.objectMerge({}, EDIT_DEFAULT_OPTIONS, this.options.plugins["edit"]);
     }
 
-    const ajaxOpt = this.options.plugins.ajax;
-    if (ajaxOpt) {
-      this.config.isAjax = true;
-
-      if (utils.isString(ajaxOpt)) {
-        this.options.plugins["ajax"] = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, { url: { search: ajaxOpt } });
-      } else if (utils.isString(ajaxOpt?.url)) {
-        this.options.plugins["ajax"] = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, { url: { search: ajaxOpt?.url } });
-      } else {
-        this.options.plugins["ajax"] = utils.objectMerge({}, AJAX_DEFAULT_OPTIONS, ajaxOpt);
-      }
-
-      this.config.ajax = new Ajax(this);
-    } else {
-      this.config.ajax = new Ajax(this);
-    }
+    this.config.ajax = new Ajax(this);
   }
 
   public init() {
@@ -220,14 +180,22 @@ export default class Tree {
     const opts = this.options;
 
     if (this.config.isAjax) {
-      this.config.ajax.search(this.config.selectedNode);
+      this.config.ajax.search(this.config.allNode[this.config.openNodeId]);
     } else if (utils.isArray(opts.items)) {
       this.addNode(opts.items);
     }
   }
 
   public refresh(id: any) {
-    this.render(id);
+    const refreshNode = this.config.allNode[id];
+
+    if (!refreshNode) {
+      throw new Error(`node not found : [${id}] `);
+    }
+
+    refreshNode.isLoaded = false;
+    this.config.openNodeId = id;
+    this.request();
   }
 
   /**
@@ -248,8 +216,11 @@ export default class Tree {
     for (const node of nodeArr) {
       this.treeGrid(node, parentId);
     }
+    this.config.openNodeId = !utils.isUndefined(parentId) ? parentId : this.config.openNodeId;
 
-    this.render(parentId);
+    this.render();
+
+    this.config.openNodeId = null;
   }
 
   public createNode(nodeInfo: any) {
@@ -267,6 +238,17 @@ export default class Tree {
   private treeGrid(node: any, parentId?: any) {
     const pid = parentId ?? node[this.options.itemKey.pid];
     const id = node[this.options.itemKey.id];
+
+    if (this.config.rootNode.id === id) {
+      this.config.rootNode.orgin = node;
+      return;
+    }
+
+    if (utils.isBlank(this.config.rootNode.id)) {
+      delete this.config.allNode[this.config.rootNode.id];
+      this.config.rootNode.id = pid;
+      this.config.allNode[this.config.rootNode.id] = this.config.rootNode;
+    }
 
     const addNode = new TreeNodeInfo(node, pid, this);
     const parentNode = this.config.allNode[pid];
@@ -290,14 +272,18 @@ export default class Tree {
     this.config.allNode[id] = addNode;
   }
 
-  private render(id?: any) {
-    if (utils.isBlank(id) && this.config.selectedNode == null) {
+  private render() {
+    const id = this.config.openNodeId;
+    console.log("render(id?: any)  ", id, this.config.rootNode);
+    if (id == null || id === this.config.rootNode.id) {
       // init load
       this.mainElement.innerHTML = `<ul id="${this.prefix}" class="dt-container" tabindex="-1">
-        ${this.getNodeTemplate(this.config.rootNode.childNodes)}
+        ${this.getNodeTemplate([this.config.rootNode])}
         </ul>`;
     } else {
       let selectedNode = this.config.allNode[id] ?? this.config.selectedNode;
+
+      console.log(id, this.config.selectedNode, selectedNode);
 
       const childNodeElemnt = this.mainElement.querySelector(`[data-node-id="${selectedNode.id}"]>.dt-children`);
       if (childNodeElemnt) {
@@ -307,7 +293,6 @@ export default class Tree {
       const parentElement = this.mainElement.querySelector(`[data-node-id="${selectedNode.id}"]>.dt-node`);
       if (parentElement) {
         parentElement.innerHTML = this.nodeContentHtml(selectedNode);
-        this.setSelectNode(selectedNode.id);
       }
     }
   }
@@ -317,8 +302,6 @@ export default class Tree {
     viewNodes = viewNodes ?? this.config.rootNode.childNodes;
     const childNodeLength = viewNodes.length;
 
-    const openDepth = this.options.openDepth;
-
     let stylePaddingLeft = childNodeLength > 0 ? nodeUtils.textContentPadding(viewNodes[0].depth, this) : 0;
 
     for (let i = 0; i < childNodeLength; i++) {
@@ -326,10 +309,12 @@ export default class Tree {
 
       let childNodes = treeNode.childNodes;
       let openClass = "";
-      if (treeNode.isOpen || openDepth == -1 || openDepth >= treeNode.depth) {
+      if (treeNode.isOpen) {
         if (treeNode.getChildLength() > 0) {
           openClass = "open";
           treeNode.isOpen = true;
+        } else {
+          treeNode.isOpen = false;
         }
       }
 
@@ -357,19 +342,19 @@ export default class Tree {
     return treeHtml.join("");
   }
 
-  private nodeContentHtml(tNode: TreeNode) {
-    return this.getExpandIconHtml(tNode) + this.getNodeNameHtml(tNode);
+  private nodeContentHtml(node: TreeNode) {
+    return this.getExpandIconHtml(node) + this.getNodeNameHtml(node);
   }
 
-  private getExpandIconHtml(tNode: TreeNode) {
-    return `<i class="dt-expander ${tNode.getChildLength() > 0 ? "visible" : ""}"></i>`;
+  private getExpandIconHtml(node: TreeNode) {
+    return `<i class="dt-expander ${node.isFolder === true || node.getChildLength() > 0 ? "visible" : ""}"></i>`;
   }
 
-  private getNodeNameHtml(tNode: TreeNode) {
-    let icon = tNode.icon;
+  private getNodeNameHtml(node: TreeNode) {
+    let icon = node.icon;
     let iconHtml = "";
     if (utils.isBlank(icon)) {
-      icon = tNode.getChildLength() == 0 ? "dt-file" : "dt-folder";
+      icon = node.getChildLength() == 0 ? "dt-file" : "dt-folder";
       if (this.options.enableIcon) {
         iconHtml = `<i class="dt-icon ${icon}"></i>`;
       }
@@ -382,7 +367,7 @@ export default class Tree {
       checkboxHtml = `<label class="dt-checkbox"><span class="dt-icon checkbox"></span></label>`;
     }
 
-    return `${checkboxHtml}<span class="dt-text-content">${iconHtml}<span>${tNode.text}</span></span>`;
+    return `${checkboxHtml}<span class="dt-text-content">${iconHtml}<span>${node.text}</span></span>`;
   }
 
   public getPrefix() {
@@ -441,18 +426,14 @@ export default class Tree {
    * 전체 노드 열기
    */
   public allOpen() {
-    for (const node of this.config.rootNode.childNodes) {
-      node.open(true);
-    }
+    this.config.rootNode.open(true);
   }
 
   /**
    * 전체 노드 닫기
    */
   public allClose() {
-    for (const node of this.config.rootNode.childNodes) {
-      node.close(true);
-    }
+    this.config.rootNode.close(true);
   }
 
   /**

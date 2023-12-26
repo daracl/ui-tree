@@ -19,6 +19,7 @@ export interface ConfigInfo {
   startPaddingLeft: number;
   dndLinePadding: number;
   allNode: TreeNodeMap;
+  openNodeId: any;
   selectedNode: any;
   focusNode: any;
   completed: false;

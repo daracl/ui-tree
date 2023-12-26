@@ -34,6 +34,7 @@ module.exports = merge(common, {
   devServer: {
     // inline: true,
     //mode: 'development',
+
     host: "0.0.0.0",
     port: 8890,
     watchFiles: ["src/**/*"],
@@ -41,7 +42,7 @@ module.exports = merge(common, {
   plugins: [
     //new BundleAnalyzerPlugin()
     new CopyWebpackPlugin({
-      patterns: [{ from: "dist", to: "dist" }],
+      patterns: [{ from: "dist", to: "dist" }, { from: "public" }],
     }),
   ],
 });

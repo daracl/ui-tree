@@ -5,7 +5,7 @@ import eventUtils from "src/util/eventUtils";
 
 export default {
   expanderClick(treeContext: Tree, el: Element | string | NodeList) {
-    eventUtils.eventOn(el, "click", ".dt-expander", (e: Event, ele: Element) => {
+    eventUtils.eventOn(el, "click", ".dt-expander.visible", (e: Event, ele: Element) => {
       nodeUtils.elementToTreeNode(ele, treeContext).folderToggle();
       return false;
     });

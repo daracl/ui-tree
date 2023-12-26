@@ -132,7 +132,7 @@
     treeItem.push({ id: 0, pid: '', text: 'My example tree1', url: "detail('2')" });
     treeItem.push({ id: 1, pid: 0, text: 'pub 1', url: "detail('2')" });
     treeItem.push({ id: 3, pid: 1, text: 'pub 1.1', url: "detail('2')" });
-    treeItem.push({ id: 5, pid: 3, text: '5Node 1.1.1', url: "detail('2')", checked: true });
+    treeItem.push({ id: 5, pid: 3, text: '5Node 1.1.1', url: "detail('2')", state: { checked: true } });
     treeItem.push({ id: 6, pid: 5, text: '6Node 1.1.1.1', url: "detail('2')" });
     treeItem.push({ id: 14, pid: 3, text: '14Node 1.1.1', url: "detail('2')" });
     treeItem.push({ id: 15, pid: 14, text: '15Node 1.1.1', url: "detail('2')" });
@@ -150,8 +150,12 @@
       , style: {
         height: '200px'
       }
-      , enableRootNode: true
-      , enableIcon: false
+      , rootNode: {
+        id: 0
+        , text: 'root node'
+      }
+      , enableRootNode1: true
+      , enableIcon: true
       , openDepth: -1
       , plugins: {
         checkbox: {}
@@ -170,7 +174,33 @@
             console.log('item ', item);
           }
         }
-        , ajax: '/data/tree-node.json'
+        , ajax: {
+          searchNode: function (node) {
+
+            fetch(`/data/tree-node.json?id=${node.id}&pid=${node.pid}`, {
+              method: 'get', data: node
+            })
+              .then((response) => {
+                return response.json();
+              })
+              .then((data) => {
+                console.log('awefawef : node pid')
+                const nodeData = [];
+
+                for (let item of data) {
+                  if (item.pid == node.id) {
+                    item.state = { folder: true }
+                    nodeData.push(item);
+                  }
+                }
+                treeObj.addNode(nodeData)
+              })
+              .catch((error) => {
+                console.log(error)
+              });
+
+          }
+        }
       }
       , click: function (nodeInfo) {
         console.log('click', nodeInfo)

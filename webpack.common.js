@@ -16,9 +16,6 @@ module.exports = {
     library: ["dara", "Tree"],
     libraryTarget: "umd",
   },
-  static: {
-    directory: path.join(__dirname, "public"),
-  },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
     alias: {

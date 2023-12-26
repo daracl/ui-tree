@@ -23,6 +23,7 @@ export default class Checkbox {
   }
 
   initCheck() {
+    // 초기 체크 박스  처리 할것.
     for (const node of this.tree.config.rootNode.childNodes) {
       this.initChildNodeCheck(node);
     }

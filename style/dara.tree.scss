@@ -79,14 +79,36 @@
 
   .dt-children {
     display: none;
-    //visibility: hidden;
-    //opacity: 0;
-    //height: 0px;
     padding: 0px;
     margin: 0px;
   }
 
+  .dt-loader {
+    display: block;
+    cursor: wait;
+    position: absolute;
+    z-index: 1;
+    top: 0px;
+
+    .spinner {
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      background: radial-gradient(farthest-side, #d1d1dc 94%, #0000) top/3.8px 3.8px no-repeat, conic-gradient(#0000 30%, #d1d1dc);
+      -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 3.8px), #000 0);
+      animation: dt-spinner-loader 1s infinite linear;
+    }
+  }
+
+  @keyframes dt-spinner-loader {
+    100% {
+      transform: rotate(1turn);
+    }
+  }
+
   .dt-node {
+    position: relative;
+
     &:hover,
     &:focus {
       color: var(--item-hover-font-color);
@@ -130,7 +152,6 @@
       line-height: 24px;
 
       &.visible {
-        cursor: pointer;
         background-size: 14px 14px;
         background-position: center center;
         background-repeat: no-repeat;
@@ -142,8 +163,8 @@
       position: relative;
       display: inline-block;
       font-size: 0;
-      cursor: pointer;
       vertical-align: top;
+
       > .checkbox {
         [type="checkbox"] {
           display: none;
@@ -179,9 +200,6 @@
     }
     > .dt-children {
       display: block;
-      //visibility: visible;
-      //opacity: 1;
-      //height: 100%;
     }
   }
 

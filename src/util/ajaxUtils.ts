@@ -1,15 +1,20 @@
 import utils from "./utils";
 
-export function ajax(url: any, options: any) {
-  const method = options.method ?? "get";
-  const data = options.data;
-  const headers = options.headers;
+export function ajax(url: any, ajaxOpts: any) {
+  const method = ajaxOpts.method ?? "get";
+  const data = ajaxOpts.data;
+  const headers = ajaxOpts.headers;
 
   // 로딩바 표시
-  const loadingBar = document.getElementById("loading-bar");
-  if (loadingBar) {
-    loadingBar.style.display = "block";
+  if (ajaxOpts.beforesend) {
+    if (ajaxOpts.beforesend(ajaxOpts) === false) {
+      return new Promise(function (resolve, reject) {
+        resolve("stop");
+      });
+    }
   }
+
+  const completed = ajaxOpts.completed ? ajaxOpts.completed : () => {};
 
   if (window["fetch"]) {
     const options = {
@@ -23,10 +28,7 @@ export function ajax(url: any, options: any) {
 
     return fetch(url, options)
       .then((response) => {
-        // 로딩바 숨김
-        if (loadingBar) {
-          loadingBar.style.display = "none";
-        }
+        completed({ status: "success", options: ajaxOpts, response: response });
 
         if (!response.ok) {
           throw new Error("server response error");
@@ -34,10 +36,7 @@ export function ajax(url: any, options: any) {
         return response.json();
       })
       .catch((error) => {
-        // 로딩바 숨김
-        if (loadingBar) {
-          loadingBar.style.display = "none";
-        }
+        completed({ status: "error", options: ajaxOpts, response: error });
         throw error;
       });
   } else {
@@ -52,9 +51,7 @@ export function ajax(url: any, options: any) {
       }
       xhr.onload = function () {
         // 로딩바 숨김
-        if (loadingBar) {
-          loadingBar.style.display = "none";
-        }
+        completed({ status: "success", options: ajaxOpts, response: xhr });
 
         if (xhr.status === 200) {
           const responseData = JSON.parse(xhr.responseText);
@@ -65,9 +62,7 @@ export function ajax(url: any, options: any) {
       };
       xhr.onerror = function () {
         // 로딩바 숨김
-        if (loadingBar) {
-          loadingBar.style.display = "none";
-        }
+        completed({ status: "error", options: ajaxOpts, response: xhr });
         reject(new Error("network error"));
       };
       if ((method === "POST" || method === "PUT") && data) {

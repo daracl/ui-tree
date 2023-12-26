@@ -4,6 +4,16 @@ import domUtils from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import { MOVE_POSITION } from "src/constants";
 import eventUtils from "src/util/eventUtils";
+import utils from "src/util/utils";
+
+// dnd default option
+const DND_DEFAULT_OPTIONS = {
+  marginTop: 10,
+  marginLeft: 10,
+  inside: "last",
+  drop: (item: any) => {},
+  start: (item: any) => {},
+};
 
 /**
  * tree node drag & drop
@@ -34,6 +44,12 @@ export default class Dnd {
 
   constructor(tree: Tree) {
     this.tree = tree;
+
+    tree.options.plugins["dnd"] = utils.objectMerge({}, DND_DEFAULT_OPTIONS, tree.options.plugins["dnd"]);
+
+    tree.config.dndLinePadding = (tree.config.isCheckbox ? 24 : 0) + (tree.options.enableIcon ? 23 : 0);
+    tree.config.dndLinePadding = tree.config.dndLinePadding == 0 ? 20 : tree.config.dndLinePadding;
+
     this.helperTop = tree.options.plugins["dnd"].marginTop;
     this.helperLeft = tree.options.plugins["dnd"].marginLeft;
 

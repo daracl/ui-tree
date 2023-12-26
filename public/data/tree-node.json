@@ -1,10 +1,5 @@
 [
   {
-    "id": 0,
-    "pid": "",
-    "text": "Root "
-  },
-  {
     "id": 1,
     "pid": 0,
     "text": "Node 1"
@@ -17,7 +12,8 @@
   {
     "id": 3,
     "pid": 1,
-    "text": "Node 3"
+    "text": "Node 3",
+    "state": { "checked": true }
   },
   {
     "id": 4,

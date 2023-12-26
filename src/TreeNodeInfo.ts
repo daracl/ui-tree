@@ -23,6 +23,7 @@ export default class TreeNodeInfo implements TreeNode {
   public text;
   public url;
   public checkState;
+
   public target;
   public icon;
   public depth;
@@ -31,6 +32,8 @@ export default class TreeNodeInfo implements TreeNode {
 
   public isEdit: boolean = false;
   public isOpen: boolean = false;
+  public isFolder: boolean = false;
+  public isLoaded: boolean = false;
 
   private readonly tree;
 
@@ -41,12 +44,18 @@ export default class TreeNodeInfo implements TreeNode {
     this.pid = parentId;
     this.text = item[tree.options.itemKey.text];
     this.url = item.url;
-    this.checkState = item.checked === true ? 1 : 2;
+    this.checkState = item.state?.checked === true ? 1 : 2;
     this.target = item.target;
     this._cud = item["_cud"] ?? "";
     this.icon = item[tree.options.itemKey.icon];
     this.depth = tree.config.allNode[this.pid] ? tree.config.allNode[this.pid].depth + 1 : 0;
     this.orgin = item;
+
+    this.isFolder = item.state?.folder === true;
+
+    this.isOpen = item.state?.opened === true || tree.options.openDepth == -1 || tree.options.openDepth >= this.depth;
+
+    tree.config.selectedNode = item.state?.selected === true ? item : tree.config.selectedNode;
   }
 
   /**
@@ -74,6 +83,7 @@ export default class TreeNodeInfo implements TreeNode {
   public open(childOpenFlag?: boolean) {
     domUtils.addClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
     this.isOpen = true;
+    this.tree.config.openNodeId = this.id;
 
     if (childOpenFlag === true) {
       for (const node of this.childNodes) {
@@ -229,6 +239,11 @@ export default class TreeNodeInfo implements TreeNode {
       this.close();
     } else {
       this.open();
+
+      if (this.tree.config.isAjax && this.isLoaded !== true) {
+        this.isLoaded = true;
+        this.tree.config.ajax.search(this);
+      }
     }
   }
 
