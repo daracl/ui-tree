@@ -30,9 +30,11 @@ export default class TreeNodeInfo implements TreeNode {
   public childNodes = [] as TreeNode[];
   public _cud;
 
+  public stateFolder: boolean = false;
+
   public isEdit: boolean = false;
   public isOpen: boolean = false;
-  public isFolder: boolean = false;
+
   public isLoaded: boolean = false;
 
   private readonly tree;
@@ -51,7 +53,7 @@ export default class TreeNodeInfo implements TreeNode {
     this.depth = tree.config.allNode[this.pid] ? tree.config.allNode[this.pid].depth + 1 : 0;
     this.orgin = item;
 
-    this.isFolder = item.state?.folder === true;
+    this.stateFolder = item.state?.folder === true;
 
     this.isOpen = item.state?.opened === true || tree.options.openDepth == -1 || tree.options.openDepth >= this.depth;
 
@@ -83,7 +85,11 @@ export default class TreeNodeInfo implements TreeNode {
   public open(childOpenFlag?: boolean) {
     domUtils.addClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
     this.isOpen = true;
-    this.tree.config.openNodeId = this.id;
+
+    if (this.tree.config.isRequest && this.isLoaded !== true) {
+      this.isLoaded = true;
+      this.tree.config.request.search(this);
+    }
 
     if (childOpenFlag === true) {
       for (const node of this.childNodes) {
@@ -118,13 +124,13 @@ export default class TreeNodeInfo implements TreeNode {
   public remove(childRemoveFlag?: boolean) {
     if (childRemoveFlag === true) {
       for (let i = this.getChildLength() - 1; i >= 0; i--) {
-        this.childNodes[i].remove();
+        this.childNodes[i].remove(childRemoveFlag);
       }
     }
 
     nodeUtils.nodeIdToElement(this.tree.mainElement, this.id)?.remove();
 
-    this.tree.config.ajax.delete(this);
+    this.tree.config.request.remove(this);
 
     const parentNode = this.tree.config.allNode[this.pid];
 
@@ -239,11 +245,6 @@ export default class TreeNodeInfo implements TreeNode {
       this.close();
     } else {
       this.open();
-
-      if (this.tree.config.isAjax && this.isLoaded !== true) {
-        this.isLoaded = true;
-        this.tree.config.ajax.search(this);
-      }
     }
   }
 
@@ -269,6 +270,7 @@ export default class TreeNodeInfo implements TreeNode {
 
     this.setEdit();
   }
+
   /**
    * node text edit
    */
@@ -346,7 +348,7 @@ export default class TreeNodeInfo implements TreeNode {
         domUtils.removeClass(contElement, "edit");
         inputElement.remove();
 
-        this.tree.config.ajax.modify(this);
+        this.tree.config.request.modify(this);
       });
 
       setTimeout(function () {

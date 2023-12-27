@@ -12,7 +12,7 @@ import TreeNodeInfo from "./TreeNodeInfo";
 import nodeUtils from "./util/nodeUtils";
 import Dnd from "./plugins/Dnd";
 import Keydown from "./plugins/Keydown";
-import Ajax from "./plugins/Ajax";
+import Request from "./plugins/Request";
 
 const defaultOptions = {
   style: {
@@ -122,31 +122,30 @@ export default class Tree {
       startPaddingLeft: this.options.enableRootNode ? this.options.style.paddingLeft : 0,
       rootDepth: this.options.enableRootNode ? 0 : 1,
       allNode: {},
-      openNodeId: null,
       selectedNode: null,
       focusNode: null,
       isFocus: false,
       rootNode: {},
-      isCheckbox: !utils.isUndefined(this.options.plugins["checkbox"]),
+      isCheckbox: false,
       isDnd: !utils.isUndefined(this.options.plugins["dnd"]),
       isContextmenu: !utils.isUndefined(this.options.plugins["contextmenu"]),
       isEdit: false,
       isKeydown: !utils.isUndefined(this.options.plugins["keydown"]),
       isNodeDrag: false,
-      isAjax: false,
+      isRequest: false,
     } as ConfigInfo;
 
     this.config.rootNode = new TreeNodeInfo(utils.objectMerge({}, this.options.rootNode), "$$root$$", this);
     this.config.allNode[this.config.rootNode.id] = this.config.rootNode;
     this.config.selectedNode = this.config.rootNode;
-    this.config.openNodeId = this.config.rootNode.id;
 
     if (this.options.plugins["edit"]) {
       this.config.isEdit = true;
       this.options.plugins["edit"] = utils.objectMerge({}, EDIT_DEFAULT_OPTIONS, this.options.plugins["edit"]);
     }
 
-    this.config.ajax = new Ajax(this);
+    this.config.request = new Request(this);
+    this.config.checkbox = new Checkbox(this);
   }
 
   public init() {
@@ -165,10 +164,6 @@ export default class Tree {
       this.config.dnd = new Dnd(this);
     }
 
-    if (this.config.isCheckbox) {
-      this.config.checkbox = new Checkbox(this);
-    }
-
     treeEvent.textClick(this, this.mainElement);
   }
 
@@ -176,11 +171,12 @@ export default class Tree {
     Lanauage.set(message);
   }
 
-  public request() {
+  public request(id?: any) {
     const opts = this.options;
 
-    if (this.config.isAjax) {
-      this.config.ajax.search(this.config.allNode[this.config.openNodeId]);
+    if (this.config.isRequest) {
+      id = !utils.isUndefined(id) ? id : this.config.rootNode.id;
+      this.config.request.search(this.config.allNode[id]);
     } else if (utils.isArray(opts.items)) {
       this.addNode(opts.items);
     }
@@ -194,8 +190,7 @@ export default class Tree {
     }
 
     refreshNode.isLoaded = false;
-    this.config.openNodeId = id;
-    this.request();
+    this.request(id);
   }
 
   /**
@@ -213,26 +208,36 @@ export default class Tree {
       nodeArr = nodeItem;
     }
 
+    let firstFlag = true;
+    let viewParentId = "";
     for (const node of nodeArr) {
+      if (firstFlag) {
+        if (node.id == this.config.rootNode.id) {
+          viewParentId = node.id;
+        } else {
+          viewParentId = node.pid;
+        }
+        firstFlag = false;
+      }
       this.treeGrid(node, parentId);
     }
-    this.config.openNodeId = !utils.isUndefined(parentId) ? parentId : this.config.openNodeId;
+    parentId = !utils.isUndefined(parentId) ? parentId : viewParentId;
 
-    this.render();
+    this.render(parentId);
 
-    this.config.openNodeId = null;
+    this.config.allNode[parentId]?.open();
   }
 
   public createNode(nodeInfo: any) {
     nodeInfo = nodeInfo ?? {};
     nodeInfo["_cud"] = "C";
-    nodeInfo[this.options.itemKey.pid] = nodeInfo.pid ?? nodeInfo[this.options.itemKey.pid] ?? (this.config.selectedNode ? this.config.selectedNode.id : "");
+    nodeInfo[this.options.itemKey.pid] = nodeInfo.pid ?? nodeInfo[this.options.itemKey.pid] ?? (this.config.selectedNode ? this.config.selectedNode.id : this.config.rootNode.id);
     nodeInfo[this.options.itemKey.id] = nodeInfo.id ?? nodeInfo[this.options.itemKey.id] ?? utils.generateUUID();
     nodeInfo[this.options.itemKey.text] = nodeInfo.text ?? nodeInfo[this.options.itemKey.text] ?? "New Node";
 
-    this.addNode(nodeInfo);
+    this.config.request.create(nodeInfo);
 
-    this.config.ajax.create(nodeInfo);
+    this.addNode(nodeInfo);
   }
 
   private treeGrid(node: any, parentId?: any) {
@@ -272,29 +277,55 @@ export default class Tree {
     this.config.allNode[id] = addNode;
   }
 
-  private render() {
-    const id = this.config.openNodeId;
-    console.log("render(id?: any)  ", id, this.config.rootNode);
-    if (id == null || id === this.config.rootNode.id) {
-      // init load
+  private render(id: any) {
+    let renderParentNode;
+    if (id === this.config.rootNode.id) {
+      renderParentNode = this.config.rootNode;
+      // init tree element
       this.mainElement.innerHTML = `<ul id="${this.prefix}" class="dt-container" tabindex="-1">
         ${this.getNodeTemplate([this.config.rootNode])}
         </ul>`;
     } else {
-      let selectedNode = this.config.allNode[id] ?? this.config.selectedNode;
-
-      console.log(id, this.config.selectedNode, selectedNode);
-
-      const childNodeElemnt = this.mainElement.querySelector(`[data-node-id="${selectedNode.id}"]>.dt-children`);
-      if (childNodeElemnt) {
-        childNodeElemnt.innerHTML = this.getNodeTemplate(selectedNode.childNodes);
+      if (utils.isBlank(id)) {
+        return;
       }
 
-      const parentElement = this.mainElement.querySelector(`[data-node-id="${selectedNode.id}"]>.dt-node`);
-      if (parentElement) {
-        parentElement.innerHTML = this.nodeContentHtml(selectedNode);
+      renderParentNode = this.config.allNode[id];
+
+      const childNodeElemnt = this.mainElement.querySelector(`[data-node-id="${renderParentNode.id}"]>.dt-children`);
+      if (childNodeElemnt) {
+        childNodeElemnt.innerHTML = this.getNodeTemplate(renderParentNode.childNodes);
+      }
+
+      this.setNodeContent(renderParentNode);
+    }
+
+    this.config.checkbox.setNodeCheck(renderParentNode);
+  }
+
+  private setNodeContent(selectedNode: TreeNode) {
+    const parentElement = this.mainElement.querySelector(`[data-node-id="${selectedNode.id}"]>.dt-node`);
+
+    if (parentElement) {
+      // 아이콘 활성화 일경우 아이콘 변경.
+      if (this.options.enableIcon) {
+        const iconElement = parentElement.querySelector("i.dt-icon");
+        const icon = nodeUtils.getIcon(selectedNode);
+        if (!domUtils.hasClass(iconElement, icon)) {
+          domUtils.removeClass(iconElement, "dt-folder dt-file");
+          domUtils.addClass(iconElement, icon);
+        }
+      }
+
+      if (nodeUtils.isFolder(selectedNode) && parentElement.querySelector(".dt-expander.visible") == null) {
+        // 폴더가 아닐 경우 폴더로 변경.
+        domUtils.addClass(parentElement.querySelector(".dt-expander"), "visible");
+      } else if (!nodeUtils.isFolder(selectedNode) && parentElement.querySelector(".dt-expander.visible")) {
+        // 폴더일 경우 일반 노드로 변경.
+        domUtils.removeClass(parentElement.querySelector(".dt-expander"), "visible");
       }
     }
+    //parentElement.innerHTML = this.nodeContentHtml(selectedNode);
   }
 
   private getNodeTemplate(viewNodes: TreeNode[]): string {
@@ -347,19 +378,14 @@ export default class Tree {
   }
 
   private getExpandIconHtml(node: TreeNode) {
-    return `<i class="dt-expander ${node.isFolder === true || node.getChildLength() > 0 ? "visible" : ""}"></i>`;
+    return `<i class="dt-expander ${nodeUtils.isFolder(node) ? "visible" : ""}"></i>`;
   }
 
   private getNodeNameHtml(node: TreeNode) {
-    let icon = node.icon;
     let iconHtml = "";
-    if (utils.isBlank(icon)) {
-      icon = node.getChildLength() == 0 ? "dt-file" : "dt-folder";
-      if (this.options.enableIcon) {
-        iconHtml = `<i class="dt-icon ${icon}"></i>`;
-      }
-    } else {
-      iconHtml = `<i class="dt-icon ${icon}"></i>`;
+
+    if (this.options.enableIcon) {
+      iconHtml = `<i class="dt-icon ${nodeUtils.getIcon(node)}"></i>`;
     }
 
     let checkboxHtml = "";
@@ -382,12 +408,14 @@ export default class Tree {
   };
 
   /**
-   * set items
-   * @param items {array} items
+   * Tree node 정보
+   *
+   * @param id {any} node id
+   * @returns {TreeNode} 트리 노드 정보
    */
-  public setItems(items: any[]) {
-    this.options.items = items;
-  }
+  public getNodeInfo = (id: any) => {
+    return this.config.allNode[id];
+  };
 
   public static instance(selector?: string) {
     if (utils.isUndefined(selector) || utils.isBlank(selector)) {

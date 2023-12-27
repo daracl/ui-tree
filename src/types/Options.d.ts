@@ -12,7 +12,7 @@ export interface Plugins {
   };
   contextmenu?: any;
   keydown: any;
-  ajax: {
+  request: {
     url:
       | string
       | {

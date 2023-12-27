@@ -4,6 +4,7 @@ import domUtils from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import { CHECK_STATE } from "../constants";
 import eventUtils from "src/util/eventUtils";
+import utils from "src/util/utils";
 
 /**
  * tree node Checkbox
@@ -18,28 +19,28 @@ export default class Checkbox {
   constructor(tree: Tree) {
     this.tree = tree;
 
-    this.initCheck();
-    this.initEvt();
-  }
-
-  initCheck() {
-    // 초기 체크 박스  처리 할것.
-    for (const node of this.tree.config.rootNode.childNodes) {
-      this.initChildNodeCheck(node);
+    if (utils.isUndefined(tree.options.plugins.checkbox)) {
+      return;
     }
+
+    tree.config.isCheckbox = true;
+
+    this.initEvt();
   }
 
   /**
    * init child node check
    * @param node treenode
    */
-  private initChildNodeCheck(node: TreeNode) {
+  public setNodeCheck(node: TreeNode) {
+    if (!this.tree.config.isCheckbox) return;
+
     if (node.checkState == CHECK_STATE.CHECKED) {
       this.parentNodeCheck(node);
       this.childCheck(node, CHECK_STATE.CHECKED);
-    } else if (node.childNodes.length > 0) {
+    } else if (node.getChildLength() > 0) {
       for (const childNode of node.childNodes) {
-        this.initChildNodeCheck(childNode);
+        this.setNodeCheck(childNode);
       }
     }
   }
@@ -96,6 +97,8 @@ export default class Checkbox {
   }
 
   public childCheck(node: TreeNode, state: number) {
+    if (!this.tree.config.isCheckbox) return;
+
     this.setCheckBox(node.id, state);
 
     if (node.childNodes.length > 0) {
@@ -113,6 +116,8 @@ export default class Checkbox {
    * @returns nodeid
    */
   public setCheckBox(id: string | number, state: number) {
+    if (!this.tree.config.isCheckbox) return;
+
     const ele = this.tree.mainElement.querySelector(`[data-node-id="${id}"] .dt-checkbox`);
     const node = this.tree.config.allNode[id];
 
@@ -136,6 +141,8 @@ export default class Checkbox {
   }
 
   public getCheckValues() {
+    if (!this.tree.config.isCheckbox) return [];
+
     let checkNodeValues = [] as TreeNode[];
 
     for (const node of this.tree.config.rootNode.childNodes) {

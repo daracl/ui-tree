@@ -1,5 +1,6 @@
 import { TreeNode } from "@t/TreeNode";
 import Tree from "src/Tree";
+import utils from "./utils";
 
 export default {
   /**
@@ -50,6 +51,11 @@ export default {
     return childNodes.findIndex((element: any) => element.id == id);
   },
 
+  /**
+   *
+   * @param node {TreeNode} tree node
+   * @returns {Object} tree 정보
+   */
   getParameterNode(node: TreeNode) {
     return {
       id: node.id,
@@ -58,5 +64,31 @@ export default {
       depth: node.depth,
       origin: node.orgin,
     };
+  },
+
+  /**
+   * 폴더 여부
+   *
+   * @param node {TreeNode} tree node
+   * @returns {boolean} 폴더 = true , false
+   */
+  isFolder(node: TreeNode) {
+    return node.stateFolder === true || node.getChildLength() > 0;
+  },
+
+  /**
+   * 아이콘
+   *
+   * @param node {TreeNode} tree node
+   * @returns {string} icon
+   */
+  getIcon(node: TreeNode): string {
+    let icon = node.icon;
+
+    if (utils.isBlank(icon)) {
+      return this.isFolder(node) ? "dt-folder" : "dt-file";
+    } else {
+      return icon ?? "dt-file";
+    }
   },
 };

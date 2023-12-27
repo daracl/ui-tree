@@ -17,7 +17,7 @@ export interface TreeNode {
 
   isOpen: boolean;
   isLoaded: boolean;
-  isFolder: boolean;
+  stateFolder: boolean;
 
   addChild: OptionCallback;
 

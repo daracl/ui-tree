@@ -36,13 +36,7 @@
 
           </td>
           <td width="400px">
-            <!--
-              노드명 <input type = "text" id = "name"> <br />
-              링크 <input type = "text" id = "url"> <br />
-              사용여부<input type = "text" id = ""> <br />
-              팝업여부<input type = "text" id = "ccc"> <br />
-              팝업여부<input type = "button" onclick = "saveInfo()" value = "저장"> <br />
-            -->
+            <div id="logView"></div>
           </td>
         </tr>
       </table>
@@ -124,6 +118,10 @@
     init()
   }
 
+  function logView() {
+
+  }
+
   var treeObj;
 
   function init() {
@@ -174,7 +172,7 @@
             console.log('item ', item);
           }
         }
-        , ajax: {
+        , request: {
           searchNode: function (node) {
 
             fetch(`/data/tree-node.json?id=${node.id}&pid=${node.pid}`, {
@@ -184,12 +182,16 @@
                 return response.json();
               })
               .then((data) => {
-                console.log('awefawef : node pid')
+
                 const nodeData = [];
 
                 for (let item of data) {
                   if (item.pid == node.id) {
-                    item.state = { folder: true }
+                    if (item.state) {
+                      item.state.folder = true;
+                    } else {
+                      item.state = { folder: true }
+                    }
                     nodeData.push(item);
                   }
                 }
@@ -199,6 +201,15 @@
                 console.log(error)
               });
 
+          }
+          , removeNode: (node) => {
+            console.log('removeNode ', node)
+          }
+          , modifyNode: (node) => {
+            console.log('modifyNode ', node)
+          }
+          , createNode: (node) => {
+            console.log('createNode ', node)
           }
         }
       }
@@ -212,6 +223,7 @@
       , selectNode: (item) => {
         console.log(item);
       }
+
     });
   }
 

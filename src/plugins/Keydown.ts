@@ -142,9 +142,13 @@ export default class Keydown {
   public arrowRight(focusNode: TreeNode) {
     const childNodes = focusNode.childNodes;
 
-    if (childNodes.length > 0) {
+    if (nodeUtils.isFolder(focusNode)) {
       if (focusNode.isOpen) {
-        childNodes[0].focus();
+        if (childNodes.length > 0) {
+          childNodes[0].focus();
+        } else {
+          focusNode.focus();
+        }
       } else {
         focusNode.open();
       }
