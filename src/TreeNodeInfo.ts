@@ -128,9 +128,11 @@ export default class TreeNodeInfo implements TreeNode {
       }
     }
 
-    nodeUtils.nodeIdToElement(this.tree.mainElement, this.id)?.remove();
+    if (this.tree.config.request.remove(this) === false) {
+      return;
+    }
 
-    this.tree.config.request.remove(this);
+    nodeUtils.nodeIdToElement(this.tree.mainElement, this.id)?.remove();
 
     const parentNode = this.tree.config.allNode[this.pid];
 

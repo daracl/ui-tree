@@ -235,9 +235,11 @@ export default class Tree {
     nodeInfo[this.options.itemKey.id] = nodeInfo.id ?? nodeInfo[this.options.itemKey.id] ?? utils.generateUUID();
     nodeInfo[this.options.itemKey.text] = nodeInfo.text ?? nodeInfo[this.options.itemKey.text] ?? "New Node";
 
-    this.config.request.create(nodeInfo);
-
     this.addNode(nodeInfo);
+
+    console.log("111111", this.config.allNode[nodeInfo[this.options.itemKey.id]]);
+
+    this.config.request.create(nodeInfo);
   }
 
   private treeGrid(node: any, parentId?: any) {

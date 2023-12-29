@@ -112,12 +112,11 @@ export default class Request {
       });
   }
 
-  public create(node: TreeNode) {
+  public create(node: TreeNode): any {
     const paramNode = nodeUtils.getParameterNode(node);
 
     if (this.opts.createNode) {
-      this.opts.createNode(paramNode);
-      return;
+      return this.opts.createNode(paramNode);
     }
 
     if (!this.initFlag || utils.isUndefined(this.url.create)) return;
@@ -133,12 +132,11 @@ export default class Request {
       });
   }
 
-  public modify(node: TreeNode) {
+  public modify(node: TreeNode): any {
     const paramNode = nodeUtils.getParameterNode(node);
 
     if (this.opts.modifyNode) {
-      this.opts.modifyNode(paramNode);
-      return;
+      return this.opts.modifyNode(paramNode);
     }
 
     if (!this.initFlag || utils.isUndefined(this.url.modify)) return;
@@ -154,12 +152,11 @@ export default class Request {
       });
   }
 
-  public remove(node: TreeNode) {
+  public remove(node: TreeNode): any {
     const paramNode = nodeUtils.getParameterNode(node);
 
     if (this.opts.removeNode) {
-      this.opts.removeNode(paramNode, "remove");
-      return;
+      return this.opts.removeNode(paramNode, "remove");
     }
 
     if (!this.initFlag || utils.isUndefined(this.url.remove)) return;
