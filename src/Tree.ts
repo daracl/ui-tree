@@ -14,6 +14,8 @@ import Dnd from "./plugins/Dnd";
 import Keydown from "./plugins/Keydown";
 import Request from "./plugins/Request";
 
+declare const APP_VERSION: string;
+
 const defaultOptions = {
   style: {
     width: "",
@@ -61,6 +63,8 @@ const EDIT_DEFAULT_OPTIONS = {
  * @typedef {Tree}
  */
 export default class Tree {
+  public static VERSION = `${APP_VERSION}`;
+
   public options;
 
   private orginStyle;

@@ -5,6 +5,8 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
+const TerserPlugin = require("terser-webpack-plugin");
+
 module.exports = merge(common, {
   mode: "production",
   devtool: "source-map",
@@ -16,6 +18,36 @@ module.exports = merge(common, {
         use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
         //use: ["style-loader", "css-loader"],
       },
+    ],
+  },
+  optimization: {
+    providedExports: true,
+    usedExports: true,
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        test: /\.(js|jsx)$/,
+        extractComments: {
+          condition: /^\**!/i,
+          filename: (fileData) => {
+            // The "fileData" argument contains object with "filename", "basename", "query" and "hash"
+            return `${fileData.filename}.LICENSE.txt${fileData.query}`;
+          },
+          banner: (licenseFile) => {
+            return "";
+          },
+        },
+        parallel: true,
+        terserOptions: {
+          format: {
+            //comments: false,
+            preamble: process.env.TOP_BANNER,
+          },
+        },
+      }),
+      new CssMinimizerPlugin({
+        test: /\.(sa|sc|c)ss$/i,
+      }),
     ],
   },
   output: {
