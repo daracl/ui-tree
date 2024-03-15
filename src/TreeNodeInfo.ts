@@ -55,7 +55,7 @@ export default class TreeNodeInfo implements TreeNode {
 
     this.stateFolder = item.state?.folder === true;
 
-    this.isOpen = item.state?.opened === true || tree.options.openDepth == -1 || tree.options.openDepth >= this.depth;
+    this.isOpen = tree.config.isRequest ? false : item.state?.opened === true || tree.options.openDepth == -1 || tree.options.openDepth >= this.depth;
 
     tree.config.selectedNode = item.state?.selected === true ? item : tree.config.selectedNode;
   }
@@ -87,7 +87,6 @@ export default class TreeNodeInfo implements TreeNode {
     this.isOpen = true;
 
     if (this.tree.config.isRequest && this.isLoaded !== true) {
-      this.isLoaded = true;
       this.tree.config.request.search(this);
     }
 
@@ -128,20 +127,11 @@ export default class TreeNodeInfo implements TreeNode {
       }
     }
 
-    if (this.tree.config.request.remove(this) === false) {
+    if (this.tree.config.isRequest && this.tree.config.request.remove(this) === false) {
       return;
     }
 
-    nodeUtils.nodeIdToElement(this.tree.mainElement, this.id)?.remove();
-
-    const parentNode = this.tree.config.allNode[this.pid];
-
-    if (parentNode) {
-      parentNode.childNodes.splice(
-        parentNode.childNodes.findIndex((element: any) => element.id == this.id),
-        1
-      );
-    }
+    this.removeElement();
 
     delete this.tree.config.allNode[this.id];
 
@@ -152,6 +142,18 @@ export default class TreeNodeInfo implements TreeNode {
       depth: this.depth,
     };
   }
+  private removeElement() {
+    nodeUtils.nodeIdToElement(this.tree.mainElement, this.id)?.remove();
+
+    const parentNode = this.tree.config.allNode[this.pid];
+
+    if (parentNode) {
+      parentNode.childNodes.splice(
+        parentNode.childNodes.findIndex((element: any) => element.id == this.id),
+        1
+      );
+    }
+  }
 
   /**
    * 노드 이동
@@ -160,7 +162,7 @@ export default class TreeNodeInfo implements TreeNode {
    * @param moveNodeId move node id
    */
   public move(position: string, moveNodeId: any) {
-    this.remove(); // 현재 노드 삭제.
+    this.removeElement(); // 현재 노드 삭제.
 
     const allNode = this.tree.config.allNode;
 
@@ -200,8 +202,6 @@ export default class TreeNodeInfo implements TreeNode {
     }
 
     this.setChildNodeDepth();
-    allNode[this.id] = this;
-
     this.tree.refresh(this.pid);
   }
 

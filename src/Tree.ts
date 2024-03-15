@@ -87,7 +87,6 @@ export default class Tree {
     this.options = utils.objectMerge({}, defaultOptions, options);
 
     this.orginStyleClass = mainElement.className;
-    mainElement.classList.add("dara-tree");
 
     if (this.options.style) {
       let style = [];
@@ -109,10 +108,19 @@ export default class Tree {
       mainElement.setAttribute("style", style.join(""));
     }
 
+    this.prefix = "dt" + utils.getHashCode(selector);
     this.selector = selector;
     this.mainElement = mainElement;
+    mainElement.classList.add("dara-tree");
 
-    this.prefix = "dt" + utils.getHashCode(selector);
+    const ulElement = document.createElement("ul");
+
+    domUtils.setAttribute(ulElement, {
+      class: "dt-container",
+      tabindex: "-1",
+    });
+
+    mainElement.append(ulElement);
 
     this.initConfig();
 
@@ -194,7 +202,8 @@ export default class Tree {
     }
 
     refreshNode.isLoaded = false;
-    this.request(id);
+
+    this.render(id);
   }
 
   /**
@@ -241,8 +250,6 @@ export default class Tree {
 
     this.addNode(nodeInfo);
 
-    console.log("111111", this.config.allNode[nodeInfo[this.options.itemKey.id]]);
-
     this.config.request.create(nodeInfo);
   }
 
@@ -261,7 +268,15 @@ export default class Tree {
       this.config.allNode[this.config.rootNode.id] = this.config.rootNode;
     }
 
-    const addNode = new TreeNodeInfo(node, pid, this);
+    let addNode;
+    if (this.config.allNode[id]) {
+      addNode = this.config.allNode[id];
+      addNode.pid = pid;
+      addNode.orgin = node;
+    } else {
+      addNode = new TreeNodeInfo(node, pid, this);
+    }
+
     const parentNode = this.config.allNode[pid];
 
     if (parentNode) {
@@ -288,9 +303,7 @@ export default class Tree {
     if (id === this.config.rootNode.id) {
       renderParentNode = this.config.rootNode;
       // init tree element
-      this.mainElement.innerHTML = `<ul id="${this.prefix}" class="dt-container" tabindex="-1">
-        ${this.getNodeTemplate([this.config.rootNode])}
-        </ul>`;
+      (this.mainElement.querySelector(".dt-container") as Element).innerHTML = this.getNodeTemplate([this.config.rootNode]);
     } else {
       if (utils.isBlank(id)) {
         return;
@@ -346,13 +359,9 @@ export default class Tree {
 
       let childNodes = treeNode.childNodes;
       let openClass = "";
+
       if (treeNode.isOpen) {
-        if (treeNode.getChildLength() > 0) {
-          openClass = "open";
-          treeNode.isOpen = true;
-        } else {
-          treeNode.isOpen = false;
-        }
+        openClass = "open";
       }
 
       if (treeNode.depth == 0) {
@@ -477,6 +486,9 @@ export default class Tree {
    * @returns  tree node 정보
    */
   public getNodes(id: any): TreeNode {
+    if (utils.isUndefined(id)) {
+      return this.config.rootNode;
+    }
     return this.config.allNode[id];
   }
 

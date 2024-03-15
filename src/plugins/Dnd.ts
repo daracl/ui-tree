@@ -195,12 +195,41 @@ export default class Dnd {
       this.hideHelperLine();
     }
   }
-  setDragHelper(position: string) {
-    if (this.dragPostion != position) {
-      if (position != MOVE_POSITION.CHILD) this.showHelperLine();
-      this.dragPostion = position;
-      domUtils.addClass(this.dragHelper, "allowed");
+
+  private setDragHelper(position: string): void {
+    if (position != MOVE_POSITION.CHILD) {
+      const childNode = this.tree.config.allNode[this.enterNode.pid].childNodes;
+      let checkNode;
+
+      for (let i = 0; i < childNode.length; i++) {
+        let item = childNode[i];
+        if (item.id == this.enterNode.id) {
+          if (position == MOVE_POSITION.PREV) {
+            checkNode = childNode[i - 1];
+          }
+
+          if (position == MOVE_POSITION.NEXT) {
+            checkNode = childNode[i + 1];
+          }
+          break;
+        }
+      }
+
+      if (checkNode && checkNode.id == this.dragNode.id) {
+        this.dragPostion = MOVE_POSITION.IGNORE;
+        return;
+      }
+
+      this.showHelperLine();
+    } else {
+      if (this.enterNode.id == this.dragNode.pid) {
+        this.dragPostion = MOVE_POSITION.IGNORE;
+        return;
+      }
     }
+
+    this.dragPostion = position;
+    domUtils.addClass(this.dragHelper, "allowed");
   }
 
   public mouseup(e: any) {

@@ -7,6 +7,8 @@ const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
 const TerserPlugin = require("terser-webpack-plugin");
 
+console.log(common.output.filename.replace("/.js$/"));
+
 module.exports = merge(common, {
   mode: "production",
   devtool: "source-map",
@@ -51,11 +53,11 @@ module.exports = merge(common, {
     ],
   },
   output: {
-    filename: "dara.tree.min.js",
+    filename: common.output.filename.replace(/\.js$/, ".min.js"),
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: "dara.tree.min.css",
+      filename: common.output.filename.replace(/\.js$/, ".min.css"),
     }),
     //, new BundleAnalyzerPlugin()
   ],

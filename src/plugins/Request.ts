@@ -91,14 +91,14 @@ export default class Request {
   public search(node: TreeNode) {
     const paramNode = nodeUtils.getParameterNode(node);
 
+    node.isLoaded = true;
+
     if (this.opts.searchNode) {
       this.opts.searchNode(paramNode);
       return;
     }
 
     if (!this.initFlag) return;
-
-    node.isLoaded = true;
 
     this.opts.$node = node;
     this.opts.data = this.getParameters(paramNode, "search");

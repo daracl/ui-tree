@@ -22,7 +22,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, "dist"),
     filename: "dara.tree.js",
-    library: ["dara", "Tree"],
+    //library: ["dara", "Tree"],
     libraryTarget: "umd",
   },
   resolve: {

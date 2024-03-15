@@ -163,7 +163,7 @@
     treeItem.push({ id: 712, pid: 0, text: '7Node 4', url: "detail('2')" });
     treeItem.push({ id: 9, pid: 0, text: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
 
-    treeObj = new dara.Tree("#treeDiv", {
+    treeObj = new DaraTree("#treeDiv", {
       items: treeItem
       , style: {
         height: '200px'
@@ -192,7 +192,7 @@
             console.log('item ', item);
           }
         }
-        , request: {
+        , request1: {
           searchNode: function (node) {
 
             fetch(`/data/tree-node.json?id=${node.id}&pid=${node.pid}`, {
@@ -309,7 +309,7 @@
 
   function saveInfo() {
 
-    $.pubTree("#treeDiv").addNode((pubTreeConfig.allTreeItem.length + 100), pubTreeConfig.selectedNode.id, document.getElementById('name').value, document.getElementById('url').value)
+    // $.pubTree("#treeDiv").addNode((pubTreeConfig.allTreeItem.length + 100), pubTreeConfig.selectedNode.id, document.getElementById('name').value, document.getElementById('url').value)
   }
 
 
