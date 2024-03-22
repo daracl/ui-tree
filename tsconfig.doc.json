@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig",
+  "typedocOptions": {
+    "entryPoints": [
+      "src/index.ts",
+      "src/Tree.ts",
+      "src/types/Options.d.ts",
+      "src/types/TreeNode.d.ts"
+      // "src/core/StringUtils.ts"
+      //"packages/b/src/index.ts",
+    ],
+    "out": "docs",
+    "name": "Dara Tree Api",
+    "excludePrivate": true,
+    "readme": "DOC-README.md",
+    "gitRevision": "main",
+    /*
+    "plugin": [
+      "@mxssfd/typedoc-theme"
+    ],
+    "theme": "my-theme",
+    */
+    "disableSources": true,
+    "customCss": "./docCss/customStyle.css"
+  }
+}

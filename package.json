@@ -113,6 +113,7 @@
     "build": "yarn build:prod && yarn copy-dts && yarn build:tsc && yarn build:js && yarn copy-app",
     "build:tsc": "npx tsc --emitDeclarationOnly",
     "build:js": "node build.js",
+    "docs:gen": "typedoc --tsconfig tsconfig.doc.json",
     "build:dev": "webpack --config webpack.dev.js",
     "build:prod": "webpack --config webpack.prod.js && webpack --env=mode=deploy --config webpack.dev.js",
     "dts:gen": "npx -p typescript tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir dist",
