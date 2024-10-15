@@ -111,7 +111,7 @@ export default class Tree {
     this.prefix = "dt" + utils.getHashCode(selector);
     this.selector = selector;
     this.mainElement = mainElement;
-    mainElement.classList.add("dara-tree");
+    mainElement.classList.add("daracl-tree");
 
     const ulElement = document.createElement("ul");
 
@@ -127,6 +127,10 @@ export default class Tree {
     this.init();
 
     allInstance[selector] = this;
+  }
+
+  public static create(selector: string, options: Options, message: Message): Tree {
+    return new Tree(selector, options, message);
   }
 
   private initConfig() {

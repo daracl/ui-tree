@@ -11,7 +11,7 @@ const nodeExternals = require("webpack-node-externals");
 const packageJson = require("./package.json");
 const topBanner = `/*!
 * ${packageJson.name}  v${packageJson.version}
-* Copyright 2023-${new Date().getUTCFullYear()} darainfo and other contributors; 
+* Copyright 2023-${new Date().getUTCFullYear()} daracl.info and other contributors; 
 * Licensed ${packageJson.license}
 */`;
 
@@ -21,8 +21,8 @@ module.exports = {
   entry: "./src/index.ts",
   output: {
     path: path.join(__dirname, "dist"),
-    filename: "dara.tree.js",
-    //library: ["dara", "Tree"],
+    filename: "daracl.tree.js",
+    library: ["Daracl", "tree"],
     libraryTarget: "umd",
   },
   resolve: {

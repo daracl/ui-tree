@@ -1,10 +1,10 @@
 # tree
 JavaScript tree library
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/darainfo/dara-tree/blob/main/LICENSE)
-[![npm version](https://badge.fury.io/js/dara-tree.svg)](https://img.shields.io/npm/v/dara-tree)
-![npm](https://img.shields.io/npm/dt/dara-tree)
-[![minzipped size](https://img.shields.io/bundlephobia/minzip/dara-tree)](https://bundlephobia.com/package/dara-tree)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/darainfo/daracl.tree/blob/main/LICENSE)
+[![npm version](https://badge.fury.io/js/daracl.tree.svg)](https://img.shields.io/npm/v/daracl.tree)
+![npm](https://img.shields.io/npm/dt/daracl.tree)
+[![minzipped size](https://img.shields.io/bundlephobia/minzip/daracl.tree)](https://bundlephobia.com/package/daracl.tree)
 
 
 ## Browser Support
@@ -48,72 +48,112 @@ npm start
 
 # 사용방법
 ```
-const example1 = new Tree('#example1', {
-    mode: 'double'	// single, double
-    , style: {
-      height: 300
-    }
-    , orientation: 'horizontal' // horizontal , vertical
-    , body: {
-      enableMoveBtn: true	// 이동 버튼 보이기 여부
-      , moveBtnSize: 50	// item move button 영역 width 값
-    }
-    , footer: {
-      enable: true
-    }
-    , usetree: true
-    , useDragMove: true	// drag해서 이동할지 여부.
-    , useDragSort: true // target drag 해서 정렬할지 여부.
-    , enableUpDown: true // updown 버튼 활성화여부.
 
-    , duplicateCheck: true
-    , valueKey: 'viewid'
-    , labelKey: 'uname'
-    , source: {
-      items: []
-      , enableLabel: true
-      , search: {
-        enable: true
-        , callback: (param) => {
-          console.log(param)
-        }
-      }
-      , completeMove: function (addItems) {
-        console.log('source completeMove fn', JSON.stringify(addItems));
-        return true;
-      }
-      , paging: {
-        enable: true
-        , unitPage: 10
-        , totalCount: 300
-        , currPage: 15
-        , callback: function (clickInfo) {
-          console.log(clickInfo)
-        }
-      }
-    }
-    , target: {
-      label: 'Target'
-      , enableLabel: true
-      , items: []
-      , limitSize: -1 // 추가 가능한 max size
-      , emptyMessage: 'asdfasdf '
-      , completeMove: function (delItem) {
-        console.log(delItem);
-      }
-      , paging: {
-        enable: true
-        , unitPage: 10
-        , totalCount: 150
-        , currPage: 1
+var treeItem = [];
+treeItem.push({ id: 0, pid: '', text: 'My example tree1', url: "detail('2')" });
+treeItem.push({ id: 1, pid: 0, text: 'pub 1', url: "detail('2')" });
+treeItem.push({ id: 3, pid: 1, text: 'pub 1.1', url: "detail('2')" });
+treeItem.push({ id: 5, pid: 3, text: '5Node 1.1.1', url: "detail('2')", state: { checked: true } });
+treeItem.push({ id: 6, pid: 5, text: '6Node 1.1.1.1', url: "detail('2')" });
+treeItem.push({ id: 14, pid: 3, text: '14Node 1.1.1', url: "detail('2')" });
+treeItem.push({ id: 15, pid: 14, text: '15Node 1.1.1', url: "detail('2')" });
+treeItem.push({ id: 16, pid: 14, text: '16Node 1.1.1', url: "detail('2')", childCnt: 1000 });
+treeItem.push({ id: 4, pid: 0, text: '4Node 3', url: "detail('2')" });
+treeItem.push({ id: 2, pid: 0, text: '2Node 2', url: "detail('2')" });
+treeItem.push({ id: 7, pid: 0, text: '7Node 4', url: "detail('2')" });
+treeItem.push({ id: 41, pid: 0, text: '4Node 3', url: "detail('2')" });
+treeItem.push({ id: 21, pid: 0, text: '2Node 2', url: "detail('2')" });
+treeItem.push({ id: 712, pid: 0, text: '7Node 4', url: "detail('2')" });
+treeItem.push({ id: 9, pid: 0, text: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
 
-        , callback: function (clickInfo) {
-          console.log(clickInfo)
-        }
+const example1 = new Daracl.tree("#treeDiv", {
+   items: treeItem
+   , style: {
+      height: '200px'
+   }
+   , rootNode: {
+      id: 0
+      , text: 'root node'
+   }
+   , enableRootNode1: true
+   , enableIcon: true
+   , openDepth: -1
+   , plugins: {
+      checkbox: {}
+      , edit: {
+         before: function (item) {
+         console.log(item)
+         //return false;
+         }
+         , after: function (item) {
+         console.log(item)
+         //return 'asdfawef';
+         }
       }
-    }
+      , dnd: {
+         drop: function (item) {
+         console.log('item ', item);
+         }
+      }
+      , request1: {
+         searchNode: function (node) {
 
-  });
+         fetch('/data/tree-node.json?id=${node.id}&pid=' + node.pid, {
+            method: 'get', data: node
+         })
+            .then(function (response) {
+               return response.json();
+            })
+            .then(function (data) {
+
+               const nodeData = [];
+
+
+               for (let idx in data) {
+               var item = data[idx];
+
+               if (item.pid == node.id) {
+                  if (item.state) {
+                     item.state.folder = true;
+                  } else {
+                     item.state = { folder: true }
+                  }
+                  nodeData.push(item);
+               }
+               }
+               treeObj.addNode(nodeData)
+            })
+            .catch(function (error) {
+               console.log(error)
+            });
+
+         }
+         , removeNode: function (node) {
+         console.log('removeNode ', node)
+
+         }
+         , modifyNode: function (node) {
+         console.log('modifyNode ', node)
+         }
+         , createNode: function (node) {
+         treeObj.getNodeInfo(node.id).setEdit();
+         console.log(node);
+         //console.log('createNode ', node)
+         }
+      }
+   }
+   , click: function (nodeInfo) {
+      console.log('click', nodeInfo.id)
+   }
+   , dblclick: function (nodeInfo) {
+      console.log('dblclick', nodeInfo.id)
+      //return false;
+   }
+   , selectNode: function (nodeInfo) {
+      console.log('selectNode', nodeInfo.id)
+   }
+
+   });
 ```
   
 <style>

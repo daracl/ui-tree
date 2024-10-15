@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Dara tree</title>
-
+  <meta http-equiv="X-UA-compatible" content="IE=edge">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css" />
 </head>
 
@@ -12,7 +12,7 @@
 </HEAD>
 
 <body onload="load()">
-  <div class="dara-main" style="height:700px;">
+  <div class="daracl-main" style="height:700px;">
     <h2 class="page-header">트리</h2>
     <div>
       <table border="1" style="width:100%;height:100%;table-layout: fixed;">
@@ -86,7 +86,7 @@
 
   if (theme) setMainTheme(theme);
 
-  function setMainTheme(theme, persist = false) {
+  function setMainTheme(theme, persist) {
     const classList = document.body.classList;
 
     classList.remove("light", "dark");
@@ -108,11 +108,13 @@
         document.querySelector('[name="theme-toggle"][value="dark"]').checked = true;
       }
 
-      toggler.forEach((el) => {
-        el.addEventListener("click", (e) => {
+      /*
+      toggler.forEach(function (el) {
+        el.addEventListener("click", function (e) {
           setMainTheme(el.value, true);
         });
       })
+      */
     }
 
     init()
@@ -126,8 +128,9 @@
 
     var logText = [];
 
-    for (var log of arguments) {
-      logText.push(JSON.stringify(log, (key, value) => {
+    for (var idx in arguments) {
+      var log = arguments[idx];
+      logText.push(JSON.stringify(log, function (key, value) {
         if (key === 'config') {
           return undefined; // 부모 객체를 제외
         }
@@ -163,7 +166,7 @@
     treeItem.push({ id: 712, pid: 0, text: '7Node 4', url: "detail('2')" });
     treeItem.push({ id: 9, pid: 0, text: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
 
-    treeObj = new DaraTree("#treeDiv", {
+    treeObj = Daracl.tree.create("#treeDiv", {
       items: treeItem
       , style: {
         height: '200px'
@@ -178,34 +181,37 @@
       , plugins: {
         checkbox: {}
         , edit: {
-          before: (item) => {
+          before: function (item) {
             console.log(item)
             //return false;
           }
-          , after: (item) => {
+          , after: function (item) {
             console.log(item)
             //return 'asdfawef';
           }
         }
         , dnd: {
-          drop: (item) => {
+          drop: function (item) {
             console.log('item ', item);
           }
         }
         , request1: {
           searchNode: function (node) {
 
-            fetch(`/data/tree-node.json?id=${node.id}&pid=${node.pid}`, {
+            fetch('/data/tree-node.json?id=${node.id}&pid=' + node.pid, {
               method: 'get', data: node
             })
-              .then((response) => {
+              .then(function (response) {
                 return response.json();
               })
-              .then((data) => {
+              .then(function (data) {
 
                 const nodeData = [];
 
-                for (let item of data) {
+
+                for (let idx in data) {
+                  var item = data[idx];
+
                   if (item.pid == node.id) {
                     if (item.state) {
                       item.state.folder = true;
@@ -217,19 +223,19 @@
                 }
                 treeObj.addNode(nodeData)
               })
-              .catch((error) => {
+              .catch(function (error) {
                 console.log(error)
               });
 
           }
-          , removeNode: (node) => {
+          , removeNode: function (node) {
             console.log('removeNode ', node)
 
           }
-          , modifyNode: (node) => {
+          , modifyNode: function (node) {
             console.log('modifyNode ', node)
           }
-          , createNode: (node) => {
+          , createNode: function (node) {
             treeObj.getNodeInfo(node.id).setEdit();
             console.log(node);
             //console.log('createNode ', node)
@@ -243,7 +249,7 @@
         console.log('dblclick', nodeInfo.id)
         //return false;
       }
-      , selectNode: (nodeInfo) => {
+      , selectNode: function (nodeInfo) {
         console.log('selectNode', nodeInfo.id)
       }
 
@@ -265,7 +271,7 @@
   let addNodeIdx = 0;
   const addNodePrefix = 'addNode_';
   function getAddItem(nodeId, depth) {
-    depth = depth ?? 1;
+    depth = depth || 1;
     let addItems = [];
     addItems.push({ id: addNodePrefix + (++addNodeIdx), pid: nodeId, text: nodeId + ' 17Node 3', url: "detail('2')" });
     addItems.push({ id: addNodePrefix + (++addNodeIdx), pid: nodeId, text: nodeId + ' 18Node 3', url: "detail('2')" });

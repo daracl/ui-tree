@@ -1,5 +1,5 @@
 import Tree from "./Tree";
 
-import "../style/dara.tree.scss";
+import "../style/daracl.tree.scss";
 
-export const DaraTree = Tree;
+export = Tree;
