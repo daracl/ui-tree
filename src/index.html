@@ -18,7 +18,7 @@
       <table border="1" style="width:100%;height:100%;table-layout: fixed;">
         <tr valign="top">
           <td style="width:50%;">
-            <input type="button" value="aaaa" onclick="init()">
+            <input type="button" value="init" onclick="init()">
             ||
             <input type="button" value="오픈" onclick="treeOpen()">
             ||
@@ -27,10 +27,9 @@
             <input type="button" value="선택 노드 삭제" onclick="removeSelectNode()">
             ||
             <input type="button" value="선택 노드에 하위 노드 추가" onclick="addChildNode()">
-            ||
-            <input type="button" value="신규 노트" onclick="createNode()">
 
-            <div id="treeDiv" style="overflow:auto;height:200px"></div>
+
+            <div id="treeDiv" style="overflow:auto;height:500px"></div>
 
             <br />
 
@@ -169,7 +168,7 @@
     treeObj = Daracl.tree.create("#treeDiv", {
       items: treeItem
       , style: {
-        height: '200px'
+        height: '500px'
       }
       , rootNode: {
         id: 0
@@ -273,24 +272,7 @@
   function getAddItem(nodeId, depth) {
     depth = depth || 1;
     let addItems = [];
-    addItems.push({ id: addNodePrefix + (++addNodeIdx), pid: nodeId, text: nodeId + ' 17Node 3', url: "detail('2')" });
-    addItems.push({ id: addNodePrefix + (++addNodeIdx), pid: nodeId, text: nodeId + ' 18Node 3', url: "detail('2')" });
-    addItems.push({ id: addNodePrefix + (++addNodeIdx), pid: nodeId, text: nodeId + ' 19Node 3', url: "detail('2')" });
-    addItems.push({ id: addNodePrefix + (++addNodeIdx), pid: nodeId, text: nodeId + ' 20Node 3', url: "detail('2')" });
-
-    for (let i = 0; i < 10; i++) {
-      const id = addNodePrefix + (++addNodeIdx);
-      if (i % 2 == 0) {
-
-        addItems.push({ id: id, pid: nodeId, text: nodeId + (20 + 1 + i) + '20Node 3', url: "detail('2')", childCnt: 1000 });
-        if (i == 4 && depth < 3) {
-          addItems = addItems.concat(getAddItem(id, depth + 1))
-        }
-      } else {
-        addItems.push({ id: addNodePrefix + (++addNodeIdx), pid: nodeId, text: nodeId + (20 + 1 + i) + '20Node 3', url: "detail('2')" });
-      }
-    }
-    //addItem.push(20,17,'ddddddddddddddddd',"detail('10')");
+    addItems.push({ id: addNodePrefix + (++addNodeIdx), pid: nodeId, text: nodeId + ' new item ' + addNodeIdx, url: "detail('2')" });
 
     return addItems;
   }

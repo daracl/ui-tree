@@ -7,6 +7,10 @@ JavaScript tree library
 [![minzipped size](https://img.shields.io/bundlephobia/minzip/daracl.tree)](https://bundlephobia.com/package/daracl.tree)
 
 
+<p>
+<img src="https://github.com/darainfo/daracl.tree/blob/main/demo.gif?raw=true"/>
+</p>
+
 ## Browser Support
 
 ![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png)  
@@ -30,21 +34,7 @@ npm start
 
 3. Open `http://localhost:8891` in your browser
 
-# 다국어 처리 
-```
-  Tree.setMessage({
-    up: '위',
-    down: '아래',
-    add: '추가',
-    allAdd: '전체추가',
-    remove: '제거',
-    allRemove: '전체제거',
-    maxSizeMsg: "{maxSize} 개 까지 등록 가능합니다.", // 추가 가능한 max size가 넘었을경우 메시지 String
-    duplicate: "이미 등록된 항목이 존재합니다.",
-    addEmptyMessage: "추가할 항목을 선택해주세요.",
-    removeEmptyMessage: "제거할 항목을 선택해주세요.",
-  })
-```
+
 
 # 사용방법
 ```
@@ -66,7 +56,7 @@ treeItem.push({ id: 21, pid: 0, text: '2Node 2', url: "detail('2')" });
 treeItem.push({ id: 712, pid: 0, text: '7Node 4', url: "detail('2')" });
 treeItem.push({ id: 9, pid: 0, text: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
 
-const example1 = new Daracl.tree("#treeDiv", {
+const example1 = Daracl.tree.create("#treeDiv", {
    items: treeItem
    , style: {
       height: '200px'
