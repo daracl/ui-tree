@@ -122,7 +122,7 @@
   },
   "scripts": {
     "prepack": "yarn build",
-    "build": "yarn build:prod && yarn copy-dts && yarn build:tsc && yarn build:js && yarn copy-app",
+    "build": "yarn build:prod && yarn copy-dts && yarn build:tsc && yarn build:js",
     "build:tsc": "npx tsc --emitDeclarationOnly",
     "build:js": "node build.js",
     "docs:gen": "typedoc --tsconfig tsconfig.doc.json",
@@ -131,8 +131,7 @@
     "dts:gen": "npx -p typescript tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir dist",
     "test": "jest",
     "start": "webpack-dev-server --open --config ./webpack.dev.server.js",
-    "copy-dts": "copyfiles -u 1 \"src/**/*.d.ts\" dist",
-    "copy-app": "copyfiles -u 1 \"dist/daracl.tree.*\" D:/03.opensources/vpi-console/vpi-console-web/src/main/webapp/webstatic/js/dara/tree"
+    "copy-dts": "copyfiles -u 1 \"src/**/*.d.ts\" dist"
   },
   "browserslist": {
     "production": [
