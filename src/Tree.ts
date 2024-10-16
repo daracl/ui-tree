@@ -2,8 +2,6 @@ import { Options } from "@t/Options";
 import { ConfigInfo } from "@t/ConfigInfo";
 import utils from "./util/utils";
 import treeEvent from "./event/initEvents";
-import { Message } from "@t/Message";
-import Lanauage from "./util/Lanauage";
 import domUtils from "./util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import Checkbox from "./plugins/Checkbox";
@@ -16,7 +14,7 @@ import Request from "./plugins/Request";
 
 declare const APP_VERSION: string;
 
-const defaultOptions = {
+let defaultOptions = {
   style: {
     width: "",
     height: "",
@@ -78,7 +76,7 @@ export default class Tree {
 
   public config: ConfigInfo;
 
-  constructor(selector: string, options: Options, message: Message) {
+  constructor(selector: string, options: Options) {
     const mainElement = document.querySelector<HTMLElement>(selector);
     if (!mainElement) {
       throw new Error(`${selector} tree selector not found`);
@@ -129,8 +127,18 @@ export default class Tree {
     allInstance[selector] = this;
   }
 
-  public static create(selector: string, options: Options, message: Message): Tree {
-    return new Tree(selector, options, message);
+  public static create(selector: string, options: Options): Tree {
+    return new Tree(selector, options);
+  }
+
+  /**
+   * default options 셋팅
+   *
+   * @static
+   * @typedef {Object} defaultOptions
+   */
+  public static setOptions(options: Options) {
+    defaultOptions = utils.objectMerge({}, defaultOptions, options);
   }
 
   private initConfig() {
@@ -181,10 +189,6 @@ export default class Tree {
     }
 
     treeEvent.textClick(this, this.mainElement);
-  }
-
-  public static setMessage(message: Message): void {
-    Lanauage.set(message);
   }
 
   public request(id?: any) {
