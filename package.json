@@ -1,6 +1,6 @@
 {
   "name": "@daracl/tree",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "sideEffects": false,
   "description": "Daracl tree",
   "author": {
@@ -106,7 +106,8 @@
     "material-icons": "^1.13.8",
     "mini-css-extract-plugin": "^2.7.6",
     "prettier": "^2.8.8",
-    "sass-loader": "^13.3.2",
+    "sass": "^1.80.2",
+    "sass-loader": "^16.0.2",
     "style-loader": "^3.3.3",
     "terser-webpack-plugin": "^5.3.9",
     "ts-jest": "^29.1.0",
