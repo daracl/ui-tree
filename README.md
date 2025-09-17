@@ -1,14 +1,14 @@
 # tree
 JavaScript tree library
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/darainfo/daracl.tree/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/daracl/ui-tree/blob/main/LICENSE)
 [![npm version](https://badge.fury.io/js/@daracl%2Ftree.svg)](https://badge.fury.io/js/@daracl%2Ftree)
-[![npm](https://img.shields.io/npm/d18m/%40daracl%2Ftree)](https://github.com/darainfo/daracl.tree/releases)
+[![npm](https://img.shields.io/npm/d18m/%40daracl%2Ftree)](https://github.com/daracl/ui-tree/releases)
 [![minzipped size](https://img.shields.io/bundlephobia/minzip/@daracl%2Ftree)](https://bundlephobia.com/package/@daracl%2Ftree)
 
 
 <p>
-<img src="https://github.com/darainfo/daracl.tree/blob/main/demo.gif?raw=true"/>
+<img src="https://raw.githubusercontent.com/daracl/ui-tree/refs/heads/main/demo.gif"/>
 </p>
 
 ## Browser Support
