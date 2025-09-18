@@ -63,7 +63,7 @@ const EDIT_DEFAULT_OPTIONS = {
 export default class Tree {
   public static VERSION = `${APP_VERSION}`;
 
-  public options;
+  public options:Options;
 
   private orginStyle;
   private orginStyleClass;
@@ -76,13 +76,15 @@ export default class Tree {
 
   public config: ConfigInfo;
 
+  private nodeStyleFn;
+
   constructor(selector: string, options: Options) {
     const mainElement = document.querySelector<HTMLElement>(selector);
     if (!mainElement) {
       throw new Error(`${selector} tree selector not found`);
     }
 
-    this.options = utils.objectMerge({}, defaultOptions, options);
+    this.options = utils.objectMerge({}, defaultOptions, options) as Options;
 
     this.orginStyleClass = mainElement.className;
 
@@ -118,6 +120,8 @@ export default class Tree {
       tabindex: "-1",
     });
 
+    this.nodeStyleFn = this.options.nodeStyleClass;
+
     mainElement.append(ulElement);
 
     this.initConfig();
@@ -142,6 +146,7 @@ export default class Tree {
   }
 
   private initConfig() {
+    const plugins = this.options.plugins;
     this.config = {
       startPaddingLeft: this.options.enableRootNode ? this.options.style.paddingLeft : 0,
       rootDepth: this.options.enableRootNode ? 0 : 1,
@@ -151,10 +156,10 @@ export default class Tree {
       isFocus: false,
       rootNode: {},
       isCheckbox: false,
-      isDnd: !utils.isUndefined(this.options.plugins["dnd"]),
-      isContextmenu: !utils.isUndefined(this.options.plugins["contextmenu"]),
+      isDnd: !utils.isUndefined(plugins?.dnd),
+      isContextmenu: !utils.isUndefined(plugins?.contextmenu),
       isEdit: false,
-      isKeydown: !utils.isUndefined(this.options.plugins["keydown"]),
+      isKeydown: !utils.isUndefined(plugins?.keydown),
       isNodeDrag: false,
       isRequest: false,
     } as ConfigInfo;
@@ -163,9 +168,9 @@ export default class Tree {
     this.config.allNode[this.config.rootNode.id] = this.config.rootNode;
     this.config.selectedNode = this.config.rootNode;
 
-    if (this.options.plugins["edit"]) {
+    if (plugins?.edit) {
       this.config.isEdit = true;
-      this.options.plugins["edit"] = utils.objectMerge({}, EDIT_DEFAULT_OPTIONS, this.options.plugins["edit"]);
+      plugins.edit = utils.objectMerge({}, EDIT_DEFAULT_OPTIONS, plugins.edit);
     }
 
     this.config.request = new Request(this);
@@ -415,8 +420,16 @@ export default class Tree {
     if (this.config.isCheckbox) {
       checkboxHtml = `<label class="dt-checkbox"><span class="dt-icon checkbox"></span></label>`;
     }
+    
+    let addNodeStyleClass = "";
+    if(this.nodeStyleFn){
+      addNodeStyleClass = this.nodeStyleFn(node);
+      if(!utils.isString(addNodeStyleClass)){
+        addNodeStyleClass="";
+      }
+    }
 
-    return `${checkboxHtml}<span class="dt-text-content">${iconHtml}<span>${node.text}</span></span>`;
+    return `${checkboxHtml}<span class="dt-node-title ${addNodeStyleClass}">${iconHtml}<span>${node.text}</span></span>`;
   }
 
   public getPrefix() {

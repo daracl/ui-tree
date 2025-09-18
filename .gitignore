@@ -4,7 +4,8 @@
 
 # ignore code scanning from package-lock
 package-lock.json
-
+style/*.css
+style/*.map
 dist.zip
 .yarn/*
 !.yarn/releases

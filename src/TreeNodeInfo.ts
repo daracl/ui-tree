@@ -6,6 +6,7 @@ import nodeUtils from "./util/nodeUtils";
 import { MOVE_POSITION } from "./constants";
 import eventUtils from "./util/eventUtils";
 import utils from "./util/utils";
+import { EditOption } from "@t/Options";
 
 /**
  *TreeNodeInfo
@@ -190,7 +191,7 @@ export default class TreeNodeInfo implements TreeNode {
         this.pid = moveNodeInfo.id;
         this.depth = moveNodeInfo.depth + 1;
 
-        if (this.tree.options.plugins["dnd"].inside === "first") {
+        if (this.tree.options.plugins?.dnd.inside === "first") {
           childNodes.unshift(this);
         } else {
           childNodes.push(this);
@@ -280,12 +281,12 @@ export default class TreeNodeInfo implements TreeNode {
     if (!this.tree.config.isEdit || this.isEdit) return;
 
     // 이전에 활성화된 input 영역 삭제.
-    this.tree.mainElement.querySelectorAll(".dt-text-content.edit").forEach((el: Element) => {
+    this.tree.mainElement.querySelectorAll(".dt-node-title.edit").forEach((el: Element) => {
       el.querySelector(".dt-input")?.remove();
       domUtils.removeClass(el, "edit");
     });
 
-    const editOptions = this.tree.options.plugins.edit;
+    const editOptions = this.tree.options.plugins?.edit??{} as EditOption;
 
     if (editOptions.before && editOptions.before({ item: this }) === false) {
       return;
@@ -304,7 +305,7 @@ export default class TreeNodeInfo implements TreeNode {
     domUtils.setAttribute(inputElement, attrs);
 
     const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
-    const contElement = nodeElement?.querySelector(".dt-text-content");
+    const contElement = nodeElement?.querySelector(".dt-node-title");
     if (contElement) {
       contElement.appendChild(inputElement);
       domUtils.addClass(contElement, "edit");
@@ -364,13 +365,13 @@ export default class TreeNodeInfo implements TreeNode {
    */
   public select() {
     this.focusOut();
-    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-text-content.selected"), "selected");
+    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-node-title.selected"), "selected");
 
     const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
 
     if (nodeElement) {
       this.tree.config.selectedNode = this;
-      domUtils.addClass(nodeElement.querySelector(".dt-text-content"), "selected");
+      domUtils.addClass(nodeElement.querySelector(".dt-node-title"), "selected");
 
       setScrollTop(this.tree.mainElement, nodeElement);
 
@@ -387,13 +388,13 @@ export default class TreeNodeInfo implements TreeNode {
    * node 선택
    */
   public focus() {
-    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-text-content.focus"), "focus");
+    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-node-title.focus"), "focus");
 
     const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
 
     if (nodeElement) {
       this.tree.config.focusNode = this;
-      domUtils.addClass(nodeElement.querySelector(".dt-text-content"), "focus");
+      domUtils.addClass(nodeElement.querySelector(".dt-node-title"), "focus");
 
       setScrollTop(this.tree.mainElement, nodeElement);
 
@@ -407,7 +408,7 @@ export default class TreeNodeInfo implements TreeNode {
   }
 
   public focusOut() {
-    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-text-content.focus"), "focus");
+    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-node-title.focus"), "focus");
     this.tree.config.focusNode = null;
   }
 }
@@ -422,7 +423,7 @@ function setScrollTop(mainElement: HTMLElement, nodeElement: Element) {
   const scrollTop = mainElement.scrollTop;
   const offsetTop = (nodeElement as HTMLElement).offsetTop;
   const height = mainElement.offsetHeight;
-  const eleHeight = (nodeElement.querySelector(".dt-text-content") as HTMLElement).offsetHeight;
+  const eleHeight = (nodeElement.querySelector(".dt-node-title") as HTMLElement).offsetHeight;
 
   if (scrollTop + height < offsetTop + eleHeight) {
     mainElement.scrollTop = offsetTop + eleHeight - height;

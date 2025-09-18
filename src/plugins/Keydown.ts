@@ -20,10 +20,11 @@ export default class Keydown {
 
   constructor(tree: Tree) {
     this.tree = tree;
+    const plugins = tree.options.plugins;
 
-    if (tree.options.plugins["keydown"]) {
+    if (plugins?.keydown) {
       tree.config.isKeydown = true;
-      tree.options.plugins["keydown"] = utils.objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, tree.options.plugins["keydown"]);
+      plugins.keydown = utils.objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, plugins.keydown);
     }
 
     this.initEvt();

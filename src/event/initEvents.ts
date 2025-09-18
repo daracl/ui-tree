@@ -11,7 +11,7 @@ export default {
     });
 
     eventUtils.eventOn(treeContext.mainElement, "focusout", (e: Event, ele: Element) => {
-      domUtils.removeClass(treeContext.mainElement.querySelectorAll(".dt-text-content.focus"), "focus");
+      domUtils.removeClass(treeContext.mainElement.querySelectorAll(".dt-node-title.focus"), "focus");
       treeContext.config.focusNode = null;
     });
   },
@@ -33,7 +33,7 @@ export default {
       clickTimer = setTimeout(resetClick, clickDelay);
     };
 
-    eventUtils.eventOn(el, "mousedown", ".dt-text-content", (e: MouseEvent, ele: Element) => {
+    eventUtils.eventOn(el, "mousedown", ".dt-node-title", (e: MouseEvent, ele: Element) => {
       if (e.button === 2 || e.which === 3) {
         clickTimer = null;
         return true;

@@ -44,14 +44,19 @@ export default class Dnd {
 
   constructor(tree: Tree) {
     this.tree = tree;
+    const plugins = this.tree.options.plugins; 
 
-    tree.options.plugins["dnd"] = utils.objectMerge({}, DND_DEFAULT_OPTIONS, tree.options.plugins["dnd"]);
+    if(!plugins?.dnd){
+      return; 
+    }
+
+    plugins.dnd = utils.objectMerge({}, DND_DEFAULT_OPTIONS, plugins.dnd);
 
     tree.config.dndLinePadding = (tree.config.isCheckbox ? 24 : 0) + (tree.options.enableIcon ? 23 : 0);
     tree.config.dndLinePadding = tree.config.dndLinePadding == 0 ? 20 : tree.config.dndLinePadding;
 
-    this.helperTop = tree.options.plugins["dnd"].marginTop;
-    this.helperLeft = tree.options.plugins["dnd"].marginLeft;
+    this.helperTop = plugins.dnd.marginTop;
+    this.helperLeft = plugins.dnd.marginLeft;
 
     this.initEvt();
   }
@@ -81,9 +86,11 @@ export default class Dnd {
           domUtils.addClass(this.dragHelper, "dt-drag");
         }
 
-        if (this.tree.options.plugins["dnd"].start) {
+        const plugins = this.tree.options.plugins; 
+
+        if (plugins?.dnd.start) {
           if (
-            this.tree.options.plugins["dnd"].start({
+            plugins.dnd.start({
               item: this.dragNode,
               evt: startEvt,
             }) === false
@@ -244,9 +251,9 @@ export default class Dnd {
     const dragNode = this.dragNode;
     const dropNode = this.enterNode;
     const position = this.dragPostion;
-    if (this.tree.options.plugins["dnd"].drop) {
-      if (
-        this.tree.options.plugins["dnd"].drop({
+    const plugins = this.tree.options.plugins; 
+    if (plugins?.dnd.drop) {
+      if (plugins?.dnd.drop({
           item: dragNode,
           dropItem: dropNode,
           position: this.dragPostion,

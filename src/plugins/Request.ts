@@ -60,12 +60,13 @@ export default class Request {
 
   constructor(tree: Tree) {
     this.tree = tree;
+    const plugins = tree.options.plugins; 
 
-    if (utils.isUndefined(tree.options.plugins.request)) {
+    if (utils.isUndefined(plugins?.request)) {
       return;
     }
 
-    const reqOpt = tree.options.plugins.request;
+    const reqOpt = plugins.request;
     tree.config.isRequest = true;
 
     this.initFlag = true;

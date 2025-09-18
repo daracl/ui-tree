@@ -2,14 +2,50 @@ export interface OptionCallback {
   (...params: any[]): any;
 }
 
+
+/**
+ * options
+ */
+export interface Options {
+  style: {
+    width: string;
+    height: string;
+    paddingLeft: number;
+  };
+  rootNode: any;
+  enableIcon?: boolean;
+  // root node 활성화 여부
+  enableRootNode?: boolean;
+  // node style class
+  nodeStyleClass?:OptionCallback;
+  itemKey: {
+    id: string;
+    pid: string;
+    text: string;
+    icon: string;
+  };
+  plugins?: Plugins;
+  items: Array;
+  openDepth: number;
+  click: OptionCallback | undefined; // click callback
+  dblclick: OptionCallback | undefined; // double click callback
+  getIcon: OptionCallback | undefined; // node icon class
+  selectNode: OptionCallback | undefined; // node 선택시 이벤트
+  focusNode: OptionCallback | undefined; // node focus 이벤트
+}
+
+
+/**
+ * tree plugin option
+ *
+ * @export
+ * @interface Plugins
+ * @typedef {Plugins}
+ */
 export interface Plugins {
   checkbox?: any;
   dnd?: any;
-  edit?: {
-    width: string;
-    before: OptionCallback;
-    after: OptionCallback;
-  };
+  edit?: EditOption;
   contextmenu?: any;
   keydown: any;
   request: {
@@ -29,29 +65,11 @@ export interface Plugins {
 }
 
 /**
- * options
+ * edit plugin options
  */
-export interface Options {
-  style: {
-    width: string;
-    height: string;
-    paddingLeft: number;
-  };
-  rootNode: any;
-  enableIcon?: boolean;
-  enableRootNode?: boolean;
-  itemKey: {
-    id: string;
-    pid: string;
-    text: string;
-    icon: string;
-  };
-  plugins?: Plugins;
-  items: Array;
-  openDepth: number;
-  click: OptionCallback | undefined; // click callback
-  dblclick: OptionCallback | undefined; // double click callback
-  getIcon: OptionCallback | undefined; // node icon class
-  selectNode: OptionCallback | undefined; // node 선택시 이벤트
-  focusNode: OptionCallback | undefined; // node focus 이벤트
+export interface EditOption{
+  width: string;
+  before: OptionCallback;
+  after: OptionCallback;
+  
 }

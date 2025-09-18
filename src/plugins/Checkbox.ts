@@ -19,8 +19,10 @@ export default class Checkbox {
   constructor(tree: Tree) {
     this.tree = tree;
 
-    if (utils.isUndefined(tree.options.plugins.checkbox)) {
-      return;
+    const plugins = this.tree.options.plugins; 
+
+    if(!plugins?.checkbox){
+      return; 
     }
 
     tree.config.isCheckbox = true;
