@@ -60,7 +60,7 @@ export default class Request {
 
   constructor(tree: Tree) {
     this.tree = tree;
-    const plugins = tree.options.plugins; 
+    const plugins = tree.options.plugins;
 
     if (utils.isUndefined(plugins?.request)) {
       return;
@@ -90,6 +90,8 @@ export default class Request {
   }
 
   public search(node: TreeNode) {
+    if (!this.initFlag) return;
+
     const paramNode = nodeUtils.getParameterNode(node);
 
     node.isLoaded = true;
@@ -98,8 +100,6 @@ export default class Request {
       this.opts.searchNode(paramNode);
       return;
     }
-
-    if (!this.initFlag) return;
 
     this.opts.$node = node;
     this.opts.data = this.getParameters(paramNode, "search");
@@ -114,13 +114,13 @@ export default class Request {
   }
 
   public create(node: TreeNode): any {
+    if (!this.initFlag || utils.isUndefined(this.url.create)) return;
+
     const paramNode = nodeUtils.getParameterNode(node);
 
     if (this.opts.createNode) {
       return this.opts.createNode(paramNode);
     }
-
-    if (!this.initFlag || utils.isUndefined(this.url.create)) return;
 
     this.opts.$node = node;
     this.opts.data = this.getParameters(paramNode, "create");
@@ -134,13 +134,13 @@ export default class Request {
   }
 
   public modify(node: TreeNode): any {
+    if (!this.initFlag || utils.isUndefined(this.url.modify)) return;
+
     const paramNode = nodeUtils.getParameterNode(node);
 
     if (this.opts.modifyNode) {
       return this.opts.modifyNode(paramNode);
     }
-
-    if (!this.initFlag || utils.isUndefined(this.url.modify)) return;
 
     this.opts.$node = node;
     this.opts.data = this.getParameters(paramNode, "modify");

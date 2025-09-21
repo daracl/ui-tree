@@ -286,7 +286,7 @@ export default class TreeNodeInfo implements TreeNode {
       domUtils.removeClass(el, "edit");
     });
 
-    const editOptions = this.tree.options.plugins?.edit??{} as EditOption;
+    const editOptions = this.tree.options.plugins?.edit ?? ({} as EditOption);
 
     if (editOptions.before && editOptions.before({ item: this }) === false) {
       return;

@@ -63,7 +63,7 @@ const EDIT_DEFAULT_OPTIONS = {
 export default class Tree {
   public static VERSION = `${APP_VERSION}`;
 
-  public options:Options;
+  public options: Options;
 
   private orginStyle;
   private orginStyleClass;
@@ -420,12 +420,12 @@ export default class Tree {
     if (this.config.isCheckbox) {
       checkboxHtml = `<label class="dt-checkbox"><span class="dt-icon checkbox"></span></label>`;
     }
-    
+
     let addNodeStyleClass = "";
-    if(this.nodeStyleFn){
+    if (this.nodeStyleFn) {
       addNodeStyleClass = this.nodeStyleFn(node);
-      if(!utils.isString(addNodeStyleClass)){
-        addNodeStyleClass="";
+      if (!utils.isString(addNodeStyleClass)) {
+        addNodeStyleClass = "";
       }
     }
 
@@ -501,6 +501,40 @@ export default class Tree {
   }
 
   /**
+   * 노드 열기
+   */
+  public openNode(id: string) {
+    const node = this.config.allNode[id];
+    if (!node) {
+      return;
+    }
+
+    node.open();
+
+    let pid = node.pid;
+    for (let depth = node.depth; depth > 0; depth--) {
+      let pNode = this.config.allNode[pid];
+      if (pNode && !pNode.isOpen) {
+        pNode.open();
+        pid = pNode.pid;
+      } else {
+        break;
+      }
+    }
+  }
+
+  /**
+   *  노드 닫기
+   */
+  public closeNode(id: string) {
+    const node = this.config.allNode[id];
+
+    if (node) {
+      node.close();
+    }
+  }
+
+  /**
    * 트리 노드 정보 얻기
    *
    * @param id tree id
@@ -518,11 +552,15 @@ export default class Tree {
    *
    * @param id tree id
    */
-  public setSelectNode(id: any) {
+  public setSelectNode(id: any, isOpen: boolean = true) {
     const node = this.config.allNode[id];
 
     if (node) {
       node.select();
+
+      if (isOpen) {
+        this.openNode(id);
+      }
     }
   }
 

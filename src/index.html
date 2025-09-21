@@ -174,9 +174,9 @@
         id: 0
         , text: 'root node'
       }
-      ,nodeStyleClass(node){
+      , nodeStyleClass(node) {
         console.log(node);
-        return node.id=="1"?"id-1":"222";
+        return node.id == "1" ? "id-1" : "222";
       }
       , enableRootNode1: true
       , enableIcon: true
@@ -246,14 +246,14 @@
         }
       }
       , click: function (nodeInfo) {
-        console.log('click', nodeInfo.id)
+        console.log('click', nodeInfo)
       }
       , dblclick: function (nodeInfo) {
-        console.log('dblclick', nodeInfo.id)
+        console.log('dblclick', nodeInfo)
         //return false;
       }
       , selectNode: function (nodeInfo) {
-        console.log('selectNode', nodeInfo.id)
+        console.log('selectNode', nodeInfo)
       }
 
     });
