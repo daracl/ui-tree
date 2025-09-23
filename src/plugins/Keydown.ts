@@ -96,7 +96,6 @@ export default class Keydown {
 
     const childNodes = parentNode.childNodes;
     const nodeIdx = nodeUtils.getNodeIdx(childNodes, focusNode.id);
-
     if (nodeIdx != 0) {
       findPrevNode(childNodes[nodeIdx - 1])?.focus();
     } else {
@@ -168,14 +167,14 @@ export default class Keydown {
  * @returns {TreeNode} 이동할 이전 노트 정보
  */
 function findPrevNode(focusNode: TreeNode) {
-  const childLength = focusNode.childNodes.length;
+  const childNodes = focusNode.childNodes;
+  const childLength = childNodes.length;
+
   if (!focusNode.isOpen || childLength < 1) {
     return focusNode;
   }
 
-  const childNodes = focusNode.childNodes;
-
-  if (childLength - 1 > 0) {
+  if (childLength - 1 >= 0) {
     const node = childNodes[childLength - 1];
     if (node.isOpen) {
       if (node.childNodes.length > 0) {
@@ -195,24 +194,28 @@ function findPrevNode(focusNode: TreeNode) {
  * @param firstFlag {boolean} 첫번째 호출 여부.
  * @returns
  */
-function findNextNode(focusNode: TreeNode, tree: Tree, firstFlag: boolean) {
+function findNextNode(focusNode: TreeNode, tree: Tree, firstFlag: boolean):TreeNode|undefined {
   if (firstFlag && focusNode.isOpen && focusNode.getChildLength() > 0) {
     return focusNode.childNodes[0];
   } else {
-    const parentNode = tree.config.allNode[focusNode.pid];
+    const parentNode = focusNode.getParentNode();
+
+    if(!parentNode){
+      return ;
+    }
     const childNodes = parentNode.childNodes;
+  
+    let focusNodeIdx = nodeUtils.getNodeIdx(childNodes, focusNode.id);
+    const maxChildIdx = parentNode.getChildLength()-1;
 
-    const childLength = childNodes.length - 1;
-    let nodeIdx = nodeUtils.getNodeIdx(childNodes, focusNode.id);
-
-    if (childLength > nodeIdx) {
-      return childNodes[nodeIdx + 1];
+    if (maxChildIdx > focusNodeIdx) {
+      return childNodes[focusNodeIdx + 1];
     }
 
-    if (childLength == nodeIdx && (tree.config.rootDepth >= focusNode.depth || parentNode.id == tree.config.rootNode.id)) {
-      return;
+    if(maxChildIdx == focusNodeIdx){
+      return findNextNode(parentNode, tree, false);
     }
 
-    return findNextNode(parentNode, tree, false);
+    return ;     
   }
 }

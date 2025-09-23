@@ -36,4 +36,5 @@ export interface TreeNode {
   focus: OptionCallback;
 
   folderToggle: OptionCallback;
+  getParentNode : OptionCallback;
 }

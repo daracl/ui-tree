@@ -36,7 +36,7 @@ let defaultOptions = {
   },
   enableIcon: true,
   items: [],
-  openDepth: 1,
+  openDepth: 0,
   click: (nodeItem) => {},
   dblclick: (nodeItem) => {},
 } as Options;
@@ -53,6 +53,8 @@ const EDIT_DEFAULT_OPTIONS = {
   before: false,
   after: false,
 };
+
+const ETC_NODE_ID = "$__etc";
 
 /**
  * Tree class
@@ -234,20 +236,11 @@ export default class Tree {
       nodeArr = nodeItem;
     }
 
-    let firstFlag = true;
-    let viewParentId = "";
+    const rootNodeId = this.config.rootNode.id;
     for (const node of nodeArr) {
-      if (firstFlag) {
-        if (node.id == this.config.rootNode.id) {
-          viewParentId = node.id;
-        } else {
-          viewParentId = node.pid;
-        }
-        firstFlag = false;
-      }
       this.treeGrid(node, parentId);
     }
-    parentId = !utils.isUndefined(parentId) ? parentId : viewParentId;
+    parentId = !utils.isUndefined(parentId) ? parentId : rootNodeId;
 
     this.render(parentId);
 
@@ -275,31 +268,25 @@ export default class Tree {
       return;
     }
 
-    if (utils.isBlank(this.config.rootNode.id)) {
-      delete this.config.allNode[this.config.rootNode.id];
-      this.config.rootNode.id = pid;
-      this.config.allNode[this.config.rootNode.id] = this.config.rootNode;
-    }
-
-    let addNode;
+    let addNodeItem;
     if (this.config.allNode[id]) {
-      addNode = this.config.allNode[id];
-      addNode.pid = pid;
-      addNode.orgin = node;
+      addNodeItem = this.config.allNode[id];
+      addNodeItem.pid = pid;
+      addNodeItem.orgin = node;
     } else {
-      addNode = new TreeNodeInfo(node, pid, this);
+      addNodeItem = new TreeNodeInfo(node, pid, this);
     }
 
     const parentNode = this.config.allNode[pid];
 
     if (parentNode) {
-      parentNode.addChild(addNode);
+      parentNode.addChild(addNodeItem);
 
       if (parentNode.checkState == CHECK_STATE.CHECKED) {
-        addNode.checkState = CHECK_STATE.CHECKED;
+        addNodeItem.checkState = CHECK_STATE.CHECKED;
       }
     } else {
-      this.config.rootNode.addChild(addNode);
+      this.config.rootNode.addChild(addNodeItem);
     }
 
     if (node.children && node.children.length > 0) {
@@ -308,11 +295,12 @@ export default class Tree {
       }
     }
 
-    this.config.allNode[id] = addNode;
+    this.config.allNode[id] = addNodeItem;
   }
 
   private render(id: any) {
     let renderParentNode;
+
     if (id === this.config.rootNode.id) {
       renderParentNode = this.config.rootNode;
       // init tree element
@@ -324,7 +312,7 @@ export default class Tree {
 
       renderParentNode = this.config.allNode[id];
 
-      const childNodeElemnt = this.mainElement.querySelector(`[data-node-id="${renderParentNode.id}"]>.dt-children`);
+      const childNodeElemnt = this.mainElement.querySelector(`[data-dt-id="${renderParentNode.id}"]>.dt-children`);
       if (childNodeElemnt) {
         childNodeElemnt.innerHTML = this.getNodeTemplate(renderParentNode.childNodes);
       }
@@ -336,7 +324,7 @@ export default class Tree {
   }
 
   private setNodeContent(selectedNode: TreeNode) {
-    const parentElement = this.mainElement.querySelector(`[data-node-id="${selectedNode.id}"]>.dt-node`);
+    const parentElement = this.mainElement.querySelector(`[data-dt-id="${selectedNode.id}"]>.dt-node`);
 
     if (parentElement) {
       // 아이콘 활성화 일경우 아이콘 변경.
@@ -379,16 +367,16 @@ export default class Tree {
 
       if (treeNode.depth == 0) {
         treeHtml.push(
-          `<li data-node-id="${treeNode.id}" class="open">
+          `<li data-dt-id="${treeNode.id}" class="open">
               <div class="dt-node" style="display:${this.options.enableRootNode ? "inline" : "none"}">
                 ${this.nodeContentHtml(treeNode)}
               </div>
-              <ul id="c_${treeNode.id}" class="dt-children">${this.getNodeTemplate(childNodes)}</ul>
+              <ul class="dt-children">${this.getNodeTemplate(childNodes)}</ul>
             </li>`
         );
       } else {
         treeHtml.push(
-          `<li data-node-id="${treeNode.id}" class="${openClass}">
+          `<li data-dt-id="${treeNode.id}" class="${openClass}">
             <div class="dt-node" style="padding-left:${stylePaddingLeft}px" draggable="true">
               ${this.nodeContentHtml(treeNode)}
             </div>

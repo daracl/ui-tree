@@ -148,34 +148,20 @@
 
   function init() {
 
-    var treeItem = [];
-    treeItem.push({ id: 0, pid: '', text: 'My example tree1', url: "detail('2')" });
-    treeItem.push({ id: 1, pid: 0, text: 'pub 1', url: "detail('2')" });
-    treeItem.push({ id: 3, pid: 1, text: 'pub 1.1', url: "detail('2')" });
-    treeItem.push({ id: 5, pid: 3, text: '5Node 1.1.1', url: "detail('2')", state: { checked: true } });
-    treeItem.push({ id: 6, pid: 5, text: '6Node 1.1.1.1', url: "detail('2')" });
-    treeItem.push({ id: 14, pid: 3, text: '14Node 1.1.1', url: "detail('2')" });
-    treeItem.push({ id: 15, pid: 14, text: '15Node 1.1.1', url: "detail('2')" });
-    treeItem.push({ id: 16, pid: 14, text: '16Node 1.1.1', url: "detail('2')", childCnt: 1000 });
-    treeItem.push({ id: 4, pid: 0, text: '4Node 3', url: "detail('2')" });
-    treeItem.push({ id: 2, pid: 0, text: '2Node 2', url: "detail('2')" });
-    treeItem.push({ id: 7, pid: 0, text: '7Node 4', url: "detail('2')" });
-    treeItem.push({ id: 41, pid: 0, text: '4Node 3', url: "detail('2')" });
-    treeItem.push({ id: 21, pid: 0, text: '2Node 2', url: "detail('2')" });
-    treeItem.push({ id: 712, pid: 0, text: '7Node 4', url: "detail('2')" });
-    treeItem.push({ id: 9, pid: 0, text: '9My Pictures', url: "detail('2')", img: 'img/cd.gif', childCnt: 10 });
+    var treeItem = JSON.parse(document.getElementById("sourceSample").textContent);
 
     treeObj = Daracl.tree.create("#treeDiv", {
       items: treeItem
       , style: {
         height: '500px'
       }
+      //"root"
       , rootNode: {
-        id: 0
+        id: ""
         , text: 'root node'
       }
       , nodeStyleClass(node) {
-        console.log(node);
+        //console.log(node);
         return node.id == "1" ? "id-1" : "222";
       }
       , enableRootNode1: true
@@ -305,4 +291,39 @@
   }
 
 
+</script>
+<script id="sourceSample" type="text/content">
+  [
+  
+  { "id": 0, "pid": "", "text": "Root Menu 1", "url": "detail('0')" },
+  { "id": 1, "pid": 0, "text": "Sub Menu 1.1", "url": "detail('1')" },
+  { "id": 2, "pid": 0, "text": "Sub Menu 1.2", "url": "detail('2')" },
+  { "id": 3, "pid": 1, "text": "Sub Menu 1.1.1", "url": "detail('3')" },
+  { "id": 4, "pid": 1, "text": "Sub Menu 1.1.2", "url": "detail('4')" },
+  { "id": 5, "pid": 2, "text": "Sub Menu 1.2.1", "url": "detail('5')" },
+  { "id": 6, "pid": "", "text": "Root Menu 2", "url": "detail('6')" },
+  { "id": 7, "pid": 0, "text": "Sub Menu 2.1", "url": "detail('7')" },
+  { "id": 8, "pid": 0, "text": "Sub Menu 2.2", "url": "detail('8')" },
+  { "id": 9, "pid": 7, "text": "Sub Menu 2.1.1", "url": "detail('9')" },
+  { "id": 10, "pid": 7, "text": "Sub Menu 2.1.2", "url": "detail('10')" },
+  { "id": 11, "pid": 8, "text": "Sub Menu 2.2.1", "url": "detail('11')" },
+  { "id": 12, "pid": "", "text": "Root Menu 3", "url": "detail('12')" },
+  { "id": 13, "pid": 12, "text": "Sub Menu 3.1", "url": "detail('13')" },
+  { "id": 14, "pid": 12, "text": "Sub Menu 3.2", "url": "detail('14')" },
+  { "id": 15, "pid": 13, "text": "Sub Menu 3.1.1", "url": "detail('15')" },
+  { "id": 16, "pid": 13, "text": "Sub Menu 3.1.2", "url": "detail('16')" },
+  { "id": 17, "pid": 14, "text": "Sub Menu 3.2.1", "url": "detail('17')" },
+  { "id": 18, "pid": 14, "text": "Sub Menu 3.2.2", "url": "detail('18')" },
+  { "id": 19, "pid": 18, "text": "Sub Menu 3.2.2.1", "url": "detail('19')" },
+  { "id": 20, "pid": "", "text": "Root Menu 4", "url": "detail('20')" },
+  { "id": 21, "pid": 20, "text": "Sub Menu 4.1", "url": "detail('21')" },
+  { "id": 22, "pid": 20, "text": "Sub Menu 4.2", "url": "detail('22')" },
+  { "id": 23, "pid": 21, "text": "Sub Menu 4.1.1", "url": "detail('23')" },
+  { "id": 24, "pid": 21, "text": "Sub Menu 4.1.2", "url": "detail('24')" },
+  { "id": 25, "pid": 22, "text": "Sub Menu 4.2.1", "url": "detail('25')" },
+  { "id": 26, "pid": "", "text": "Root Menu 5", "url": "detail('26')" },
+  { "id": 27, "pid": 26, "text": "Sub Menu 5.1", "url": "detail('27')" },
+  { "id": 28, "pid": 27, "text": "Sub Menu 5.1.1", "url": "detail('28')" },
+  { "id": 29, "pid": 27, "text": "Sub Menu 5.1.2", "url": "detail('29')" }
+]
 </script>

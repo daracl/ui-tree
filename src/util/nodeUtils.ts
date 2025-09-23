@@ -12,11 +12,11 @@ export default {
     return itemEle.getAttribute("data-val");
   },
   nodeLiElement(itemEle: Element): Element | null {
-    return itemEle.closest("[data-node-id]");
+    return itemEle.closest("[data-dt-id]");
   },
 
   nodeIdToElement(treeElement: Element, id: any): Element | null {
-    return treeElement.querySelector(`[data-node-id="${id}"]`);
+    return treeElement.querySelector(`[data-dt-id="${id}"]`);
   },
 
   /**
@@ -38,13 +38,13 @@ export default {
    */
   elementToTreeNode(itemEle: Element, treeContext: Tree): TreeNode {
     let nodeEle;
-    if (itemEle.hasAttribute("data-node-id")) {
+    if (itemEle.hasAttribute("data-dt-id")) {
       nodeEle = itemEle;
     } else {
       nodeEle = this.nodeLiElement(itemEle);
     }
 
-    return treeContext.config.allNode[nodeEle?.getAttribute("data-node-id") ?? ""];
+    return treeContext.config.allNode[nodeEle?.getAttribute("data-dt-id") ?? ""];
   },
 
   getNodeIdx(childNodes: TreeNode[], id: any) {

@@ -74,7 +74,9 @@ export default class TreeNodeInfo implements TreeNode {
         item
       );
     } else {
-      this.childNodes.push(item);
+      if(this.id === item.pid){
+        this.childNodes.push(item);
+      }
     }
   }
 
@@ -184,6 +186,7 @@ export default class TreeNodeInfo implements TreeNode {
 
         break;
       }
+      
       case MOVE_POSITION.CHILD: {
         const moveNodeInfo = this.tree.config.allNode[moveNodeId];
         childNodes = this.tree.config.allNode[moveNodeId].childNodes;
@@ -410,6 +413,38 @@ export default class TreeNodeInfo implements TreeNode {
   public focusOut() {
     domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-node-title.focus"), "focus");
     this.tree.config.focusNode = null;
+  }
+
+  
+  /**
+   * get parent node
+   *
+   * @public
+   * @returns {TreeNode} 
+   */
+  public getParentNode():TreeNode {
+    return this.tree.config.allNode[this.pid];
+  }
+  
+  
+  /**
+   * all parent nodes
+   *
+   * @public
+   * @returns {TreeNode[]} 
+   */
+  public getParentNodes():TreeNode[] {
+    let pid = this.pid;
+
+    let parentNodes = [];
+    for (let depth = this.depth; depth > 0; depth--) {
+      let pNode = this.tree.config.allNode[pid];
+      if (pNode) {
+        parentNodes.push(pNode);
+      }
+    }
+
+    return parentNodes;
   }
 }
 

@@ -120,7 +120,7 @@ export default class Checkbox {
   public setCheckBox(id: string | number, state: number) {
     if (!this.tree.config.isCheckbox) return;
 
-    const ele = this.tree.mainElement.querySelector(`[data-node-id="${id}"] .dt-checkbox`);
+    const ele = this.tree.mainElement.querySelector(`[data-dt-id="${id}"] .dt-checkbox`);
     const node = this.tree.config.allNode[id];
 
     if (ele) {
