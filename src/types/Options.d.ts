@@ -8,8 +8,8 @@ export interface OptionCallback {
  */
 export interface Options {
   style: {
-    width: string;
-    height: string;
+    width: string|number;
+    height: string|number;
     paddingLeft: number;
   };
   rootNode: any;

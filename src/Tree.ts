@@ -11,6 +11,7 @@ import nodeUtils from "./util/nodeUtils";
 import Dnd from "./plugins/Dnd";
 import Keydown from "./plugins/Keydown";
 import Request from "./plugins/Request";
+import { escapeRegExp, findText, normalizeText, textToRegex } from "./util/searchUtil";
 
 declare const APP_VERSION: string;
 
@@ -72,8 +73,6 @@ export default class Tree {
 
   private selector: string;
 
-  private prefix: string;
-
   public mainElement: HTMLElement;
 
   public config: ConfigInfo;
@@ -94,15 +93,17 @@ export default class Tree {
       let style = [];
 
       let addStyle = (this.orginStyle = mainElement.getAttribute("style")) || "";
+      const width = this.options.style.width;
       if (this.options.style.width) {
         addStyle = addStyle.replace(/(width:).+?(;[\s]?|$)/g, "");
 
-        style.push(`width:${this.options.style.width};`);
+        style.push(`width:${utils.isNumber(width)? width+'px': width};`);
       }
-      if (this.options.style.height) {
+      const height = this.options.style.height;
+      if (height) {
         addStyle = addStyle.replace(/(height:).+?(;[\s]?|$)/g, "");
 
-        style.push(`height:${this.options.style.height};`);
+        style.push(`height:${utils.isNumber(height)? height+'px': height};`);
       }
 
       style.push(addStyle ? addStyle + ";" : "");
@@ -110,7 +111,6 @@ export default class Tree {
       mainElement.setAttribute("style", style.join(""));
     }
 
-    this.prefix = "dt" + utils.getHashCode(selector);
     this.selector = selector;
     this.mainElement = mainElement;
     mainElement.classList.add("daracl-tree");
@@ -133,8 +133,38 @@ export default class Tree {
     allInstance[selector] = this;
   }
 
+  
+  /**
+   * tree 생성
+   *
+   * @public
+   * @static
+   * @param {string} selector 
+   * @param {Options} options 
+   * @returns {Tree} 
+   */
   public static create(selector: string, options: Options): Tree {
     return new Tree(selector, options);
+  }
+  
+  /**
+   * tree instance 얻기
+   *
+   * @public
+   * @static
+   * @param {?string} [selector] 
+   * @returns {Tree} 
+   */
+  public static instance(selector?: string) {
+    if (utils.isUndefined(selector) || utils.isBlank(selector)) {
+      const keys = Object.keys(allInstance);
+      if (keys.length > 1) {
+        throw new Error(`selector empty : [${selector}]`);
+      }
+      selector = keys[0];
+    }
+
+    return allInstance[selector];
   }
 
   /**
@@ -420,10 +450,6 @@ export default class Tree {
     return `${checkboxHtml}<span class="dt-node-title ${addNodeStyleClass}">${iconHtml}<span>${node.text}</span></span>`;
   }
 
-  public getPrefix() {
-    return this.prefix;
-  }
-
   /**
    * 설정 옵션 얻기
    */
@@ -437,32 +463,8 @@ export default class Tree {
    * @param id {any} node id
    * @returns {TreeNode} 트리 노드 정보
    */
-  public getNodeInfo = (id: any) => {
+  public getNodeInfo = (id: string|number):TreeNode => {
     return this.config.allNode[id];
-  };
-
-  public static instance(selector?: string) {
-    if (utils.isUndefined(selector) || utils.isBlank(selector)) {
-      const keys = Object.keys(allInstance);
-      if (keys.length > 1) {
-        throw new Error(`selector empty : [${selector}]`);
-      }
-      selector = keys[0];
-    }
-
-    return allInstance[selector];
-  }
-
-  public destroy = () => {
-    domUtils.setAttribute(this.mainElement, { class: this.orginStyleClass, style: this.orginStyle });
-    this.mainElement.replaceChildren();
-
-    for (const key in this) {
-      if (utils.hasOwnProp(this, key)) {
-        delete this[key];
-        delete allInstance[this.selector];
-      }
-    }
   };
 
   /**
@@ -491,7 +493,7 @@ export default class Tree {
   /**
    * 노드 열기
    */
-  public openNode(id: string) {
+  public openNode(id: string|number) {
     const node = this.config.allNode[id];
     if (!node) {
       return;
@@ -514,7 +516,7 @@ export default class Tree {
   /**
    *  노드 닫기
    */
-  public closeNode(id: string) {
+  public closeNode(id: string|number) {
     const node = this.config.allNode[id];
 
     if (node) {
@@ -528,7 +530,7 @@ export default class Tree {
    * @param id tree id
    * @returns  tree node 정보
    */
-  public getNodes(id: any): TreeNode {
+  public getNodes(id: string|number): TreeNode {
     if (utils.isUndefined(id)) {
       return this.config.rootNode;
     }
@@ -540,7 +542,7 @@ export default class Tree {
    *
    * @param id tree id
    */
-  public setSelectNode(id: any, isOpen: boolean = true) {
+  public setSelectNode(id: string|number, isOpen: boolean = true) {
     const node = this.config.allNode[id];
 
     if (node) {
@@ -578,7 +580,7 @@ export default class Tree {
    * @param id tree node id
    * @returns 삭제된 노드 값
    */
-  public remove(...ids: any[]) {
+  public remove(...ids: string[]|number[]) {
     const reval = [];
     for (const id of ids) {
       const removeNode = this.config.allNode[id];
@@ -591,4 +593,113 @@ export default class Tree {
     }
     return reval;
   }
+  
+  
+  /**
+   * node count
+   *
+   * @public
+   * @param {?(string|number)} [id] node id
+   * @returns {number} count
+   */
+  public getTreeNodeCount(id?: string|number) {
+    if(!id){
+      return nodeCount(this.config.rootNode) + (this.options.enableRootNode?1:0);
+    }else{
+      return nodeCount(this.config.allNode[id])+1;
+    }
+  }
+  
+  /**
+   * tree node search
+   *
+   * @public
+   * @param {string} searchText search text
+   * @param {?(string|number)} [id] node id 가 있을 경우 하위 노드 검색
+   */
+  public search(searchText:string, id?:string|number){
+    const searchResult: TreeNode[] = [];
+
+    const mainElement = this.mainElement; 
+    domUtils.removeClass(mainElement.querySelectorAll(".dt-node-title.dt-highlight"),"dt-highlight");
+
+    // 공백만 있는 검색어 제거
+    const cleanedText = (searchText ?? "").trim();
+    if (!cleanedText) return searchResult;
+
+    const cleanedSearch = normalizeText(searchText);
+    const safePattern = escapeRegExp(cleanedSearch);
+    const searchRegex = new RegExp(safePattern, 'i'); // 대소문자 무시
+
+    // 검색 수행
+    const startNode = id ? this.config.allNode[id] : this.config.rootNode;
+    if (startNode) {
+      nodeSearch(startNode, searchRegex, searchResult);
+    }
+    
+    // 결과 하이라이팅 및 노드 열기
+    for (const node of searchResult) {
+      this.openNode(node.id);
+      const titleEl = nodeUtils.nodeIdToNodeTitleElement(mainElement, node.id);
+      domUtils.addClass(titleEl, "dt-highlight");
+    }
+    return searchResult;
+  }
+
+  public destroy = () => {
+    domUtils.setAttribute(this.mainElement, { class: this.orginStyleClass, style: this.orginStyle });
+    this.mainElement.replaceChildren();
+
+    for (const key in this) {
+      if (utils.hasOwnProp(this, key)) {
+        delete this[key];
+        delete allInstance[this.selector];
+      }
+    }
+  };
 }
+
+/**
+ * node count 얻기
+ *
+ * @param {TreeNode} node tree 
+ * @returns {number} node count
+ */
+function nodeCount(node: TreeNode):number {
+  if(node){
+    const childNodes = node.childNodes;
+    if(childNodes && childNodes.length > 0){
+      let childNodeCount = childNodes.length;
+      for(let treeNode of childNodes){
+        childNodeCount = childNodeCount+nodeCount(treeNode);
+      }
+      return childNodeCount;
+    }
+  }
+  return 0;
+}
+
+
+/**
+ * 노드 검색
+ *
+ * @param {TreeNode} node tree node 
+ * @param {RegExp} searchText 검색 정규화
+ * @param {TreeNode[]} searchResult 검색결과
+ */
+function nodeSearch(node: TreeNode, searchText:RegExp, searchResult:TreeNode[]) {
+  if(node){
+    const childNodes = node.childNodes;
+
+    if(node.text && findText(searchText, node.text)){
+      searchResult.push(node);
+    }
+
+    if(childNodes && childNodes.length > 0){ 
+      for(let treeNode of childNodes){
+        nodeSearch(treeNode, searchText, searchResult);
+      }
+    }
+  }
+}
+

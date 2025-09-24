@@ -124,6 +124,11 @@
       line-height: 24px;
       height: 24px;
 
+      &.dt-highlight{
+        color: var(--item-search-font-color) !important;
+        font-weight: bold;
+      }
+
       &.selected {
         color: var(--item-select-font-color);
         background-color: var(--item-select-bg-color);

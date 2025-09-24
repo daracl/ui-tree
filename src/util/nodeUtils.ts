@@ -19,6 +19,19 @@ export default {
     return treeElement.querySelector(`[data-dt-id="${id}"]`);
   },
 
+  
+  /**
+   * node title element
+   *
+   * @param {Element} treeElement main tree element
+   * @param {*} id node id  
+   * @returns {(Element | null)} node title element
+   */
+  nodeIdToNodeTitleElement(treeElement: Element, id: any): Element | null {
+    return treeElement.querySelector(`[data-dt-id="${id}"]>.dt-node>.dt-node-title`);
+  },
+
+
   /**
    * text-content padding 값 구하기.
    *
