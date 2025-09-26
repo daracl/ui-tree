@@ -1,6 +1,6 @@
 import { Options } from "@t/Options";
 import { ConfigInfo } from "@t/ConfigInfo";
-import utils from "./util/utils";
+import { generateUUID, hasOwnProp, isArray, isBlank, isNumber, isString, isUndefined, objectMerge } from "./util/utils";
 import treeEvent from "./event/initEvents";
 import domUtils from "./util/domUtils";
 import { TreeNode } from "@t/TreeNode";
@@ -47,7 +47,7 @@ interface ComponentMap {
 }
 
 // all instance
-const allInstance: ComponentMap = {};
+const ALL_INSTANCE: ComponentMap = {};
 
 // edit default option
 const EDIT_DEFAULT_OPTIONS = {
@@ -73,64 +73,88 @@ export default class Tree {
 
   private selector: string;
 
-  public mainElement: HTMLElement;
+  private containerElement:HTMLElement
+
+  private rootElement: HTMLElement;
 
   public config: ConfigInfo;
 
   private nodeStyleFn;
 
   constructor(selector: string, options: Options) {
-    const mainElement = document.querySelector<HTMLElement>(selector);
-    if (!mainElement) {
+    const containerElement = document.querySelector<HTMLElement>(selector);
+    if (!containerElement) {
       throw new Error(`${selector} tree selector not found`);
     }
 
-    this.options = utils.objectMerge({}, defaultOptions, options) as Options;
+    this.options = objectMerge({}, defaultOptions, options) as Options;
 
-    this.orginStyleClass = mainElement.className;
+    this.orginStyleClass = containerElement.className;
 
     if (this.options.style) {
       let style = [];
 
-      let addStyle = (this.orginStyle = mainElement.getAttribute("style")) || "";
+      let addStyle = (this.orginStyle = containerElement.getAttribute("style")) || "";
       const width = this.options.style.width;
       if (this.options.style.width) {
         addStyle = addStyle.replace(/(width:).+?(;[\s]?|$)/g, "");
 
-        style.push(`width:${utils.isNumber(width)? width+'px': width};`);
+        style.push(`width:${isNumber(width)? width+'px': width};`);
       }
       const height = this.options.style.height;
       if (height) {
         addStyle = addStyle.replace(/(height:).+?(;[\s]?|$)/g, "");
 
-        style.push(`height:${utils.isNumber(height)? height+'px': height};`);
+        style.push(`height:${isNumber(height)? height+'px': height};`);
       }
 
-      style.push(addStyle ? addStyle + ";" : "");
+      style.push(addStyle ? addStyle +(addStyle.endsWith(";")?"": ";") : "");
 
-      mainElement.setAttribute("style", style.join(""));
+      containerElement.setAttribute("style", style.join(""));
     }
 
+    this.nodeStyleFn = this.options.nodeStyleClass;
+
     this.selector = selector;
-    this.mainElement = mainElement;
-    mainElement.classList.add("daracl-tree");
+    containerElement.classList.add("daracl-tree");
+
+    this.containerElement = containerElement;
+    this.initContainerElement();
 
     const ulElement = document.createElement("ul");
 
     domUtils.setAttribute(ulElement, {
-      class: "dt-container",
+      class: "dt-root",
       tabindex: "-1",
     });
-
-    this.nodeStyleFn = this.options.nodeStyleClass;
-
-    mainElement.append(ulElement);
-
+    
+    containerElement.append(ulElement);
+    this.rootElement = ulElement;
+        
     this.initConfig();
 
     this.init();
 
-    allInstance[selector] = this;
+    ALL_INSTANCE[selector] = this;
+  }
+
+
+  /**
+   * get container element
+   * 
+   * @returns tree container element
+   */
+  public getContainerElement(){
+    return this.containerElement;
+  }
+
+  /**
+   * get tree root element
+   * 
+   * @returns tree root element
+   */
+  public getRootElement(){
+    return this.rootElement;
   }
 
   
@@ -156,15 +180,15 @@ export default class Tree {
    * @returns {Tree} 
    */
   public static instance(selector?: string) {
-    if (utils.isUndefined(selector) || utils.isBlank(selector)) {
-      const keys = Object.keys(allInstance);
+    if (isUndefined(selector) || isBlank(selector)) {
+      const keys = Object.keys(ALL_INSTANCE);
       if (keys.length > 1) {
         throw new Error(`selector empty : [${selector}]`);
       }
       selector = keys[0];
     }
 
-    return allInstance[selector];
+    return ALL_INSTANCE[selector];
   }
 
   /**
@@ -174,7 +198,7 @@ export default class Tree {
    * @typedef {Object} defaultOptions
    */
   public static setOptions(options: Options) {
-    defaultOptions = utils.objectMerge({}, defaultOptions, options);
+    defaultOptions = objectMerge({}, defaultOptions, options);
   }
 
   private initConfig() {
@@ -188,21 +212,21 @@ export default class Tree {
       isFocus: false,
       rootNode: {},
       isCheckbox: false,
-      isDnd: !utils.isUndefined(plugins?.dnd),
-      isContextmenu: !utils.isUndefined(plugins?.contextmenu),
+      isDnd: !isUndefined(plugins?.dnd),
+      isContextmenu: !isUndefined(plugins?.contextmenu),
       isEdit: false,
-      isKeydown: !utils.isUndefined(plugins?.keydown),
+      isKeydown: !isUndefined(plugins?.keydown),
       isNodeDrag: false,
       isRequest: false,
     } as ConfigInfo;
 
-    this.config.rootNode = new TreeNodeInfo(utils.objectMerge({}, this.options.rootNode), "$$root$$", this);
+    this.config.rootNode = new TreeNodeInfo(objectMerge({}, this.options.rootNode), "$$root$$", this);
     this.config.allNode[this.config.rootNode.id] = this.config.rootNode;
     this.config.selectedNode = this.config.rootNode;
 
     if (plugins?.edit) {
       this.config.isEdit = true;
-      plugins.edit = utils.objectMerge({}, EDIT_DEFAULT_OPTIONS, plugins.edit);
+      plugins.edit = objectMerge({}, EDIT_DEFAULT_OPTIONS, plugins.edit);
     }
 
     this.config.request = new Request(this);
@@ -219,22 +243,22 @@ export default class Tree {
       this.config.keydown = new Keydown(this);
     }
 
-    treeEvent.expanderClick(this, this.mainElement);
+    treeEvent.expanderClick(this, this.rootElement);
 
     if (this.config.isDnd) {
       this.config.dnd = new Dnd(this);
     }
 
-    treeEvent.textClick(this, this.mainElement);
+    treeEvent.textClick(this, this.rootElement);
   }
 
   public request(id?: any) {
     const opts = this.options;
 
     if (this.config.isRequest) {
-      id = !utils.isUndefined(id) ? id : this.config.rootNode.id;
+      id = !isUndefined(id) ? id : this.config.rootNode.id;
       this.config.request.search(this.config.allNode[id]);
-    } else if (utils.isArray(opts.items)) {
+    } else if (isArray(opts.items)) {
       this.addNode(opts.items);
     }
   }
@@ -260,7 +284,7 @@ export default class Tree {
    */
   public addNode(nodeItem: any[] | any, parentId?: any, options?: any) {
     let nodeArr = [];
-    if (!utils.isArray(nodeItem)) {
+    if (!isArray(nodeItem)) {
       nodeArr.push(nodeItem);
     } else {
       nodeArr = nodeItem;
@@ -270,7 +294,7 @@ export default class Tree {
     for (const node of nodeArr) {
       this.treeGrid(node, parentId);
     }
-    parentId = !utils.isUndefined(parentId) ? parentId : rootNodeId;
+    parentId = !isUndefined(parentId) ? parentId : rootNodeId;
 
     this.render(parentId);
 
@@ -281,7 +305,7 @@ export default class Tree {
     nodeInfo = nodeInfo ?? {};
     nodeInfo["_cud"] = "C";
     nodeInfo[this.options.itemKey.pid] = nodeInfo.pid ?? nodeInfo[this.options.itemKey.pid] ?? (this.config.selectedNode ? this.config.selectedNode.id : this.config.rootNode.id);
-    nodeInfo[this.options.itemKey.id] = nodeInfo.id ?? nodeInfo[this.options.itemKey.id] ?? utils.generateUUID();
+    nodeInfo[this.options.itemKey.id] = nodeInfo.id ?? nodeInfo[this.options.itemKey.id] ?? generateUUID();
     nodeInfo[this.options.itemKey.text] = nodeInfo.text ?? nodeInfo[this.options.itemKey.text] ?? "New Node";
 
     this.addNode(nodeInfo);
@@ -334,15 +358,15 @@ export default class Tree {
     if (id === this.config.rootNode.id) {
       renderParentNode = this.config.rootNode;
       // init tree element
-      (this.mainElement.querySelector(".dt-container") as Element).innerHTML = this.getNodeTemplate([this.config.rootNode]);
+      this.rootElement.innerHTML = this.getNodeTemplate([this.config.rootNode]);
     } else {
-      if (utils.isBlank(id)) {
+      if (isBlank(id)) {
         return;
       }
 
       renderParentNode = this.config.allNode[id];
 
-      const childNodeElemnt = this.mainElement.querySelector(`[data-dt-id="${renderParentNode.id}"]>.dt-children`);
+      const childNodeElemnt = this.rootElement.querySelector(`[data-dt-id="${renderParentNode.id}"]>.dt-children`);
       if (childNodeElemnt) {
         childNodeElemnt.innerHTML = this.getNodeTemplate(renderParentNode.childNodes);
       }
@@ -354,7 +378,7 @@ export default class Tree {
   }
 
   private setNodeContent(selectedNode: TreeNode) {
-    const parentElement = this.mainElement.querySelector(`[data-dt-id="${selectedNode.id}"]>.dt-node`);
+    const parentElement = this.rootElement.querySelector(`[data-dt-id="${selectedNode.id}"]>.dt-node`);
 
     if (parentElement) {
       // 아이콘 활성화 일경우 아이콘 변경.
@@ -442,7 +466,7 @@ export default class Tree {
     let addNodeStyleClass = "";
     if (this.nodeStyleFn) {
       addNodeStyleClass = this.nodeStyleFn(node);
-      if (!utils.isString(addNodeStyleClass)) {
+      if (!isString(addNodeStyleClass)) {
         addNodeStyleClass = "";
       }
     }
@@ -531,7 +555,7 @@ export default class Tree {
    * @returns  tree node 정보
    */
   public getNodes(id: string|number): TreeNode {
-    if (utils.isUndefined(id)) {
+    if (isUndefined(id)) {
       return this.config.rootNode;
     }
     return this.config.allNode[id];
@@ -560,7 +584,7 @@ export default class Tree {
    * @returns {TreeNode} 선택된 tree node
    */
   public getSelectNode(): TreeNode | undefined {
-    const selectElement = this.mainElement.querySelector(".selected");
+    const selectElement = this.rootElement.querySelector(".selected");
     if (selectElement) {
       return nodeUtils.elementToTreeNode(selectElement, this);
     }
@@ -620,7 +644,7 @@ export default class Tree {
   public search(searchText:string, id?:string|number){
     const searchResult: TreeNode[] = [];
 
-    const mainElement = this.mainElement; 
+    const mainElement = this.rootElement; 
     domUtils.removeClass(mainElement.querySelectorAll(".dt-node-title.dt-highlight"),"dt-highlight");
 
     // 공백만 있는 검색어 제거
@@ -647,16 +671,27 @@ export default class Tree {
   }
 
   public destroy = () => {
-    domUtils.setAttribute(this.mainElement, { class: this.orginStyleClass, style: this.orginStyle });
-    this.mainElement.replaceChildren();
+    domUtils.setAttribute(this.rootElement, { class: this.orginStyleClass, style: this.orginStyle });
+    this.initContainerElement();
 
     for (const key in this) {
-      if (utils.hasOwnProp(this, key)) {
+      if (hasOwnProp(this, key)) {
         delete this[key];
-        delete allInstance[this.selector];
+        delete ALL_INSTANCE[this.selector];
       }
     }
   };
+
+  private initContainerElement(){
+    const el = this.containerElement;
+    while (el.firstChild) {
+      if (typeof el.firstChild.remove === "function") {
+        el.firstChild.remove(); // DOM에서 제거
+      } else {
+        el.removeChild(el.firstChild);
+      }
+    }
+  } 
 }
 
 /**
@@ -690,8 +725,7 @@ function nodeCount(node: TreeNode):number {
 function nodeSearch(node: TreeNode, searchText:RegExp, searchResult:TreeNode[]) {
   if(node){
     const childNodes = node.childNodes;
-
-    if(node.text && findText(searchText, node.text)){
+    if(findText(searchText, node.text)){
       searchResult.push(node);
     }
 

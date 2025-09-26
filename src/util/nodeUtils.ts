@@ -1,6 +1,6 @@
 import { TreeNode } from "@t/TreeNode";
 import Tree from "src/Tree";
-import utils from "./utils";
+import { isBlank } from "./utils";
 
 export default {
   /**
@@ -98,7 +98,7 @@ export default {
   getIcon(node: TreeNode): string {
     let icon = node.icon;
 
-    if (utils.isBlank(icon)) {
+    if (isBlank(icon)) {
       return this.isFolder(node) ? "dt-folder" : "dt-file";
     } else {
       return icon ?? "dt-file";

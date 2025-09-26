@@ -1,4 +1,3 @@
-import utils from "./utils";
 
 export function ajax(url: any, ajaxOpts: any) {
   const method = ajaxOpts.method ?? "get";

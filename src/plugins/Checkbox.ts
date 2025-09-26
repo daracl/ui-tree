@@ -3,8 +3,7 @@ import Tree from "../Tree";
 import domUtils from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import { CHECK_STATE } from "../constants";
-import eventUtils from "src/util/eventUtils";
-import utils from "src/util/utils";
+import { eventOn } from "src/util/eventUtils";
 
 /**
  * tree node Checkbox
@@ -80,7 +79,9 @@ export default class Checkbox {
   }
 
   initEvt() {
-    eventUtils.eventOn(this.tree.mainElement, "click", ".dt-checkbox", (e: Event, checkboxEle: Element) => {
+    const rootElement = this.tree.getRootElement();
+    
+    eventOn(rootElement, "click", (e: Event, checkboxEle: Element) => {
       e.preventDefault();
       e.stopImmediatePropagation();
 
@@ -95,7 +96,7 @@ export default class Checkbox {
 
         this.parentNodeCheck(nodeInfo);
       }
-    });
+    },".dt-checkbox");
   }
 
   public childCheck(node: TreeNode, state: number) {
@@ -120,7 +121,9 @@ export default class Checkbox {
   public setCheckBox(id: string | number, state: number) {
     if (!this.tree.config.isCheckbox) return;
 
-    const ele = this.tree.mainElement.querySelector(`[data-dt-id="${id}"] .dt-checkbox`);
+    const rootElement = this.tree.getRootElement();
+
+    const ele = rootElement.querySelector(`[data-dt-id="${id}"] .dt-checkbox`);
     const node = this.tree.config.allNode[id];
 
     if (ele) {

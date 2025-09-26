@@ -4,9 +4,9 @@ import { TreeNode } from "@t/TreeNode";
 import Tree from "./Tree";
 import nodeUtils from "./util/nodeUtils";
 import { MOVE_POSITION } from "./constants";
-import eventUtils from "./util/eventUtils";
-import utils from "./util/utils";
+import { isBlank } from "./util/utils";
 import { EditOption } from "@t/Options";
+import { eventOff, eventOn, getEventKey } from "./util/eventUtils";
 
 /**
  *TreeNodeInfo
@@ -86,7 +86,7 @@ export default class TreeNodeInfo implements TreeNode {
    * @param childOpenFlag 자식 노드 열기 여부
    */
   public open(childOpenFlag?: boolean) {
-    domUtils.addClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
+    domUtils.addClass(nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id), "open");
     this.isOpen = true;
 
     if (this.tree.config.isRequest && this.isLoaded !== true) {
@@ -108,7 +108,7 @@ export default class TreeNodeInfo implements TreeNode {
   public close(childCloseFlag?: boolean) {
     if (this.tree.config.rootDepth <= this.depth) {
       this.isOpen = false;
-      domUtils.removeClass(nodeUtils.nodeIdToElement(this.tree.mainElement, this.id), "open");
+      domUtils.removeClass(nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id), "open");
     }
 
     if (childCloseFlag === true) {
@@ -146,7 +146,7 @@ export default class TreeNodeInfo implements TreeNode {
     };
   }
   private removeElement() {
-    nodeUtils.nodeIdToElement(this.tree.mainElement, this.id)?.remove();
+    nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id)?.remove();
 
     const parentNode = this.tree.config.allNode[this.pid];
 
@@ -284,7 +284,7 @@ export default class TreeNodeInfo implements TreeNode {
     if (!this.tree.config.isEdit || this.isEdit) return;
 
     // 이전에 활성화된 input 영역 삭제.
-    this.tree.mainElement.querySelectorAll(".dt-node-title.edit").forEach((el: Element) => {
+    this.tree.getRootElement().querySelectorAll(".dt-node-title.edit").forEach((el: Element) => {
       el.querySelector(".dt-input")?.remove();
       domUtils.removeClass(el, "edit");
     });
@@ -307,7 +307,7 @@ export default class TreeNodeInfo implements TreeNode {
     const inputElement = document.createElement("input");
     domUtils.setAttribute(inputElement, attrs);
 
-    const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
+    const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id);
     const contElement = nodeElement?.querySelector(".dt-node-title");
     if (contElement) {
       contElement.appendChild(inputElement);
@@ -316,8 +316,8 @@ export default class TreeNodeInfo implements TreeNode {
       const orginText = this.text;
       inputElement.value = orginText;
 
-      eventUtils.eventOn(inputElement, "keyup", (e: Event) => {
-        const key = eventUtils.getEventKey(e);
+      eventOn(inputElement, "keyup", (e: Event) => {
+        const key = getEventKey(e);
 
         if (key == "enter") {
           inputElement.blur();
@@ -325,7 +325,7 @@ export default class TreeNodeInfo implements TreeNode {
         }
       });
 
-      eventUtils.eventOn(inputElement, "blur", (e: Event) => {
+      eventOn(inputElement, "blur", (e: Event) => {
         let changeText = inputElement.value;
         if (editOptions.after) {
           const afterVal = editOptions.after({ item: this, orginText: orginText, text: changeText });
@@ -335,7 +335,7 @@ export default class TreeNodeInfo implements TreeNode {
             }, 1);
             return;
           }
-          if (!utils.isBlank(afterVal)) {
+          if (!isBlank(afterVal)) {
             changeText = afterVal;
           }
         }
@@ -350,7 +350,7 @@ export default class TreeNodeInfo implements TreeNode {
             this._cud = "U";
           }
         }
-        eventUtils.eventOff(inputElement, "blur keyup");
+        eventOff(inputElement, "blur keyup");
         domUtils.removeClass(contElement, "edit");
         inputElement.remove();
 
@@ -368,15 +368,15 @@ export default class TreeNodeInfo implements TreeNode {
    */
   public select() {
     this.focusOut();
-    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-node-title.selected"), "selected");
+    domUtils.removeClass(this.tree.getRootElement().querySelectorAll(".dt-node-title.selected"), "selected");
 
-    const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
+    const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id);
 
     if (nodeElement) {
       this.tree.config.selectedNode = this;
       domUtils.addClass(nodeElement.querySelector(".dt-node-title"), "selected");
 
-      setScrollTop(this.tree.mainElement, nodeElement);
+      setScrollTop(this.tree.getContainerElement(), nodeElement);
 
       if (this.tree.options.selectNode) {
         this.tree.options.selectNode({
@@ -391,15 +391,15 @@ export default class TreeNodeInfo implements TreeNode {
    * node 선택
    */
   public focus() {
-    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-node-title.focus"), "focus");
+    domUtils.removeClass(this.tree.getRootElement().querySelectorAll(".dt-node-title.focus"), "focus");
 
-    const nodeElement = nodeUtils.nodeIdToElement(this.tree.mainElement, this.id);
+    const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id);
 
     if (nodeElement) {
       this.tree.config.focusNode = this;
       domUtils.addClass(nodeElement.querySelector(".dt-node-title"), "focus");
 
-      setScrollTop(this.tree.mainElement, nodeElement);
+      setScrollTop(this.tree.getContainerElement(), nodeElement);
 
       if (this.tree.options.focusNode) {
         this.tree.options.focusNode({
@@ -411,7 +411,7 @@ export default class TreeNodeInfo implements TreeNode {
   }
 
   public focusOut() {
-    domUtils.removeClass(this.tree.mainElement.querySelectorAll(".dt-node-title.focus"), "focus");
+    domUtils.removeClass(this.tree.getRootElement().querySelectorAll(".dt-node-title.focus"), "focus");
     this.tree.config.focusNode = null;
   }
 

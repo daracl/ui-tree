@@ -15,20 +15,23 @@
   <div class="daracl-main" style="height:700px;">
     <h2 class="page-header">트리</h2>
     <div>
-      <table border="1" style="width:100%;height:100%;table-layout: fixed;">
+      <table style="width:100%;height:100%;table-layout: fixed;border:1px solid #dddddd">
         <tr valign="top">
           <td style="width:50%;">
-            <input type="button" value="init" onclick="init()">
-            ||
-            <input type="button" value="오픈" onclick="treeOpen()">
-            ||
-            <input type="button" value="닫기" onclick="treeClose()">
-            ||
-            <input type="button" value="선택 노드 삭제" onclick="removeSelectNode()">
-            ||
-            <input type="button" value="선택 노드에 하위 노드 추가" onclick="addChildNode()">
-
-
+            <div class="button-area">
+              <button type="button" onclick="init()">init</button>
+              ||
+              <button type="button" onclick="treeOpen()">오픈</button>
+              ||
+              <button type="button" onclick="treeClose()">닫기</button>
+              ||
+              <button type="button" onclick="removeSelectNode()">선택 노드 삭제</button>
+              ||
+              <button type="button" onclick="addChildNode()">선택 노드에 하위 노드 추가</button>
+            </div>
+            <div>
+              <input type="text" placeholder="Search" class="node-search"/>
+            </div>
             <div id="treeDiv" style="overflow:auto;height:500px"></div>
 
             <br />
@@ -106,15 +109,16 @@
       if (theme === "dark") {
         document.querySelector('[name="theme-toggle"][value="dark"]').checked = true;
       }
-
-      /*
-      toggler.forEach(function (el) {
-        el.addEventListener("click", function (e) {
-          setMainTheme(el.value, true);
-        });
-      })
-      */
     }
+
+    document.querySelectorAll(".node-search").forEach((input) => {
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            const value = this.value.trim();
+            treeObj.search(value);
+          }
+        });
+      });
 
     init()
   }
@@ -166,7 +170,7 @@
       }
       , enableRootNode1: true
       , enableIcon: true
-      , openDepth: -1
+      , openDepth: 0
       , plugins: {
         checkbox: {}
         , edit: {

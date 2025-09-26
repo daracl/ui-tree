@@ -1,9 +1,9 @@
 import Tree from "../Tree";
 import { TreeNode } from "@t/TreeNode";
+import { eventOff, eventOn, getEventKey } from "src/util/eventUtils";
 
-import eventUtils from "src/util/eventUtils";
 import nodeUtils from "src/util/nodeUtils";
-import utils from "src/util/utils";
+import { objectMerge } from "src/util/utils";
 
 // keydown default option
 const KEYDOWN_DEFAULT_OPTIONS = {};
@@ -24,19 +24,20 @@ export default class Keydown {
 
     if (plugins?.keydown) {
       tree.config.isKeydown = true;
-      plugins.keydown = utils.objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, plugins.keydown);
+      plugins.keydown = objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, plugins.keydown);
     }
 
     this.initEvt();
   }
 
   initEvt() {
-    eventUtils.eventOn(this.tree.mainElement, "keydown", (e: any) => {
+    eventOff(this.tree.getContainerElement(), "keydown");
+    eventOn(this.tree.getContainerElement(), "keydown", (e: any) => {
       const focusNode = this.tree.config.focusNode || this.tree.config.selectedNode;
 
       if (focusNode == null) return;
 
-      const key = eventUtils.getEventKey(e);
+      const key = getEventKey(e);
 
       if (key == "f2") {
         focusNode.setEdit();
@@ -77,7 +78,6 @@ export default class Keydown {
    */
   public arrowDown(focusNode: TreeNode) {
     const nextNode = findNextNode(focusNode, this.tree, true);
-
     nextNode?.focus();
   }
 

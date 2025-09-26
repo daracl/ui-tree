@@ -1,4 +1,4 @@
-import utils from "./utils";
+import { isString } from "./utils";
 
 type ElementType = Element | string | NodeList | Document | null | undefined;
 
@@ -130,7 +130,7 @@ function $querySelector(el: ElementType): any[] {
 }
 
 function insertAdjacentHTML(elements: Element[], insertPosition: InsertPosition, renderElements: Element | string) {
-  if (utils.isString(renderElements)) {
+  if (isString(renderElements)) {
     elements.forEach((el) => {
       el.insertAdjacentHTML(insertPosition, renderElements);
     });

@@ -3,7 +3,7 @@ import { TreeNode } from "@t/TreeNode";
 import { ajax } from "src/util/ajaxUtils";
 import domUtils from "src/util/domUtils";
 import nodeUtils from "src/util/nodeUtils";
-import utils from "src/util/utils";
+import { isString, isUndefined, objectMerge } from "src/util/utils";
 
 const REQUEST_DEFAULT_OPTIONS = {
   url: { search: "" },
@@ -62,7 +62,7 @@ export default class Request {
     this.tree = tree;
     const plugins = tree.options.plugins;
 
-    if (utils.isUndefined(plugins?.request)) {
+    if (isUndefined(plugins?.request)) {
       return;
     }
 
@@ -72,15 +72,15 @@ export default class Request {
     this.initFlag = true;
     let opts: any;
 
-    if (utils.isString(reqOpt)) {
-      opts = utils.objectMerge({}, REQUEST_DEFAULT_OPTIONS, { url: { search: reqOpt } });
-    } else if (utils.isString(reqOpt?.url)) {
-      opts = utils.objectMerge({}, REQUEST_DEFAULT_OPTIONS, { url: { search: reqOpt?.url } });
+    if (isString(reqOpt)) {
+      opts = objectMerge({}, REQUEST_DEFAULT_OPTIONS, { url: { search: reqOpt } });
+    } else if (isString(reqOpt?.url)) {
+      opts = objectMerge({}, REQUEST_DEFAULT_OPTIONS, { url: { search: reqOpt?.url } });
     } else {
-      opts = utils.objectMerge({}, REQUEST_DEFAULT_OPTIONS, reqOpt);
+      opts = objectMerge({}, REQUEST_DEFAULT_OPTIONS, reqOpt);
     }
 
-    opts.$mainElement = tree.mainElement;
+    opts.$mainElement = tree.getContainerElement();
     this.url = opts.url;
 
     this.successCallback = opts.success || this.defaultSuccessCallback;
@@ -114,7 +114,7 @@ export default class Request {
   }
 
   public create(node: TreeNode): any {
-    if (!this.initFlag || utils.isUndefined(this.url.create)) return;
+    if (!this.initFlag || isUndefined(this.url.create)) return;
 
     const paramNode = nodeUtils.getParameterNode(node);
 
@@ -134,7 +134,7 @@ export default class Request {
   }
 
   public modify(node: TreeNode): any {
-    if (!this.initFlag || utils.isUndefined(this.url.modify)) return;
+    if (!this.initFlag || isUndefined(this.url.modify)) return;
 
     const paramNode = nodeUtils.getParameterNode(node);
 
@@ -160,7 +160,7 @@ export default class Request {
       return this.opts.removeNode(paramNode, "remove");
     }
 
-    if (!this.initFlag || utils.isUndefined(this.url.remove)) return;
+    if (!this.initFlag || isUndefined(this.url.remove)) return;
 
     this.opts.$node = node;
     this.opts.data = this.getParameters(paramNode);

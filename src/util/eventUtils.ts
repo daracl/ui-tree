@@ -1,4 +1,4 @@
-import utils from "./utils";
+import { isArray, isBlank, isEmpty, isString, isUndefined } from "./utils";
 
 const EVENT_KEY_CODE = {
   Enter: 13,
@@ -11,56 +11,62 @@ const EVENT_KEY_CODE = {
 };
 
 const EVENT_HANDLER_MAP = new Map();
-export default {
-  eventOff(el: Element | string | NodeList | null | Document, type: string) {
-    if (el == null) return el;
 
-    const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
+/**
+ * html element event 등록
+ *
+ * @param {(Element | string | NodeList | null | Document)} el html element
+ * @param {string} type event type "click mousedown" space split
+ * @returns {*}
+ */
+export const eventOff = (el: Element | string | NodeList | null | Document | Element[], type: string) => {
+  if (el == null) return el;
 
-    const elements = $querySelector(el);
+  const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
 
-    const evtInfo = EVENT_HANDLER_MAP.get(el);
-    for (const eventType of eventTypes) {
-      elements.forEach((el) => {
-        el.removeEventListener(eventType, evtInfo[eventType]);
-      });
+  const elements = $querySelector(el);
 
-      delete evtInfo[eventType];
-    }
-    if (Object.keys(evtInfo).length < 1) {
-      EVENT_HANDLER_MAP.delete(el);
-    }
-  },
+  const evtInfo = EVENT_HANDLER_MAP.get(el);
 
-  eventOn(el: Element | string | NodeList | null | Document, type: string, selector?: any, listener?: any) {
-    if (el == null) return el;
+  if (isEmpty(evtInfo)) {
+    return;
+  }
 
-    const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
+  for (const eventType of eventTypes) {
+    if (isUndefined(evtInfo[eventType])) continue;
 
-    const elements = $querySelector(el);
+    elements.forEach((el) => {
+      el.removeEventListener(eventType, evtInfo[eventType]);
+    });
 
-    if (!utils.isString(selector)) {
-      listener = selector;
+    delete evtInfo[eventType];
+  }
 
-      const fn = (e: Event) => {
-        if (listener(e, el) === false) {
-          e.stopImmediatePropagation();
-          e.preventDefault();
-        }
-      };
+  if (Object.keys(evtInfo).length < 1) {
+    EVENT_HANDLER_MAP.delete(el);
+  }
+};
 
-      for (const eventType of eventTypes) {
-        addEventInfo(el, eventType, fn);
+/**
+ * html element event 등록
+ *
+ * @param {(Element | string | NodeList | null | Document)} el html element
+ * @param {string} type event type "click mousedown" space split
+ * @param {?*} [listener] 이벤트 리스너
+ * @param {?*} [selector] 상위 셀럭터
+ * @param {?*} [fnOpts] listener option
+ * @returns {*}
+ */
+export const eventOn = (el: Element | string | NodeList | null | Document | Element[], type: string, listener?: any, selector?: any, fnOpts?: any) => {
+  if (el == null) return;
 
-        elements.forEach((el) => {
-          el.addEventListener(eventType, fn);
-        });
-      }
+  const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
 
-      return this;
-    }
+  const elements = $querySelector(el);
 
-    const fn = (e: Event) => {
+  let fn: any;
+  if (!isBlank(selector) && isString(selector)) {
+    fn = (e: Event) => {
       const evtTarget = e.target as Element;
       const selectorEle = evtTarget.closest(selector);
 
@@ -80,26 +86,35 @@ export default {
         e.preventDefault();
       }
     };
+  } else {
+    fn = (e: Event) => {
+      if (listener(e, el) === false) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+    };
+  }
 
-    for (const eventType of eventTypes) {
-      addEventInfo(el, eventType, fn);
-      elements.forEach((el) => {
-        el.addEventListener(eventType, fn);
-      });
-    }
-  },
-
-  getEventPosition(e: any) {
-    const evtTouche = e.touches;
-    const evt = evtTouche && evtTouche[0] ? evtTouche[0] : e;
-
-    return { x: evt.pageX, y: evt.pageY };
-  },
-
-  getEventKey(e: any) {
-    return (e.key || "").toLowerCase();
-  },
+  for (const eventType of eventTypes) {
+    addEventInfo(el, eventType, fn);
+    elements.forEach((el: Element) => {
+      el.addEventListener(eventType, fn, fnOpts ?? {});
+    });
+  }
 };
+
+
+export function  getEventPosition(e: any) {
+  const evtTouche = e.touches;
+  const evt = evtTouche && evtTouche[0] ? evtTouche[0] : e;
+
+  return { x: evt.pageX, y: evt.pageY };
+}
+
+export function   getEventKey(e: any) {
+  return (e.key || "").toLowerCase();
+}
+
 
 function addEventInfo(el: any, eventType: string, listener: any) {
   if (!EVENT_HANDLER_MAP.has(el)) {
@@ -108,7 +123,10 @@ function addEventInfo(el: any, eventType: string, listener: any) {
   EVENT_HANDLER_MAP.get(el)[eventType] = listener;
 }
 
-function $querySelector(el: Element | string | NodeList | Document): any[] {
+export function $querySelector(el: Element | string | NodeList | Document | Element[]): any[] {
+  if (isArray(el)) {
+    return el;
+  }
   if (el instanceof Document) {
     return [document];
   }
@@ -130,4 +148,15 @@ function $querySelector(el: Element | string | NodeList | Document): any[] {
   }
 
   return reval;
+}
+
+/**
+ * 모든 이벤트 취소
+ */
+export function allEventOff() {
+  for (const [element, events] of EVENT_HANDLER_MAP) {
+    for (let event in events) {
+      eventOff(element, event);
+    }
+  }
 }

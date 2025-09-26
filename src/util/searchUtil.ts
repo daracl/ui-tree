@@ -25,7 +25,8 @@ export function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function normalizeText(text: string) {
-  return text.toLowerCase().replace(/\s+/g, ''); // 소문자 + 공백 제거
+export function normalizeText(text: unknown): string {
+  if (!text) return ''; 
+  return String(text).toLowerCase().replace(/\s+/g, '');
 }
 

@@ -1,17 +1,20 @@
 import domUtils from "src/util/domUtils";
 import nodeUtils from "src/util/nodeUtils";
 import Tree from "../Tree";
-import eventUtils from "src/util/eventUtils";
+import { eventOff, eventOn } from "src/util/eventUtils";
 
 export default {
   expanderClick(treeContext: Tree, el: Element | string | NodeList) {
-    eventUtils.eventOn(el, "click", ".dt-expander.visible", (e: Event, ele: Element) => {
+    eventOn(el, "click", (e: Event, ele: Element) => {
       nodeUtils.elementToTreeNode(ele, treeContext).folderToggle();
       return false;
-    });
+    },".dt-expander.visible");
 
-    eventUtils.eventOn(treeContext.mainElement, "focusout", (e: Event, ele: Element) => {
-      domUtils.removeClass(treeContext.mainElement.querySelectorAll(".dt-node-title.focus"), "focus");
+    const treeElement = treeContext.getRootElement(); 
+
+    eventOff(treeElement, "focusout");
+    eventOn(treeElement, "focusout", (e: Event, ele: Element) => {
+      domUtils.removeClass(treeElement.querySelectorAll(".dt-node-title.focus"), "focus");
       treeContext.config.focusNode = null;
     });
   },
@@ -33,7 +36,7 @@ export default {
       clickTimer = setTimeout(resetClick, clickDelay);
     };
 
-    eventUtils.eventOn(el, "mousedown", ".dt-node-title", (e: MouseEvent, ele: Element) => {
+    eventOn(el, "mousedown", (e: MouseEvent, ele: Element) => {
       if (e.button === 2 || e.which === 3) {
         clickTimer = null;
         return true;
@@ -59,6 +62,6 @@ export default {
       }
 
       //console.log("double Clicked!");
-    });
+    },".dt-node-title");
   },
 };
