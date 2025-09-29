@@ -399,14 +399,14 @@ export default class TreeNodeInfo implements TreeNode {
       this.tree.config.focusNode = this;
       domUtils.addClass(nodeElement.querySelector(".dt-node-title"), "focus");
 
-      setScrollTop(this.tree.getContainerElement(), nodeElement);
-
       if (this.tree.options.focusNode) {
         this.tree.options.focusNode({
           item: this,
           element: nodeElement,
         });
       }
+
+      setScrollTop(this.tree.getContainerElement(), nodeElement);
     }
   }
 
@@ -455,6 +455,9 @@ export default class TreeNodeInfo implements TreeNode {
  * @param nodeElement {HTMLElement} 스크롤 이동할 element
  */
 function setScrollTop(mainElement: HTMLElement, nodeElement: Element) {
+
+  //nodeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
   const scrollTop = mainElement.scrollTop;
   const offsetTop = (nodeElement as HTMLElement).offsetTop;
   const height = mainElement.offsetHeight;

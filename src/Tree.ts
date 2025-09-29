@@ -570,11 +570,11 @@ export default class Tree {
     const node = this.config.allNode[id];
 
     if (node) {
-      node.select();
-
       if (isOpen) {
         this.openNode(id);
       }
+
+      node.select();
     }
   }
 
@@ -661,12 +661,19 @@ export default class Tree {
       nodeSearch(startNode, searchRegex, searchResult);
     }
     
+    if(searchResult.length < 1) return ; 
+
+    let firstResultNode;
     // 결과 하이라이팅 및 노드 열기
     for (const node of searchResult) {
+      if(!firstResultNode) firstResultNode = node;
       this.openNode(node.id);
       const titleEl = nodeUtils.nodeIdToNodeTitleElement(mainElement, node.id);
       domUtils.addClass(titleEl, "dt-highlight");
     }
+
+    if(firstResultNode) firstResultNode.focus();
+
     return searchResult;
   }
 
