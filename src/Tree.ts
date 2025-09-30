@@ -460,7 +460,7 @@ export default class Tree {
 
     let checkboxHtml = "";
     if (this.config.isCheckbox) {
-      checkboxHtml = `<label class="dt-checkbox"><span class="dt-icon checkbox"></span></label>`;
+      checkboxHtml = `<span class="dt-checkbox dt-icon"></span>`;
     }
 
     let addNodeStyleClass = "";
