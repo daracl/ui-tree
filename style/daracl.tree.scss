@@ -17,7 +17,7 @@
         }
     }
 
-    &.allowed:before {
+    &.dt-allowed:before {
         content: '\2714 ' !important;
         color: #04aa6d;
     }
@@ -42,14 +42,10 @@
         outline: none;
     }
 
-    li {
+    li[data-dt-id] {
         list-style-type: none;
         margin: 0px;
         padding: 0px;
-    }
-
-    .tree-empty-area {
-        padding-left: 15px;
     }
 
     .dt-icon {
@@ -129,17 +125,17 @@
                 font-weight: bold;
             }
 
-            &.selected {
+            &.dt-selected {
                 color: var(--item-select-font-color);
                 background-color: var(--item-select-bg-color);
             }
 
-            &.focus {
+            &.dt-focus {
                 color: var(--item-focus-font-color);
                 background-color: var(--item-focus-bg-color);
             }
 
-            &.edit > span {
+            &.dt-edit > span {
                 display: none;
             }
 
@@ -156,7 +152,7 @@
             height: 24px;
             line-height: 24px;
 
-            &.visible {
+            &.dt-visible {
                 background-size: 14px 14px;
                 background-position: center center;
                 background-repeat: no-repeat;
@@ -191,8 +187,8 @@
         margin: 0px;
     }
 
-    li.open {
-        > .dt-node > .dt-expander.visible {
+    li.dt-open {
+        > .dt-node > .dt-expander.dt-visible {
             background-image: url('data:image/svg+xml;utf8,<svg style="width: 14px; height: 14px; fill: rgb(142, 142, 142);" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"></path></svg>');
         }
         > .dt-children {

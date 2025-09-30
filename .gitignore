@@ -17,3 +17,4 @@ template.zip
 
 # test result 
 test-results/*
+/test-results
