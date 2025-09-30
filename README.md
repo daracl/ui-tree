@@ -35,6 +35,12 @@ npm start
 3. Open `http://localhost:8891` in your browser
 
 
+# 테스트 설치 모듈
+```
+npx playwright install
+```
+
+
 
 # 사용방법
 ```

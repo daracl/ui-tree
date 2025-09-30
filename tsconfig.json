@@ -2,27 +2,33 @@
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist", "build", ".vscode"],
   "compilerOptions": {
-    "target": "es6" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "module": "commonJS",
-    "jsx": "react-jsx",
-    //"jsxFactory": "h",
-    "jsxImportSource": "preact",
-    "declaration": true,
-    "strictPropertyInitialization": false,
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "moduleResolution": "node" /* Specify how TypeScript looks up a file from a given module specifier. */,
-    "baseUrl": "." /* Specify the base directory to resolve non-relative module names. */,
-    "outDir": "./dist/",
+    /* Emit */
+    "target": "ESNext",                  /* 최신 브라우저 타겟 (vite/esbuild가 다운트랜스파일링함). */
+    "module": "ESNext",                  /* Rollup/Vite 환경에 맞게 ESM 사용. */
+    "declaration": true,                 /* .d.ts 파일 생성 */
+    "outDir": "./dist",                  /* 타입 선언만 dist로 출력 */
+    "sourceMap": true,                   /* 소스맵 생성 */
+
+    /* Module resolution */
+    "moduleResolution": "Node",
+    "baseUrl": ".",
     "paths": {
-      "@t/*": ["src/types/*"]
-    } /* Specify a set of entries that re-map imports to additional lookup locations. */,
+      "@t/*": ["src/types/*"],
+      "src/*": ["src/*"]
+    },
+
+    /* Interop & helpers */
     "importHelpers": true,
-    "allowSyntheticDefaultImports": true /* Allow 'import x from y' when a module doesn't have a default export. */,
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    /* Type Checking */
-    "strict": true /* Enable all strict type-checking options. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    /* Strictness */
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    /* Libs */
+    "lib": ["DOM", "DOM.Iterable", "ESNext"]
   }
 }
