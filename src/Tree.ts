@@ -1,7 +1,7 @@
 import { Options } from '@t/Options'
 import { ConfigInfo } from '@t/ConfigInfo'
 import { generateUUID, hasOwnProp, isArray, isBlank, isNumber, isString, isUndefined, objectMerge } from './util/utils'
-import treeEvent from './event/initEvents'
+import { expanderClick, textClick } from './event/initEvents'
 import domUtils from './util/domUtils'
 import { TreeNode } from '@t/TreeNode'
 import Checkbox from './plugins/Checkbox'
@@ -43,7 +43,7 @@ let defaultOptions = {
 } as Options
 
 interface ComponentMap {
-    [key: string]: Tree
+  [key: string]: Tree
 }
 
 // all instance
@@ -51,8 +51,8 @@ const ALL_INSTANCE: ComponentMap = {}
 
 // edit default option
 const EDIT_DEFAULT_OPTIONS = {
-    before: false,
-    after: false,
+  before: false,
+  after: false,
 }
 
 const ETC_NODE_ID = '$__etc'
@@ -241,13 +241,13 @@ export default class Tree {
             this.config.keydown = new Keydown(this)
         }
 
-        treeEvent.expanderClick(this, this.rootElement)
+        expanderClick(this, this.rootElement)
 
         if (this.config.isDnd) {
             this.config.dnd = new Dnd(this)
         }
 
-        treeEvent.textClick(this, this.rootElement)
+        textClick(this, this.rootElement)
     }
 
     public request(id?: any) {
@@ -582,7 +582,7 @@ export default class Tree {
      * @returns {TreeNode} 선택된 tree node
      */
     public getSelectNode(): TreeNode | undefined {
-        const selectElement = this.rootElement.querySelector('.selected')
+        const selectElement = this.rootElement.querySelector('.dt-selected')
         if (selectElement) {
             return nodeUtils.elementToTreeNode(selectElement, this)
         }
@@ -658,7 +658,7 @@ export default class Tree {
             nodeSearch(startNode, searchRegex, searchResult)
         }
 
-        if (searchResult.length < 1) return
+        if (searchResult.length < 1) return [];
 
         let firstResultNode
         // 결과 하이라이팅 및 노드 열기

@@ -286,7 +286,7 @@ export default class TreeNodeInfo implements TreeNode {
         // 이전에 활성화된 input 영역 삭제.
         this.tree
             .getRootElement()
-            .querySelectorAll('.dt-node-title.edit')
+            .querySelectorAll('.dt-node-title.dt-edit')
             .forEach((el: Element) => {
                 el.querySelector('.dt-input')?.remove()
                 domUtils.removeClass(el, 'dt-edit')
@@ -371,7 +371,7 @@ export default class TreeNodeInfo implements TreeNode {
      */
     public select() {
         this.focusOut()
-        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.selected'), 'dt-selected')
+        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.dt-selected'), 'dt-selected')
 
         const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id)
 
@@ -394,7 +394,7 @@ export default class TreeNodeInfo implements TreeNode {
      * node 선택
      */
     public focus() {
-        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.focus'), 'dt-focus')
+        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.dt-focus'), 'dt-focus')
 
         const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id)
 
@@ -414,7 +414,7 @@ export default class TreeNodeInfo implements TreeNode {
     }
 
     public focusOut() {
-        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.focus'), 'dt-focus')
+        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.dt-focus'), 'dt-focus')
         this.tree.config.focusNode = null
     }
 

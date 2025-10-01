@@ -23,7 +23,7 @@ function _beforesend(opts: any) {
     nodeElement = opts.$mainElement;
   }
 
-  domUtils.append(nodeElement, '<div class="dt-loader"><div class="spinner"></div></div>');
+  domUtils.append(nodeElement, '<div class="dt-loader"><div class="dt-spinner"></div></div>');
 }
 
 function _completed(result: any) {

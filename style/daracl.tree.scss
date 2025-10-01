@@ -86,7 +86,7 @@
         z-index: 1;
         top: 0px;
 
-        .spinner {
+        .dt-spinner {
             width: 21px;
             height: 21px;
             border-radius: 50%;
@@ -104,6 +104,10 @@
 
     .dt-node {
         position: relative;
+        vertical-align: middle;
+        line-height: 24px;
+        height: 24px;
+        overflow: hidden;
 
         &:hover,
         &:focus {

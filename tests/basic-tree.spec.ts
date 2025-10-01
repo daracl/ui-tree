@@ -72,7 +72,7 @@ test.describe('ui-tree component', () => {
     // 클릭
     await nodeTitle.click();
     // 내부 구현에서 선택된 노드 스타일 변경 또는 클래스 변경이 있을 테니 그것 확인
-    await expect(nodeTitle).toHaveClass(/selected/);
+    await expect(nodeTitle).toHaveClass(/dt-selected/);
     // 또는 selection 콜백이 내부적으로 DOM 어딘가 상태를 바꾼다면 그 변화 확인
   });
 
@@ -84,7 +84,7 @@ test.describe('ui-tree component', () => {
     // 더블 클릭 시 어떤 동작이 있어야 한다면 그 UI 변화 확인
     // 예: 클래스 변경, 문구 변경, 입력 활성화 등
     // 아래는 예시:
-    await expect(nodeTitle).toHaveClass(/edit/);
+    await expect(nodeTitle).toHaveClass(/dt-edit/);
   });
 
 });
