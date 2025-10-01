@@ -1,7 +1,7 @@
 import domUtils from './util/domUtils'
 import { TreeNode } from '@t/TreeNode'
 
-import Tree from './Tree'
+import {Tree} from './Tree'
 import nodeUtils from './util/nodeUtils'
 import { MOVE_POSITION } from './constants'
 import { isBlank } from './util/utils'
@@ -16,7 +16,7 @@ import { eventOff, eventOn, getEventKey } from './util/eventUtils'
  * @typedef {TreeNodeInfo}
  * @implements {TreeNode}
  */
-export default class TreeNodeInfo implements TreeNode {
+export class TreeNodeInfo implements TreeNode {
     public orgin
 
     public id

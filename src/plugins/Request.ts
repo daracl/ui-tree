@@ -1,4 +1,4 @@
-import Tree from "../Tree";
+import {Tree} from "../Tree";
 import { TreeNode } from "@t/TreeNode";
 import { ajax } from "src/util/ajaxUtils";
 import domUtils from "src/util/domUtils";
@@ -49,7 +49,7 @@ function _completed(result: any) {
  * @class Request
  * @typedef {Request}
  */
-export default class Request {
+export class Request {
   private tree;
   private url: any;
   private opts: any;

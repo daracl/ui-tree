@@ -1,4 +1,4 @@
-import Tree from "./Tree";
+import {Tree} from "./Tree";
 import "../style/daracl.tree.scss";
 
 // 1) ESM / CJS 라이브러리 export

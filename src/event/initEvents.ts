@@ -1,6 +1,6 @@
 import domUtils from 'src/util/domUtils'
 import nodeUtils from 'src/util/nodeUtils'
-import Tree from '../Tree'
+import {Tree} from '../Tree'
 import { eventOff, eventOn } from 'src/util/eventUtils'
 
 

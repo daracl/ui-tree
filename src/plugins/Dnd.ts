@@ -1,5 +1,5 @@
 import nodeUtils from 'src/util/nodeUtils'
-import Tree from '../Tree'
+import {Tree} from '../Tree'
 import domUtils from '../util/domUtils'
 import { TreeNode } from '@t/TreeNode'
 import { MOVE_POSITION } from 'src/constants'
@@ -22,7 +22,7 @@ const DND_DEFAULT_OPTIONS = {
  * @class Dnd
  * @typedef {Dnd}
  */
-export default class Dnd {
+export class Dnd {
     private tree
     private dragHelper: HTMLElement
     private helperLine: HTMLElement

@@ -4,13 +4,13 @@ import { generateUUID, hasOwnProp, isArray, isBlank, isNumber, isString, isUndef
 import { expanderClick, textClick } from './event/initEvents'
 import domUtils from './util/domUtils'
 import { TreeNode } from '@t/TreeNode'
-import Checkbox from './plugins/Checkbox'
+import {Checkbox} from './plugins/Checkbox'
 import { CHECK_STATE } from './constants'
-import TreeNodeInfo from './TreeNodeInfo'
+import {TreeNodeInfo} from './TreeNodeInfo'
 import nodeUtils from './util/nodeUtils'
-import Dnd from './plugins/Dnd'
-import Keydown from './plugins/Keydown'
-import Request from './plugins/Request'
+import {Dnd} from './plugins/Dnd'
+import {Keydown} from './plugins/Keydown'
+import {Request} from './plugins/Request'
 import { escapeRegExp, findText, normalizeText, textToRegex } from './util/searchUtil'
 
 declare const APP_VERSION: string
@@ -63,7 +63,7 @@ const ETC_NODE_ID = '$__etc'
  * @class Tree
  * @typedef {Tree}
  */
-export default class Tree {
+export class Tree {
     public static VERSION = `${APP_VERSION}`
 
     public options: Options

@@ -1,5 +1,5 @@
 import nodeUtils from "src/util/nodeUtils";
-import Tree from "../Tree";
+import {Tree} from "../Tree";
 import domUtils from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import { CHECK_STATE } from "../constants";
@@ -12,7 +12,7 @@ import { eventOn } from "src/util/eventUtils";
  * @class Checkbox
  * @typedef {Checkbox}
  */
-export default class Checkbox {
+export class Checkbox {
   private tree;
 
   constructor(tree: Tree) {

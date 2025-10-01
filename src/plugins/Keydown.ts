@@ -1,4 +1,4 @@
-import Tree from "../Tree";
+import {Tree} from "../Tree";
 import { TreeNode } from "@t/TreeNode";
 import { eventOff, eventOn, getEventKey } from "src/util/eventUtils";
 
@@ -15,7 +15,7 @@ const KEYDOWN_DEFAULT_OPTIONS = {};
  * @class Keydown
  * @typedef {Keydown}
  */
-export default class Keydown {
+export class Keydown {
   private tree;
 
   constructor(tree: Tree) {
