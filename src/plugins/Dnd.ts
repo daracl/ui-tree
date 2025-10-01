@@ -1,5 +1,5 @@
 import nodeUtils from 'src/util/nodeUtils'
-import {Tree} from '../Tree'
+import { Tree } from '../Tree'
 import domUtils from '../util/domUtils'
 import { TreeNode } from '@t/TreeNode'
 import { MOVE_POSITION } from 'src/constants'
@@ -89,7 +89,7 @@ export class Dnd {
 
                         this.tree.config.isNodeDrag = true
                         this.dragHelper.textContent = this.dragNode.text
-                        domUtils.addClass(this.dragHelper, 'dt-drag')
+                        domUtils.addClass(this.dragHelper, 'dt-dragging')
                     }
 
                     const plugins = this.tree.options.plugins
@@ -223,6 +223,7 @@ export class Dnd {
     }
 
     private setDragHelper(position: string): void {
+        let isChild = false
         if (position != MOVE_POSITION.CHILD) {
             const childNode = this.tree.config.allNode[this.enterNode.pid].childNodes
             let checkNode
@@ -248,21 +249,28 @@ export class Dnd {
 
             this.showHelperLine()
         } else {
+            isChild = true
             if (this.enterNode.id == this.dragNode.pid) {
                 this.dragPostion = MOVE_POSITION.IGNORE
                 return
             }
         }
 
+        console.log('position : ', position, isChild)
+
+        if (!isChild && this.dragPostion == MOVE_POSITION.CHILD) {
+            domUtils.removeClass(this.dragHelper, 'dt-drop-child')
+        }
+
         this.dragPostion = position
-        domUtils.addClass(this.dragHelper, 'dt-allowed')
+        domUtils.addClass(this.dragHelper, isChild ? 'dt-drop-child' : 'dt-drop-allowed')
     }
 
     public mouseup(e: any) {
         this.tree.config.isNodeDrag = false
         this.mouseOverEle = null
         this.hideHelperLine()
-        domUtils.removeClass(this.dragHelper, 'dt-drag')
+        domUtils.removeClass(this.dragHelper, 'dt-dragging')
         eventOff(document, 'touchmove mousemove dragstart mouseup touchend mouseup')
 
         if (this.dragPostion == MOVE_POSITION.IGNORE) return
@@ -294,6 +302,6 @@ export class Dnd {
     setNotAllowed() {
         this.hideHelperLine()
         this.dragPostion = MOVE_POSITION.IGNORE
-        domUtils.removeClass(this.dragHelper, 'dt-allowed')
+        domUtils.removeClass(this.dragHelper, 'dt-drop-allowed dt-drop-child')
     }
 }

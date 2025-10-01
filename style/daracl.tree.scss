@@ -8,7 +8,7 @@
     display: none;
     height: 24px;
 
-    &.dt-drag {
+    &.dt-dragging {
         display: inline-block;
 
         &:before {
@@ -17,8 +17,13 @@
         }
     }
 
-    &.dt-allowed:before {
+    &.dt-drop-allowed:before {
         content: '\2714 ' !important;
+        color: #04aa6d;
+    }
+
+    &.dt-drop-child:before {
+        content: '\271A ' !important;
         color: #04aa6d;
     }
 }
