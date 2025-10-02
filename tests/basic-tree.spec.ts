@@ -67,7 +67,7 @@ test.describe('ui-tree component', () => {
   test('click node triggers selection callback', async ({ page }) => {
     const node = await getNodeElement(page, '6');
 
-    const nodeTitle = node.locator('>.dt-node>.dt-node-title');
+    const nodeTitle = node.locator('>.dt-node');
 
     // 클릭
     await nodeTitle.click();

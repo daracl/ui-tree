@@ -96,7 +96,7 @@
             height: 21px;
             border-radius: 50%;
             background: radial-gradient(farthest-side, #d1d1dc 94%, #0000) top/3.8px 3.8px no-repeat, conic-gradient(#0000 30%, #d1d1dc);
-            -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 3.8px), #000 0);
+            mask: radial-gradient(farthest-side, #0000 calc(100% - 3.8px), #000 0);
             animation: dt-spinner-loader 1s infinite linear;
         }
     }
@@ -114,10 +114,25 @@
         height: 24px;
         overflow: hidden;
 
-        &:hover,
-        &:focus {
-            color: var(--item-hover-font-color);
-            background: var(--item-hover-bg-color);
+        &.dt-selected {
+          .dt-node-title {
+            color: var(--item-select-font-color);
+            background-color: var(--item-select-bg-color);
+          }
+        }
+
+        &.dt-focus {
+          .dt-node-title {
+            color: var(--item-focus-font-color);
+            background-color: var(--item-focus-bg-color);
+          }
+        }
+
+        &.dt-highlight {
+          .dt-node-title {
+            color: var(--item-search-font-color) !important;
+            font-weight: bold;
+          }
         }
 
         .dt-node-title {
@@ -129,21 +144,7 @@
             line-height: 24px;
             height: 24px;
 
-            &.dt-highlight {
-                color: var(--item-search-font-color) !important;
-                font-weight: bold;
-            }
-
-            &.dt-selected {
-                color: var(--item-select-font-color);
-                background-color: var(--item-select-bg-color);
-            }
-
-            &.dt-focus {
-                color: var(--item-focus-font-color);
-                background-color: var(--item-focus-bg-color);
-            }
-
+            
             &.dt-edit > span {
                 display: none;
             }
@@ -151,6 +152,13 @@
             .dt-input {
                 width: 100px;
             }
+
+            &:hover,
+            &:focus {
+                color: var(--item-hover-font-color);
+                background: var(--item-hover-bg-color);
+            }
+
         }
 
         .dt-expander {
@@ -181,6 +189,39 @@
 
             &.dt-checked {
                 background-image: url('data:image/svg+xml;utf8,<svg style="width: 16px;height: 16px;fill: rgb(75 150 230);" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zM337 209L209 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L303 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"></path></svg>');
+            }
+        }
+    }
+
+    > .dt-whole-row{
+        .dt-node {
+            &:hover,
+            &:focus {
+                color: var(--item-hover-font-color);
+                background: var(--item-hover-bg-color);
+            }
+
+            &.dt-selected {
+                background-color: var(--item-select-bg-color);
+                .dt-node-title {
+                    color: var(--item-select-font-color);
+                    background-color: inherit;
+                }
+            }
+
+            &.dt-focus {
+                background-color: var(--item-focus-bg-color);
+                .dt-node-title {
+                    color: var(--item-focus-font-color);
+                    background-color: inherit;
+                }
+            }
+
+            &.dt-highlight {
+                .dt-node-title {
+                    color: var(--item-search-font-color) !important;
+                    font-weight: bold;
+                }
             }
         }
     }

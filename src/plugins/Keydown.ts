@@ -1,3 +1,4 @@
+import { KeydownOptions } from "@t/Options";
 import {Tree} from "../Tree";
 import { TreeNode } from "@t/TreeNode";
 import { eventOff, eventOn, getEventKey } from "src/util/eventUtils";
@@ -22,10 +23,14 @@ export class Keydown {
     this.tree = tree;
     const plugins = tree.options.plugins;
 
-    if (plugins?.keydown) {
-      tree.config.isKeydown = true;
-      plugins.keydown = objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, plugins.keydown);
+     if(!plugins?.keydown){
+      return; 
     }
+    console.log('1111111key')
+
+    tree.config.isKeydown = true;
+    plugins.keydown = objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, plugins.keydown) as KeydownOptions;
+  
 
     this.initEvt();
   }

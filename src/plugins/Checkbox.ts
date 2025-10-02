@@ -78,7 +78,7 @@ export class Checkbox {
     }
   }
 
-  initEvt() {
+  private initEvt() {
     const rootElement = this.tree.getRootElement();
     
     eventOn(rootElement, "click", (e: Event, checkboxEle: Element) => {

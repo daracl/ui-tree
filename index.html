@@ -155,11 +155,13 @@
                 //console.log(node);
                 return node.id == '1' ? 'id-1' : '222'
             },
+            selectOnWholeRow1: true,
             enableRootNode1: true,
             enableIcon: true,
             openDepth: 0,
             plugins: {
                 checkbox: {},
+                keydown: {},
                 edit: {
                     before: function (item) {
                         console.log(item)
@@ -170,9 +172,10 @@
                         //return 'asdfawef';
                     },
                 },
+                search: {},
                 dnd: {
                     drop: function (item) {
-                        console.log('item ', item)
+                        console.log('drop item ', item)
                     },
                 },
                 request1: {

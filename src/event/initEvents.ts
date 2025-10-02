@@ -26,7 +26,7 @@ export function expanderClick(treeContext: Tree, el: Element | string | NodeList
 
 	eventOff(treeElement, 'focusout')
 	eventOn(treeElement, 'focusout', (e: Event, ele: Element) => {
-			domUtils.removeClass(treeElement.querySelectorAll('.dt-node-title.dt-focus'), 'dt-focus')
+			domUtils.removeClass(treeElement.querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
 			treeContext.config.focusNode = null
 	})
 }

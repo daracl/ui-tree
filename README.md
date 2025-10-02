@@ -41,7 +41,6 @@ npx playwright install
 ```
 
 
-
 # 사용방법
 ```
 

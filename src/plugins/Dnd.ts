@@ -5,6 +5,7 @@ import { TreeNode } from '@t/TreeNode'
 import { MOVE_POSITION } from 'src/constants'
 import { eventOff, eventOn, getEventPosition } from 'src/util/eventUtils'
 import { objectMerge } from 'src/util/utils'
+import { DndOptions } from '@t/Options'
 
 // dnd default option
 const DND_DEFAULT_OPTIONS = {
@@ -46,11 +47,14 @@ export class Dnd {
         this.tree = tree
         const plugins = this.tree.options.plugins
 
+
         if (!plugins?.dnd) {
             return
         }
 
-        plugins.dnd = objectMerge({}, DND_DEFAULT_OPTIONS, plugins.dnd)
+        tree.config.isDnd = true;
+
+        plugins.dnd = objectMerge({}, DND_DEFAULT_OPTIONS, plugins.dnd) as DndOptions;
 
         tree.config.dndLinePadding = (tree.config.isCheckbox ? 24 : 0) + (tree.options.enableIcon ? 23 : 0)
         tree.config.dndLinePadding = tree.config.dndLinePadding == 0 ? 20 : tree.config.dndLinePadding
@@ -94,7 +98,7 @@ export class Dnd {
 
                     const plugins = this.tree.options.plugins
 
-                    if (plugins?.dnd.start) {
+                    if (plugins?.dnd?.start) {
                         if (
                             plugins.dnd.start({
                                 item: this.dragNode,
@@ -279,9 +283,9 @@ export class Dnd {
         const dropNode = this.enterNode
         const position = this.dragPostion
         const plugins = this.tree.options.plugins
-        if (plugins?.dnd.drop) {
+        if (plugins?.dnd?.drop) {
             if (
-                plugins?.dnd.drop({
+                plugins?.dnd?.drop({
                     item: dragNode,
                     dropItem: dropNode,
                     position: this.dragPostion,

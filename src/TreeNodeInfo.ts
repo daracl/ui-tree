@@ -5,7 +5,7 @@ import {Tree} from './Tree'
 import nodeUtils from './util/nodeUtils'
 import { MOVE_POSITION } from './constants'
 import { isBlank } from './util/utils'
-import { EditOption } from '@t/Options'
+import { EditOptions } from '@t/Options'
 import { eventOff, eventOn, getEventKey } from './util/eventUtils'
 
 /**
@@ -169,7 +169,9 @@ export class TreeNodeInfo implements TreeNode {
 
         const allNode = this.tree.config.allNode
 
-        let childNodes = []
+        let childNodes = [];
+
+        const dndOpts = this.tree.options.plugins?.dnd;
 
         switch (position) {
             case MOVE_POSITION.PREV:
@@ -194,7 +196,7 @@ export class TreeNodeInfo implements TreeNode {
                 this.pid = moveNodeInfo.id
                 this.depth = moveNodeInfo.depth + 1
 
-                if (this.tree.options.plugins?.dnd.inside === 'first') {
+                if (dndOpts?.inside === 'first') {
                     childNodes.unshift(this)
                 } else {
                     childNodes.push(this)
@@ -234,8 +236,9 @@ export class TreeNodeInfo implements TreeNode {
      *
      * @param e {Event} event
      */
-    public click(e: any) {
-        this.select()
+    public click(e: Event) {
+        
+        this.select((e as KeyboardEvent).ctrlKey);
 
         if (this.tree.options.click) {
             this.tree.options.click.call(null, { item: this, evt: e })
@@ -292,7 +295,7 @@ export class TreeNodeInfo implements TreeNode {
                 domUtils.removeClass(el, 'dt-edit')
             })
 
-        const editOptions = this.tree.options.plugins?.edit ?? ({} as EditOption)
+        const editOptions = this.tree.options.plugins?.edit ?? ({} as EditOptions)
 
         if (editOptions.before && editOptions.before({ item: this }) === false) {
             return
@@ -369,15 +372,29 @@ export class TreeNodeInfo implements TreeNode {
     /**
      * node 선택
      */
-    public select() {
+    public select(isCtrl:boolean= false) {
         this.focusOut()
-        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.dt-selected'), 'dt-selected')
 
         const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id)
 
+        // node drag 처리 할것.
+        //
+        // 
+
+        if(this.tree.options.multiple && isCtrl){
+            const nodeTitleElement = nodeElement?.querySelector('.dt-node');
+
+            if(domUtils.hasClass(nodeTitleElement,'dt-selected')){
+                domUtils.removeClass(nodeTitleElement,'dt-selected');    
+                return ; 
+            }
+        }else{
+            domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-selected'), 'dt-selected')
+        }
+       
         if (nodeElement) {
             this.tree.config.selectedNode = this
-            domUtils.addClass(nodeElement.querySelector('.dt-node-title'), 'dt-selected')
+            domUtils.addClass(nodeElement.querySelector('.dt-node'), 'dt-selected')
 
             setScrollTop(this.tree.getContainerElement(), nodeElement)
 
@@ -394,13 +411,13 @@ export class TreeNodeInfo implements TreeNode {
      * node 선택
      */
     public focus() {
-        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.dt-focus'), 'dt-focus')
+        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
 
         const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id)
 
         if (nodeElement) {
             this.tree.config.focusNode = this
-            domUtils.addClass(nodeElement.querySelector('.dt-node-title'), 'dt-focus')
+            domUtils.addClass(nodeElement.querySelector('.dt-node'), 'dt-focus')
 
             if (this.tree.options.focusNode) {
                 this.tree.options.focusNode({
@@ -414,7 +431,7 @@ export class TreeNodeInfo implements TreeNode {
     }
 
     public focusOut() {
-        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node-title.dt-focus'), 'dt-focus')
+        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
         this.tree.config.focusNode = null
     }
 
@@ -461,7 +478,7 @@ function setScrollTop(mainElement: HTMLElement, nodeElement: Element) {
     const scrollTop = mainElement.scrollTop
     const offsetTop = (nodeElement as HTMLElement).offsetTop
     const height = mainElement.offsetHeight
-    const eleHeight = (nodeElement.querySelector('.dt-node-title') as HTMLElement).offsetHeight
+    const eleHeight = (nodeElement.querySelector('.dt-node') as HTMLElement).offsetHeight
 
     if (scrollTop + height < offsetTop + eleHeight) {
         mainElement.scrollTop = offsetTop + eleHeight - height

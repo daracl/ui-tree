@@ -1,3 +1,5 @@
+import { TreeNode } from "./TreeNode";
+
 export interface OptionCallback {
   (...params: any[]): any;
 }
@@ -12,12 +14,46 @@ export interface Options {
     height: string|number;
     paddingLeft: number;
   };
+
+  /**
+   * 노드 행 선택할지 여부 default false
+   * 
+   * false : node name select
+   * true : node row select
+   */
+  selectOnWholeRow:boolean; 
+  
+  /**
+   * 다중선택 여부
+   *
+   * @type {boolean}
+   */
+  multiple?: boolean;
+  
+  /**
+   * root node info
+   *
+   * @type {*}
+   */
   rootNode: any;
   enableIcon?: boolean;
-  // root node 활성화 여부
+  /**
+   * root node 활성화 여부
+   */
   enableRootNode?: boolean;
   // node style class
   nodeStyleClass?:OptionCallback;
+  
+  /**
+   * tree item key
+   *
+   * @type {{
+   *     id: string;
+   *     pid: string;
+   *     text: string;
+   *     icon: string;
+   *   }}
+   */
   itemKey: {
     id: string;
     pid: string;
@@ -43,11 +79,12 @@ export interface Options {
  * @typedef {Plugins}
  */
 export interface Plugins {
-  checkbox?: any;
-  dnd?: any;
-  edit?: EditOption;
+  checkbox?: CheckboxOptions;
+  dnd?: DndOptions;
+  edit?: EditOptions;
   contextmenu?: any;
-  keydown: any;
+  keydown?: KeydownOptions;
+  search?:SearchOptions;
   request: {
     url:
       | string
@@ -67,9 +104,94 @@ export interface Plugins {
 /**
  * edit plugin options
  */
-export interface EditOption{
+export interface EditOptions{
+
   width: string;
   before: OptionCallback;
-  after: OptionCallback;
+  after: OptionCallback;  
+}
+
+/**
+ * checkbox option
+ *
+ * @export
+ * @interface CheckboxOption
+ * @typedef {CheckboxOption}
+ */
+export interface CheckboxOptions{
+
+}
+
+/**
+ * drag and drop option
+ *
+ * @export
+ * @interface DndOptions
+ * @typedef {DndOptions}
+ */
+export interface DndOptions{
   
+  /**
+   * drag helper margin top
+   *
+   * @type {number}
+   */
+  marginTop :number;
+
+  /**
+   * drag helper margin left
+   *
+   * @type {number}
+   */
+  marginLeft: 10,
+  
+  /**
+   * add postion
+   *
+   * @type {('last'|'first')} 
+   */
+  inside: 'last'|'first',
+
+  /**
+   * drag object drop callback 
+   *
+   * @type {(item: any) => {}}
+   */
+  drop: OptionCallback;
+
+  
+  /**
+   * drag start callback
+   *
+   * @type {OptionCallback}
+   */
+  start:OptionCallback;
+}
+
+
+/**
+ * keydown option
+ *
+ * @export
+ * @interface KeydownOption
+ * @typedef {KeydownOption}
+ */
+export interface KeydownOptions{
+
+}
+
+/**
+ * search option
+ *
+ * @export
+ * @interface SearchOptions
+ * @typedef {SearchOptions}
+ */
+export interface SearchOptions{
+  callback: SearchCallback;
+}
+
+
+export interface SearchCallback {
+  (searchText:string, node:TreeNode): boolean;
 }

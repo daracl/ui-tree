@@ -12,6 +12,7 @@ import {Dnd} from './plugins/Dnd'
 import {Keydown} from './plugins/Keydown'
 import {Request} from './plugins/Request'
 import { escapeRegExp, findText, normalizeText, textToRegex } from './util/searchUtil'
+import { Search } from './plugins/Search'
 
 declare const APP_VERSION: string
 
@@ -21,6 +22,8 @@ let defaultOptions = {
         height: '',
         paddingLeft: 12,
     },
+    selectOnWholeRow : false,
+    multiple :true,
     rootNode: {
         id: '',
         text: 'Root',
@@ -124,7 +127,7 @@ export class Tree {
         const ulElement = document.createElement('ul')
 
         domUtils.setAttribute(ulElement, {
-            class: 'dt-root',
+            class: `dt-root ${this.options.selectOnWholeRow ? "dt-whole-row":""}`,
             tabindex: '-1',
         })
 
@@ -210,10 +213,10 @@ export class Tree {
             isFocus: false,
             rootNode: {},
             isCheckbox: false,
-            isDnd: !isUndefined(plugins?.dnd),
-            isContextmenu: !isUndefined(plugins?.contextmenu),
+            isDnd: false,
+            isContextmenu: false,
             isEdit: false,
-            isKeydown: !isUndefined(plugins?.keydown),
+            isKeydown: false,
             isNodeDrag: false,
             isRequest: false,
         } as ConfigInfo
@@ -229,6 +232,7 @@ export class Tree {
 
         this.config.request = new Request(this)
         this.config.checkbox = new Checkbox(this)
+        this.config.search = new Search(this);
     }
 
     public init() {
@@ -237,15 +241,12 @@ export class Tree {
     }
 
     private initEvt() {
-        if (this.config.isKeydown) {
-            this.config.keydown = new Keydown(this)
-        }
-
+        
+        this.config.keydown = new Keydown(this)
+        
         expanderClick(this, this.rootElement)
-
-        if (this.config.isDnd) {
-            this.config.dnd = new Dnd(this)
-        }
+  
+        this.config.dnd = new Dnd(this);
 
         textClick(this, this.rootElement)
     }
@@ -581,11 +582,17 @@ export class Tree {
      *
      * @returns {TreeNode} 선택된 tree node
      */
-    public getSelectNode(): TreeNode | undefined {
-        const selectElement = this.rootElement.querySelector('.dt-selected')
-        if (selectElement) {
-            return nodeUtils.elementToTreeNode(selectElement, this)
+    public getSelectNode(): TreeNode[] {
+        const selectNodeList = this.rootElement.querySelectorAll('.dt-selected');
+        if (selectNodeList) {
+            const result:TreeNode[] =[];
+            for(let node of selectNodeList){
+                result.push(nodeUtils.elementToTreeNode(node, this));
+            }
+            return result
         }
+
+        return [];
     }
 
     /**
@@ -639,39 +646,7 @@ export class Tree {
      * @param {?(string|number)} [id] node id 가 있을 경우 하위 노드 검색
      */
     public search(searchText: string, id?: string | number) {
-        const searchResult: TreeNode[] = []
-
-        const mainElement = this.rootElement
-        domUtils.removeClass(mainElement.querySelectorAll('.dt-node-title.dt-highlight'), 'dt-highlight')
-
-        // 공백만 있는 검색어 제거
-        const cleanedText = (searchText ?? '').trim()
-        if (!cleanedText) return searchResult
-
-        const cleanedSearch = normalizeText(searchText)
-        const safePattern = escapeRegExp(cleanedSearch)
-        const searchRegex = new RegExp(safePattern, 'i') // 대소문자 무시
-
-        // 검색 수행
-        const startNode = id ? this.config.allNode[id] : this.config.rootNode
-        if (startNode) {
-            nodeSearch(startNode, searchRegex, searchResult)
-        }
-
-        if (searchResult.length < 1) return [];
-
-        let firstResultNode
-        // 결과 하이라이팅 및 노드 열기
-        for (const node of searchResult) {
-            if (!firstResultNode) firstResultNode = node
-            this.openNode(node.id)
-            const titleEl = nodeUtils.nodeIdToNodeTitleElement(mainElement, node.id)
-            domUtils.addClass(titleEl, 'dt-highlight')
-        }
-
-        if (firstResultNode) firstResultNode.focus()
-
-        return searchResult
+      return this.config.search.search(searchText,id);
     }
 
     public destroy = () => {
@@ -716,26 +691,4 @@ function nodeCount(node: TreeNode): number {
         }
     }
     return 0
-}
-
-/**
- * 노드 검색
- *
- * @param {TreeNode} node tree node
- * @param {RegExp} searchText 검색 정규화
- * @param {TreeNode[]} searchResult 검색결과
- */
-function nodeSearch(node: TreeNode, searchText: RegExp, searchResult: TreeNode[]) {
-    if (node) {
-        const childNodes = node.childNodes
-        if (findText(searchText, node.text)) {
-            searchResult.push(node)
-        }
-
-        if (childNodes && childNodes.length > 0) {
-            for (let treeNode of childNodes) {
-                nodeSearch(treeNode, searchText, searchResult)
-            }
-        }
-    }
 }
