@@ -5,7 +5,7 @@ import { TreeNode } from "@t/TreeNode";
 import nodeUtils from "src/util/nodeUtils";
 import { isFunction, objectMerge } from "src/util/utils";
 import { escapeRegExp, findText, normalizeText } from "src/util/searchUtil";
-import domUtils from "src/util/domUtils";
+import { addClass, removeClass } from "src/util/domUtils";
 import { SearchCallback } from '../types/Options';
 
 // default option
@@ -49,7 +49,7 @@ export class Search {
       const mainTree = this.tree;
 
       const mainElement = this.tree.getRootElement();
-      domUtils.removeClass(mainElement.querySelectorAll('.dt-node.dt-highlight'), 'dt-highlight');
+      removeClass(mainElement.querySelectorAll('.dt-node.dt-highlight'), 'dt-highlight');
 
       // 검색 수행
       const startNode = id ? mainTree.config.allNode[id] : mainTree.config.rootNode;
@@ -70,7 +70,7 @@ export class Search {
           if (!firstResultNode) firstResultNode = node
           mainTree.openNode(node.id)
           const titleEl = nodeUtils.nodeIdToNodeTitleElement(mainElement, node.id)
-          domUtils.addClass(titleEl, 'dt-highlight')
+          addClass(titleEl, 'dt-highlight')
       }
 
       if (firstResultNode) firstResultNode.focus()

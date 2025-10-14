@@ -1,4 +1,4 @@
-import domUtils from 'src/util/domUtils'
+import { isInputField, removeClass } from 'src/util/domUtils'
 import nodeUtils from 'src/util/nodeUtils'
 import {Tree} from '../Tree'
 import { eventOff, eventOn } from 'src/util/eventUtils'
@@ -26,7 +26,7 @@ export function expanderClick(treeContext: Tree, el: Element | string | NodeList
 
 	eventOff(treeElement, 'focusout')
 	eventOn(treeElement, 'focusout', (e: Event, ele: Element) => {
-			domUtils.removeClass(treeElement.querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
+			removeClass(treeElement.querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
 			treeContext.config.focusNode = null
 	})
 }
@@ -50,14 +50,14 @@ export function textClick(treeContext: Tree, el: Element | string | NodeList) {
 
 	eventOn(
 			el,
-			'mousedown',
+			'mousedown touchstart',
 			(e: MouseEvent, ele: Element) => {
 					if (e.button === 2 || e.which === 3) {
 							clickTimer = null
 							return true
 					}
 
-					if (domUtils.isInputField((e.target as HTMLElement).tagName)) {
+					if (isInputField((e.target as HTMLElement).tagName)) {
 							return true
 					}
 
@@ -69,14 +69,11 @@ export function textClick(treeContext: Tree, el: Element | string | NodeList) {
 							nodeInfo.doubleClick(e)
 							clearTimeout(clickTimer)
 							resetClick()
-							//console.log("doubleClick : ", clickCount);
 					} else {
 							++clickCount
 							conserveClick(nodeInfo)
 							nodeInfo.click(e)
 					}
-
-					//console.log("double Clicked!");
 			},
 			'.dt-node-title',
 	)

@@ -104,11 +104,19 @@ export const eventOn = (el: Element | string | NodeList | null | Document | Elem
 };
 
 
-export function  getEventPosition(e: any) {
-  const evtTouche = e.touches;
-  const evt = evtTouche && evtTouche[0] ? evtTouche[0] : e;
-
-  return { x: evt.pageX, y: evt.pageY };
+export function  getEventPosition(e: Event) {
+  let evt;
+  if (typeof TouchEvent !== "undefined" && e instanceof TouchEvent && e.touches.length > 0) {
+    evt = e.touches[0];
+  } else if (e instanceof MouseEvent) {
+    evt = e;
+  } else {
+    evt = { pageX: 0, pageY: 0 };
+  }
+  return {
+    x: evt.pageX,
+    y: evt.pageY,
+  };
 }
 
 export function   getEventKey(e: any) {

@@ -1,6 +1,6 @@
 import nodeUtils from 'src/util/nodeUtils'
 import { Tree } from '../Tree'
-import domUtils from '../util/domUtils'
+import { addClass, getWinScrollTop, removeClass, setAttribute } from '../util/domUtils'
 import { TreeNode } from '@t/TreeNode'
 import { MOVE_POSITION } from 'src/constants'
 import { eventOff, eventOn, getEventPosition } from 'src/util/eventUtils'
@@ -57,7 +57,7 @@ export class Dnd {
         plugins.dnd = objectMerge({}, DND_DEFAULT_OPTIONS, plugins.dnd) as DndOptions;
 
         tree.config.dndLinePadding = (tree.config.isCheckbox ? 24 : 0) + (tree.options.enableIcon ? 23 : 0)
-        tree.config.dndLinePadding = tree.config.dndLinePadding == 0 ? 20 : tree.config.dndLinePadding
+        tree.config.dndLinePadding = tree.config.dndLinePadding === 0 ? 20 : tree.config.dndLinePadding
 
         this.helperTop = plugins.dnd.marginTop
         this.helperLeft = plugins.dnd.marginLeft
@@ -66,13 +66,19 @@ export class Dnd {
     }
 
     initEvt() {
-        const containerElement = this.tree.getContainerElement()
+        const rootElement = this.tree.getRootElement();
 
-        eventOff(containerElement, 'mousedown touchstart mouseover mouseleave mouseup touchend')
+        eventOff(rootElement, 'mousedown touchstart mouseover mouseleave mouseup touchend')
         eventOn(
-            containerElement,
+            rootElement,
             'mousedown touchstart',
-            (e: any, ele: Element) => {
+            (e: Event, ele: Element) => {
+                
+
+                console.log('1111111111');
+
+                this.tree.config.isDndMouseDown = true;
+
                 const evtPos = getEventPosition(e)
 
                 this.dragElement = ele as HTMLElement
@@ -83,6 +89,8 @@ export class Dnd {
                 this.enterNode = this.dragNode
 
                 eventOn(document, 'dragstart', (startEvt: any) => {
+
+                    console.log('11111111112222222');
                     if (!this.tree.config.isNodeDrag) {
                         if (!this.initFlag) {
                             this.initFlag = true
@@ -93,7 +101,7 @@ export class Dnd {
 
                         this.tree.config.isNodeDrag = true
                         this.dragHelper.textContent = this.dragNode.text
-                        domUtils.addClass(this.dragHelper, 'dt-dragging')
+                        addClass(this.dragHelper, 'dt-dragging')
                     }
 
                     const plugins = this.tree.options.plugins
@@ -118,13 +126,16 @@ export class Dnd {
                         return false
                     })
                     return false
-                })
+                });
+
+                //e.preventDefault();
+                //e.stopImmediatePropagation();
             },
             '.dt-node',
         )
 
         eventOn(
-            containerElement,
+            rootElement,
             'mouseover',
             (e: any, ele: Element) => {
                 if (!this.tree.config.isNodeDrag) return
@@ -133,22 +144,23 @@ export class Dnd {
 
                 this.mouseOverEle = ele as HTMLElement
                 this.overElementOffsetTop = this.mouseOverEle.offsetTop - 1
-                this.overElementTop = domUtils.getWinScrollTop() + ele.getBoundingClientRect().top
+                this.overElementTop = getWinScrollTop() + ele.getBoundingClientRect().top
 
                 this.enterNode = nodeUtils.elementToTreeNode(ele, this.tree)
             },
             '.dt-node',
         )
 
-        eventOn(containerElement, 'mouseleave', (e: any, ele: Element) => {
+        eventOn(rootElement, 'mouseleave', (e: any, ele: Element) => {
             if (!this.tree.config.isNodeDrag) return
 
             this.mouseOverEle = null
             this.setNotAllowed()
         })
 
-        eventOn(containerElement, 'mouseup touchend', (e: UIEvent) => {
-            this.tree.config.isNodeDrag = false
+        eventOn(rootElement, 'mouseup touchend', (e: UIEvent) => {
+            this.tree.config.isNodeDrag = false;
+            this.tree.config.isDndMouseDown = false;
         })
     }
 
@@ -163,14 +175,14 @@ export class Dnd {
 
     createHelperElement() {
         const dragHelper = document.createElement('div')
-        domUtils.setAttribute(dragHelper, { class: 'dt-drag-helper' })
+        setAttribute(dragHelper, { class: 'dt-drag-helper' })
 
         document.body.appendChild(dragHelper)
 
         this.dragHelper = dragHelper
 
         const helperLine = document.createElement('hr')
-        domUtils.setAttribute(helperLine, { class: 'dt-drop-helper', style: '' })
+        setAttribute(helperLine, { class: 'dt-drop-helper', style: '' })
 
         this.tree.getContainerElement().appendChild(helperLine)
         this.helperLine = helperLine
@@ -182,31 +194,31 @@ export class Dnd {
      * @param e {Event}
      * @returns
      */
-    private mousemove(e: any) {
+    private mousemove(e: Event) {
         const evtPos = getEventPosition(e)
         const moveX = evtPos.x + this.helperLeft //+ this.tree.mainElement.offsetLeft;
         const moveY = evtPos.y + this.helperTop //+ this.tree.mainElement.offsetTop;
 
         this.dragHelper.style.top = moveY + 'px'
         this.dragHelper.style.left = moveX + 'px'
-
-        const startElementTop = domUtils.getWinScrollTop() + this.dragElement.getBoundingClientRect().top
-
-        if (this.mouseOverEle == null || (this.enterNode.depth == this.dragNode.depth && startElementTop - this.lineViewHeight <= evtPos.y && evtPos.y <= startElementTop + this.nodeHeight + this.lineViewHeight)) {
+     
+        if (this.mouseOverEle == null || (this.enterNode.id === this.dragNode.id)) {
             this.setNotAllowed()
             return
         }
-
-        let parentEnterNode = this.enterNode
-
-        while (parentEnterNode !== undefined) {
-            if (parentEnterNode.pid == this.dragNode.id) {
+              
+        const dragNodeDepth = this.dragNode.depth; 
+        
+        let parentEnterNode = this.enterNode;
+        while (parentEnterNode !== undefined && dragNodeDepth < parentEnterNode.depth) {
+            if (parentEnterNode.pid === this.dragNode.id) {
                 this.setNotAllowed()
                 return
             }
             parentEnterNode = this.tree.config.allNode[parentEnterNode.pid]
         }
-
+        
+      
         if (this.overElementTop + this.lineViewHeight >= evtPos.y) {
             if (this.dragPostion != MOVE_POSITION.PREV) {
                 this.helperLine.style.top = this.overElementOffsetTop + 'px'
@@ -228,56 +240,60 @@ export class Dnd {
 
     private setDragHelper(position: string): void {
         let isChild = false
+
+        console.log('position: ', position)
+       
         if (position != MOVE_POSITION.CHILD) {
             const childNode = this.tree.config.allNode[this.enterNode.pid].childNodes
             let checkNode
 
             for (let i = 0; i < childNode.length; i++) {
                 let item = childNode[i]
-                if (item.id == this.enterNode.id) {
-                    if (position == MOVE_POSITION.PREV) {
+                if (item.id === this.enterNode.id) {
+                    if (position === MOVE_POSITION.PREV) {
                         checkNode = childNode[i - 1]
                     }
 
-                    if (position == MOVE_POSITION.NEXT) {
+                    if (position === MOVE_POSITION.NEXT) {
                         checkNode = childNode[i + 1]
                     }
                     break
                 }
             }
 
-            if (checkNode && checkNode.id == this.dragNode.id) {
+            if (checkNode && checkNode.id === this.dragNode.id) {
                 this.dragPostion = MOVE_POSITION.IGNORE
                 return
             }
 
             this.showHelperLine()
         } else {
-            isChild = true
-            if (this.enterNode.id == this.dragNode.pid) {
+            isChild = true;
+
+            console.log('position: ', this.enterNode.id, this.dragNode.pid)
+
+            if (this.enterNode.id === this.dragNode.pid) {
                 this.dragPostion = MOVE_POSITION.IGNORE
                 return
             }
         }
 
-        console.log('position : ', position, isChild)
-
-        if (!isChild && this.dragPostion == MOVE_POSITION.CHILD) {
-            domUtils.removeClass(this.dragHelper, 'dt-drop-child')
+        if (!isChild && this.dragPostion === MOVE_POSITION.CHILD) {
+            removeClass(this.dragHelper, 'dt-drop-child')
         }
 
         this.dragPostion = position
-        domUtils.addClass(this.dragHelper, isChild ? 'dt-drop-child' : 'dt-drop-allowed')
+        addClass(this.dragHelper, isChild ? 'dt-drop-child' : 'dt-drop-allowed')
     }
 
     public mouseup(e: any) {
         this.tree.config.isNodeDrag = false
         this.mouseOverEle = null
         this.hideHelperLine()
-        domUtils.removeClass(this.dragHelper, 'dt-dragging')
+        removeClass(this.dragHelper, 'dt-dragging')
         eventOff(document, 'touchmove mousemove dragstart mouseup touchend mouseup')
 
-        if (this.dragPostion == MOVE_POSITION.IGNORE) return
+        if (this.dragPostion === MOVE_POSITION.IGNORE) return
 
         const dragNode = this.dragNode
         const dropNode = this.enterNode
@@ -306,6 +322,6 @@ export class Dnd {
     setNotAllowed() {
         this.hideHelperLine()
         this.dragPostion = MOVE_POSITION.IGNORE
-        domUtils.removeClass(this.dragHelper, 'dt-drop-allowed dt-drop-child')
+        removeClass(this.dragHelper, 'dt-drop-allowed dt-drop-child')
     }
 }

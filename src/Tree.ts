@@ -2,7 +2,7 @@ import { Options } from '@t/Options'
 import { ConfigInfo } from '@t/ConfigInfo'
 import { generateUUID, hasOwnProp, isArray, isBlank, isNumber, isString, isUndefined, objectMerge } from './util/utils'
 import { expanderClick, textClick } from './event/initEvents'
-import domUtils from './util/domUtils'
+import { addClass, hasClass, removeClass, setAttribute } from './util/domUtils'
 import { TreeNode } from '@t/TreeNode'
 import {Checkbox} from './plugins/Checkbox'
 import { CHECK_STATE } from './constants'
@@ -126,7 +126,7 @@ export class Tree {
 
         const ulElement = document.createElement('ul')
 
-        domUtils.setAttribute(ulElement, {
+        setAttribute(ulElement, {
             class: `dt-root ${this.options.selectOnWholeRow ? "dt-whole-row":""}`,
             tabindex: '-1',
         })
@@ -384,18 +384,18 @@ export class Tree {
             if (this.options.enableIcon) {
                 const iconElement = parentElement.querySelector('i.dt-icon')
                 const icon = nodeUtils.getIcon(selectedNode)
-                if (!domUtils.hasClass(iconElement, icon)) {
-                    domUtils.removeClass(iconElement, 'dt-folder dt-file')
-                    domUtils.addClass(iconElement, icon)
+                if (!hasClass(iconElement, icon)) {
+                    removeClass(iconElement, 'dt-folder dt-file')
+                    addClass(iconElement, icon)
                 }
             }
 
             if (nodeUtils.isFolder(selectedNode) && parentElement.querySelector('.dt-expander.dt-visible') == null) {
                 // 폴더가 아닐 경우 폴더로 변경.
-                domUtils.addClass(parentElement.querySelector('.dt-expander'), 'dt-visible')
+                addClass(parentElement.querySelector('.dt-expander'), 'dt-visible')
             } else if (!nodeUtils.isFolder(selectedNode) && parentElement.querySelector('.dt-expander.dt-visible')) {
                 // 폴더일 경우 일반 노드로 변경.
-                domUtils.removeClass(parentElement.querySelector('.dt-expander'), 'dt-visible')
+                removeClass(parentElement.querySelector('.dt-expander'), 'dt-visible')
             }
         }
         //parentElement.innerHTML = this.nodeContentHtml(selectedNode);
@@ -650,7 +650,7 @@ export class Tree {
     }
 
     public destroy = () => {
-        domUtils.setAttribute(this.rootElement, { class: this.orginStyleClass, style: this.orginStyle })
+        setAttribute(this.rootElement, { class: this.orginStyleClass, style: this.orginStyle })
         this.initContainerElement()
 
         for (const key in this) {

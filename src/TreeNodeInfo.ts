@@ -1,4 +1,4 @@
-import domUtils from './util/domUtils'
+import { addClass, hasClass, removeClass, setAttribute } from './util/domUtils'
 import { TreeNode } from '@t/TreeNode'
 
 import {Tree} from './Tree'
@@ -86,7 +86,7 @@ export class TreeNodeInfo implements TreeNode {
      * @param childOpenFlag 자식 노드 열기 여부
      */
     public open(childOpenFlag?: boolean) {
-        domUtils.addClass(nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id), 'dt-open')
+        addClass(nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id), 'dt-open')
         this.isOpen = true
 
         if (this.tree.config.isRequest && this.isLoaded !== true) {
@@ -108,7 +108,7 @@ export class TreeNodeInfo implements TreeNode {
     public close(childCloseFlag?: boolean) {
         if (this.tree.config.rootDepth <= this.depth) {
             this.isOpen = false
-            domUtils.removeClass(nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id), 'dt-open')
+            removeClass(nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id), 'dt-open')
         }
 
         if (childCloseFlag === true) {
@@ -237,7 +237,7 @@ export class TreeNodeInfo implements TreeNode {
      * @param e {Event} event
      */
     public click(e: Event) {
-        
+       
         this.select((e as KeyboardEvent).ctrlKey);
 
         if (this.tree.options.click) {
@@ -292,7 +292,7 @@ export class TreeNodeInfo implements TreeNode {
             .querySelectorAll('.dt-node-title.dt-edit')
             .forEach((el: Element) => {
                 el.querySelector('.dt-input')?.remove()
-                domUtils.removeClass(el, 'dt-edit')
+                removeClass(el, 'dt-edit')
             })
 
         const editOptions = this.tree.options.plugins?.edit ?? ({} as EditOptions)
@@ -311,13 +311,13 @@ export class TreeNodeInfo implements TreeNode {
         }
 
         const inputElement = document.createElement('input')
-        domUtils.setAttribute(inputElement, attrs)
+        setAttribute(inputElement, attrs)
 
         const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id)
         const contElement = nodeElement?.querySelector('.dt-node-title')
         if (contElement) {
             contElement.appendChild(inputElement)
-            domUtils.addClass(contElement, 'dt-edit')
+            addClass(contElement, 'dt-edit')
 
             const orginText = this.text
             inputElement.value = orginText
@@ -357,7 +357,7 @@ export class TreeNodeInfo implements TreeNode {
                     }
                 }
                 eventOff(inputElement, 'blur keyup')
-                domUtils.removeClass(contElement, 'dt-edit')
+                removeClass(contElement, 'dt-edit')
                 inputElement.remove()
 
                 this.tree.config.request.modify(this)
@@ -377,24 +377,23 @@ export class TreeNodeInfo implements TreeNode {
 
         const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id)
 
-        // node drag 처리 할것.
-        //
-        // 
-
         if(this.tree.options.multiple && isCtrl){
             const nodeTitleElement = nodeElement?.querySelector('.dt-node');
 
-            if(domUtils.hasClass(nodeTitleElement,'dt-selected')){
-                domUtils.removeClass(nodeTitleElement,'dt-selected');    
+            if(hasClass(nodeTitleElement,'dt-selected')){
+                removeClass(nodeTitleElement,'dt-selected');    
                 return ; 
             }
         }else{
-            domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-selected'), 'dt-selected')
+            // 처리 할것. 
+
+
+            removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-selected'), 'dt-selected')
         }
        
         if (nodeElement) {
             this.tree.config.selectedNode = this
-            domUtils.addClass(nodeElement.querySelector('.dt-node'), 'dt-selected')
+            addClass(nodeElement.querySelector('.dt-node'), 'dt-selected')
 
             setScrollTop(this.tree.getContainerElement(), nodeElement)
 
@@ -411,13 +410,13 @@ export class TreeNodeInfo implements TreeNode {
      * node 선택
      */
     public focus() {
-        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
+        removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
 
         const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id)
 
         if (nodeElement) {
             this.tree.config.focusNode = this
-            domUtils.addClass(nodeElement.querySelector('.dt-node'), 'dt-focus')
+            addClass(nodeElement.querySelector('.dt-node'), 'dt-focus')
 
             if (this.tree.options.focusNode) {
                 this.tree.options.focusNode({
@@ -431,7 +430,7 @@ export class TreeNodeInfo implements TreeNode {
     }
 
     public focusOut() {
-        domUtils.removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
+        removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
         this.tree.config.focusNode = null
     }
 

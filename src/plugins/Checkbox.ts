@@ -1,6 +1,6 @@
 import nodeUtils from "src/util/nodeUtils";
 import {Tree} from "../Tree";
-import domUtils from "../util/domUtils";
+import { addClass, removeClass } from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import { CHECK_STATE } from "../constants";
 import { eventOn } from "src/util/eventUtils";
@@ -128,16 +128,16 @@ export class Checkbox {
 
     if (ele) {
       node.checkState = state;
-      domUtils.removeClass(ele, "dt-indeterminate");
+      removeClass(ele, "dt-indeterminate");
       switch (state) {
         case CHECK_STATE.CHECKED:
-          domUtils.addClass(ele, "dt-checked");
+          addClass(ele, "dt-checked");
           break;
         case CHECK_STATE.UNCHECKED:
-          domUtils.removeClass(ele, "dt-checked");
+          removeClass(ele, "dt-checked");
           break;
         case CHECK_STATE.INDETERMINATE:
-          domUtils.addClass(ele, "dt-indeterminate");
+          addClass(ele, "dt-indeterminate");
           break;
         default:
           return;

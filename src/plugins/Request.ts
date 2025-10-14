@@ -1,7 +1,7 @@
 import {Tree} from "../Tree";
 import { TreeNode } from "@t/TreeNode";
 import { ajax } from "src/util/ajaxUtils";
-import domUtils from "src/util/domUtils";
+import { append } from "src/util/domUtils";
 import nodeUtils from "src/util/nodeUtils";
 import { isString, isUndefined, objectMerge } from "src/util/utils";
 
@@ -16,14 +16,14 @@ function _beforesend(opts: any) {
 
   let nodeElement;
   if (node) {
-    nodeElement = opts.$mainElement.querySelector(`[data-dt-id="${node.id}"] > .dt-node`) as HTMLElement;
+    nodeElement = opts.$rootElement.querySelector(`[data-dt-id="${node.id}"] > .dt-node`) as HTMLElement;
   }
 
   if (!nodeElement) {
-    nodeElement = opts.$mainElement;
+    nodeElement = opts.$rootElement;
   }
 
-  domUtils.append(nodeElement, '<div class="dt-loader"><div class="dt-spinner"></div></div>');
+  append(nodeElement, '<div class="dt-loader"><div class="dt-spinner"></div></div>');
 }
 
 function _completed(result: any) {
@@ -33,11 +33,11 @@ function _completed(result: any) {
   let nodeElement;
 
   if (node) {
-    nodeElement = opts.$mainElement.querySelector(`[data-dt-id="${node.id}"] > .dt-node`) as HTMLElement;
+    nodeElement = opts.$rootElement.querySelector(`[data-dt-id="${node.id}"] > .dt-node`) as HTMLElement;
   }
 
   if (!nodeElement) {
-    nodeElement = opts.$mainElement;
+    nodeElement = opts.$rootElement;
   }
 
   nodeElement.querySelector(".dt-loader")?.remove();
@@ -80,7 +80,7 @@ export class Request {
       opts = objectMerge({}, REQUEST_DEFAULT_OPTIONS, reqOpt);
     }
 
-    opts.$mainElement = tree.getContainerElement();
+    opts.$rootElement = tree.getRootElement();
     this.url = opts.url;
 
     this.successCallback = opts.success || this.defaultSuccessCallback;

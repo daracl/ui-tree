@@ -26,7 +26,6 @@ export class Keydown {
      if(!plugins?.keydown){
       return; 
     }
-    console.log('1111111key')
 
     tree.config.isKeydown = true;
     plugins.keydown = objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, plugins.keydown) as KeydownOptions;
