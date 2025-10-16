@@ -114,6 +114,14 @@
         height: 24px;
         overflow: hidden;
 
+        &:hover,
+        &:focus {
+            .dt-node-title {
+            color: var(--item-hover-font-color);
+            background: var(--item-hover-bg-color);
+            }
+        }
+
         &.dt-selected {
           .dt-node-title {
             color: var(--item-select-font-color);
@@ -135,7 +143,7 @@
             font-weight: bold;
           }
         }
-
+        
         .dt-node-title {
             cursor: pointer;
             display: inline-flex;
@@ -144,7 +152,7 @@
             color: var(--body-color);
             line-height: 24px;
             height: 24px;
-						padding: 0px 5px 0px 0px;
+			padding: 0px 5px 0px 0px;
             
             &.dt-edit > span {
                 display: none;
@@ -154,12 +162,7 @@
                 width: 100px;
             }
 
-            &:hover,
-            &:focus {
-                color: var(--item-hover-font-color);
-                background: var(--item-hover-bg-color);
-            }
-
+           
         }
 
         .dt-expander {

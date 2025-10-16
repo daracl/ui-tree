@@ -20,6 +20,17 @@ export default {
     },
 
     /**
+     * node element
+     *
+     * @param {Element} treeElement main tree element
+     * @param {*} id node id
+     * @returns {(Element | null)} node title element
+     */
+    nodeIdToNodeElement(treeElement: Element, id: any): Element | null {
+        return treeElement.querySelector(`[data-dt-id="${id}"]>.dt-node`)
+    },
+
+    /**
      * node title element
      *
      * @param {Element} treeElement main tree element

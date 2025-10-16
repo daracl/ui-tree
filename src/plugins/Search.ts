@@ -69,7 +69,7 @@ export class Search {
       for (const node of searchResult) {
           if (!firstResultNode) firstResultNode = node
           mainTree.openNode(node.id)
-          const titleEl = nodeUtils.nodeIdToNodeTitleElement(mainElement, node.id)
+          const titleEl = nodeUtils.nodeIdToNodeElement(mainElement, node.id)
           addClass(titleEl, 'dt-highlight')
       }
 

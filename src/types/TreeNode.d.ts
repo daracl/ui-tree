@@ -11,6 +11,7 @@ export interface TreeNode {
   target?: string;
   icon?: string;
   depth: number;
+  renderChildLength: number;
   childNodes: TreeNode[];
   orgin: any;
   _cud: "C" | "U" | "D";

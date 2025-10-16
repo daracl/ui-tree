@@ -31,6 +31,8 @@ export class TreeNodeInfo implements TreeNode {
     public childNodes = [] as TreeNode[]
     public _cud
 
+    public renderChildLength;
+
     public stateFolder: boolean = false
 
     public isEdit: boolean = false
@@ -53,6 +55,7 @@ export class TreeNodeInfo implements TreeNode {
         this.icon = item[tree.options.itemKey.icon]
         this.depth = tree.config.allNode[this.pid] ? tree.config.allNode[this.pid].depth + 1 : 0
         this.orgin = item
+        this.renderChildLength=0;
 
         this.stateFolder = item.state?.folder === true
 
@@ -86,11 +89,18 @@ export class TreeNodeInfo implements TreeNode {
      * @param childOpenFlag 자식 노드 열기 여부
      */
     public open(childOpenFlag?: boolean) {
-        addClass(nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id), 'dt-open')
-        this.isOpen = true
+        const nodeElement = nodeUtils.nodeIdToElement(this.tree.getRootElement(), this.id) as HTMLElement; 
+        addClass(nodeElement, 'dt-open')
+
+        this.isOpen = true;
 
         if (this.tree.config.isRequest && this.isLoaded !== true) {
             this.tree.config.request.search(this)
+        }
+
+        const childLength = this.getChildLength(); 
+        if(childLength > 0 && childLength != this.renderChildLength){
+            this.tree.refresh(this.id);
         }
 
         if (childOpenFlag === true) {
@@ -98,6 +108,45 @@ export class TreeNodeInfo implements TreeNode {
                 node.open(childOpenFlag)
             }
         }
+        const containerElement = this.tree.getContainerElement(); 
+        const containerScrollTop = containerElement.scrollTop;
+        const containerHeight = containerElement.clientHeight;
+
+        const nodeOffsetBottom = nodeElement.offsetTop + nodeElement.clientHeight;
+        const childNodeHeight = nodeElement?.querySelector('.dt-children')?.clientHeight ||0;
+        
+
+        const scrollHeight = containerHeight + containerScrollTop;
+
+        //
+        //
+        // 스크롤 위치 다시 잡을 것.
+        //
+        //
+
+        if(scrollHeight < nodeOffsetBottom+ childNodeHeight){
+            containerElement.scrollTop = (nodeOffsetBottom+ childNodeHeight - scrollHeight);
+        }
+
+        //maintScrollTop
+
+
+        console.log(`containerElement.scrollTop : ${containerElement.scrollTop}, scrollHeight < nodeOffsetBottom+ childNodeHeight : ${scrollHeight < nodeOffsetBottom+ childNodeHeight}`)
+        console.log(`ㄷㄷㄷㄷㄷㄷ : ', childNodeHeight : ${childNodeHeight},  containerHeight: ${scrollHeight}, containerHeight : ${containerHeight}, nodeOffsetTop : ${nodeOffsetBottom}`, nodeElement);
+        /*
+        const offsetTop = (nodeElement as HTMLElement).offsetTop
+        const height = mainElement.offsetHeight
+        const eleHeight = (nodeElement.querySelector('.dt-node') as HTMLElement).offsetHeight
+
+        if (scrollTop + height < offsetTop + eleHeight) {
+            mainElement.scrollTop = offsetTop + eleHeight - height
+        } else if (scrollTop > offsetTop) {
+            mainElement.scrollTop = offsetTop
+        }
+        */
+
+        //scrollIntoView();
+        //setScrollTop(this.tree.getContainerElement(), nodeElement);
     }
 
     /**
@@ -385,9 +434,6 @@ export class TreeNodeInfo implements TreeNode {
                 return ; 
             }
         }else{
-            // 처리 할것. 
-
-
             removeClass(this.tree.getRootElement().querySelectorAll('.dt-node.dt-selected'), 'dt-selected')
         }
        
@@ -471,7 +517,10 @@ export class TreeNodeInfo implements TreeNode {
  * @param mainElement {HTMLElement} main element
  * @param nodeElement {HTMLElement} 스크롤 이동할 element
  */
-function setScrollTop(mainElement: HTMLElement, nodeElement: Element) {
+function setScrollTop(mainElement: HTMLElement, nodeElement: Element|null) {
+
+    if(!nodeElement) return ;
+    
     //nodeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     const scrollTop = mainElement.scrollTop

@@ -16,7 +16,7 @@ function _beforesend(opts: any) {
 
   let nodeElement;
   if (node) {
-    nodeElement = opts.$rootElement.querySelector(`[data-dt-id="${node.id}"] > .dt-node`) as HTMLElement;
+    nodeElement = nodeUtils.nodeIdToNodeElement(opts.$rootElement, node.id);
   }
 
   if (!nodeElement) {
@@ -33,7 +33,7 @@ function _completed(result: any) {
   let nodeElement;
 
   if (node) {
-    nodeElement = opts.$rootElement.querySelector(`[data-dt-id="${node.id}"] > .dt-node`) as HTMLElement;
+    nodeElement = nodeUtils.nodeIdToNodeElement(opts.$rootElement, node.id);
   }
 
   if (!nodeElement) {

@@ -269,7 +269,7 @@ export class Tree {
             throw new Error(`node not found : [${id}] `)
         }
 
-        refreshNode.isLoaded = false
+        refreshNode.isLoaded = false;
 
         this.render(id)
     }
@@ -352,28 +352,49 @@ export class Tree {
     }
 
     private render(id: any) {
-        let renderParentNode
+        let renderNode:TreeNode;
+
+				//
+				// 처리할것. 
+				//
 
         if (id === this.config.rootNode.id) {
-            renderParentNode = this.config.rootNode
-            // init tree element
-            this.rootElement.innerHTML = this.getNodeTemplate([this.config.rootNode])
+					renderNode= this.config.rootNode;
+					// init tree element
+					this.rootElement.innerHTML = `<li data-dt-id="${renderNode.id}" class="dt-open">
+						<div class="dt-node" style="display:${this.options.enableRootNode ? 'inline' : 'none'}">
+							${this.nodeContentHtml(renderNode)}
+						</div>
+						<ul class="dt-children">${this.getNodeRender(renderNode)}</ul>
+					</li>`;
+
         } else {
             if (isBlank(id)) {
                 return
             }
 
-            renderParentNode = this.config.allNode[id]
+            renderNode = this.config.allNode[id];
 
-            const childNodeElemnt = this.rootElement.querySelector(`[data-dt-id="${renderParentNode.id}"]>.dt-children`)
-            if (childNodeElemnt) {
-                childNodeElemnt.innerHTML = this.getNodeTemplate(renderParentNode.childNodes)
-            }
+						const renderNodeElement = nodeUtils.nodeIdToElement(this.rootElement, renderNode.id) as HTMLElement;
 
-            this.setNodeContent(renderParentNode)
+						if(!renderNodeElement) return; 
+
+            let childNodeElemnt = renderNodeElement.querySelector(`:scope>.dt-children`);
+
+						// dt-children없을때 생성하고 추가할것
+						if (!childNodeElemnt) {
+							const ulElement = document.createElement('ul');
+							ulElement.className ="dt-children";
+							renderNodeElement.appendChild(ulElement);
+							childNodeElemnt = ulElement;
+						}
+
+            childNodeElemnt.innerHTML = this.getNodeRender(renderNode)
+            
+            this.setNodeContent(renderNode)
         }
 
-        this.config.checkbox.setNodeCheck(renderParentNode)
+        this.config.checkbox.setNodeCheck(renderNode)
     }
 
     private setNodeContent(selectedNode: TreeNode) {
@@ -401,49 +422,51 @@ export class Tree {
         //parentElement.innerHTML = this.nodeContentHtml(selectedNode);
     }
 
-    private getNodeTemplate(viewNodes: TreeNode[]): string {
+    private getNodeRender(node: TreeNode): string {
         const treeHtml = []
-        viewNodes = viewNodes ?? this.config.rootNode.childNodes
-        const childNodeLength = viewNodes.length
 
-        let stylePaddingLeft = childNodeLength > 0 ? nodeUtils.textContentPadding(viewNodes[0].depth, this) : 0
+				let childNodes = node?.childNodes ?? this.config.rootNode.childNodes;
+        
+        const childLength = childNodes.length;
 
-        for (let i = 0; i < childNodeLength; i++) {
-            let treeNode = viewNodes[i]
+				node.renderChildLength = childLength;
 
-            let childNodes = treeNode.childNodes
+				if(childLength < 1) return '';
+
+        let stylePaddingLeft = childLength > 0 ? nodeUtils.textContentPadding(childNodes[0].depth, this) : 0
+				
+        for (let i = 0; i < childLength; i++) {
+            let childNode = childNodes[i]
+
             let openClass = ''
 
-            if (treeNode.isOpen) {
+            if (childNode.isOpen) {
                 openClass = 'dt-open'
             }
 
-            if (treeNode.depth == 0) {
-                treeHtml.push(
-                    `<li data-dt-id="${treeNode.id}" class="dt-open">
-              <div class="dt-node" style="display:${this.options.enableRootNode ? 'inline' : 'none'}">
-                ${this.nodeContentHtml(treeNode)}
-              </div>
-              <ul class="dt-children">${this.getNodeTemplate(childNodes)}</ul>
-            </li>`,
-                )
-            } else {
-                treeHtml.push(
-                    `<li data-dt-id="${treeNode.id}" class="${openClass}">
-            <div class="dt-node" style="padding-left:${stylePaddingLeft}px" draggable="true">
-              ${this.nodeContentHtml(treeNode)}
-            </div>
-            <ul class="dt-children">${treeNode.getChildLength() == 0 ? '' : this.getNodeTemplate(childNodes)}</ul>
-          </li>`,
-                )
-            }
+						const childNodeLength = childNode.getChildLength();
+
+						let childNodeTemplate ='';
+						if(childNode.isOpen && childNodeLength > 0){
+							childNodeTemplate = `<ul class="dt-children">${this.getNodeRender(childNode)}</ul>`
+						}
+
+            treeHtml.push(
+                    `<li data-dt-id="${childNode.id}" class="${openClass}">
+							<div class="dt-node" style="padding-left:${stylePaddingLeft}px" draggable="true">
+								${this.nodeContentHtml(childNode)}
+							</div>
+							${childNodeTemplate}
+						</li>`
+           )
         }
+				
 
         return treeHtml.join('')
     }
 
     private nodeContentHtml(node: TreeNode) {
-        return this.getExpandIconHtml(node) + this.getNodeNameHtml(node)
+        return '<span>'+this.getExpandIconHtml(node) + this.getNodeNameHtml(node)+'</span>';
     }
 
     private getExpandIconHtml(node: TreeNode) {
