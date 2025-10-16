@@ -117,33 +117,33 @@
         &:hover,
         &:focus {
             .dt-node-title {
-            color: var(--item-hover-font-color);
-            background: var(--item-hover-bg-color);
+                color: var(--item-hover-font-color);
+                background: var(--item-hover-bg-color);
             }
         }
 
         &.dt-selected {
-          .dt-node-title {
-            color: var(--item-select-font-color);
-            background-color: var(--item-select-bg-color);
-						box-shadow: inset 0 -4px 6px rgba(0, 0, 0, 0.1);
-          }
+            .dt-node-title {
+                color: var(--item-select-font-color);
+                background-color: var(--item-select-bg-color);
+                box-shadow: inset 0 -4px 6px rgba(0, 0, 0, 0.1);
+            }
         }
 
         &.dt-focus {
-          .dt-node-title {
-            color: var(--item-focus-font-color);
-            background-color: var(--item-focus-bg-color);
-          }
+            .dt-node-title {
+                color: var(--item-focus-font-color);
+                background-color: var(--item-focus-bg-color);
+            }
         }
 
         &.dt-highlight {
-          .dt-node-title {
-            color: var(--item-search-font-color) !important;
-            font-weight: bold;
-          }
+            .dt-node-title {
+                color: var(--item-search-font-color) !important;
+                font-weight: bold;
+            }
         }
-        
+
         .dt-node-title {
             cursor: pointer;
             display: inline-flex;
@@ -152,8 +152,8 @@
             color: var(--body-color);
             line-height: 24px;
             height: 24px;
-			padding: 0px 5px 0px 0px;
-            
+            padding: 0px 5px 0px 0px;
+
             &.dt-edit > span {
                 display: none;
             }
@@ -161,8 +161,6 @@
             .dt-input {
                 width: 100px;
             }
-
-           
         }
 
         .dt-expander {
@@ -197,7 +195,7 @@
         }
     }
 
-    > .dt-whole-row{
+    > .dt-whole-row {
         .dt-node {
             &:hover,
             &:focus {
@@ -211,7 +209,7 @@
                 .dt-node-title {
                     color: var(--item-select-font-color);
                     background-color: inherit;
-										box-shadow: unset;
+                    box-shadow: unset;
                 }
             }
 
