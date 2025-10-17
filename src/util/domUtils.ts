@@ -20,18 +20,6 @@ export function append(el: ElementType, renderElements: Element | string) {
   insertAdjacentHTML($querySelector(el), "beforeend", renderElements);
 }
 
-export function empty(el: ElementType, html?: string) {
-  if (el == null) return el;
-
-  $querySelector(el).forEach((el1) => {
-    el1.replaceChildren();
-
-    if (html) {
-      el1.innerHTML = html;
-    }
-  });
-}
-
 export function hasClass(el: ElementType, styleClassName: string) {
   for (let el1 of $querySelector(el)) {
     if (el1.classList.contains(styleClassName)) {
@@ -81,12 +69,6 @@ export function removeClass(el: ElementType, styleClassName: string) {
   }
 }
   
-export function  htmlToText(htmlText: string): string {
-  let divEle = document.createElement("div");
-  divEle.innerHTML = htmlText;
-  return divEle.innerText;
-}
-
 export function  isInputField(tagName: string): boolean {
   return tagName.search(/(input|select|textarea)/i) > -1;
 }

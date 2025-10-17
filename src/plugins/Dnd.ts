@@ -42,6 +42,8 @@ export class Dnd {
     private overElementTop: number = 0
     private overElementOffsetTop: number = 0
     private dragPostion: string = ''
+    private measurementScheduled: boolean = false
+    private pendingMeasureElement: Element | null = null
 
     constructor(tree: Tree) {
         this.tree = tree
@@ -74,9 +76,6 @@ export class Dnd {
             'mousedown touchstart',
             (e: Event, ele: Element) => {
                 
-
-                console.log('1111111111');
-
                 this.tree.config.isDndMouseDown = true;
 
                 const evtPos = getEventPosition(e)
@@ -90,7 +89,6 @@ export class Dnd {
 
                 eventOn(document, 'dragstart', (startEvt: any) => {
 
-                    console.log('11111111112222222');
                     if (!this.tree.config.isNodeDrag) {
                         if (!this.initFlag) {
                             this.initFlag = true
@@ -143,10 +141,9 @@ export class Dnd {
                 if (this.mouseOverEle == ele) return
 
                 this.mouseOverEle = ele as HTMLElement
-                this.overElementOffsetTop = this.mouseOverEle.offsetTop - 1
-                this.overElementTop = getWinScrollTop() + ele.getBoundingClientRect().top
 
-                this.enterNode = nodeUtils.elementToTreeNode(ele, this.tree)
+                // Schedule measurement in requestAnimationFrame to avoid layout thrashing
+                this.scheduleMeasureOverElement(ele)
             },
             '.dt-node',
         )
@@ -161,6 +158,28 @@ export class Dnd {
         eventOn(rootElement, 'mouseup touchend', (e: UIEvent) => {
             this.tree.config.isNodeDrag = false;
             this.tree.config.isDndMouseDown = false;
+        })
+    }
+
+    /**
+     * Schedule measuring element position in a single rAF to throttle getBoundingClientRect calls.
+     */
+    private scheduleMeasureOverElement(ele: Element) {
+        this.pendingMeasureElement = ele
+        if (this.measurementScheduled) return
+
+        this.measurementScheduled = true
+        requestAnimationFrame(() => {
+            this.measurementScheduled = false
+            if (!this.pendingMeasureElement) return
+
+            const el = this.pendingMeasureElement as HTMLElement
+            this.overElementOffsetTop = el.offsetTop - 1
+            // use getBoundingClientRect inside rAF
+            this.overElementTop = getWinScrollTop() + el.getBoundingClientRect().top
+            this.enterNode = nodeUtils.elementToTreeNode(el, this.tree)
+
+            this.pendingMeasureElement = null
         })
     }
 

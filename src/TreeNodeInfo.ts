@@ -112,26 +112,29 @@ export class TreeNodeInfo implements TreeNode {
         }
         const containerElement = this.tree.getContainerElement()
         if (nodeElement && containerElement) {
-            const childNodeHeight = (nodeElement.querySelector('.dt-children') as HTMLElement)?.clientHeight || 0
+            // Defer measurements to rAF to avoid layout thrash when many nodes open/close rapidly
+            requestAnimationFrame(() => {
+                const childNodeHeight = (nodeElement.querySelector('.dt-children') as HTMLElement)?.clientHeight || 0
 
-            // getBoundingClientRect 기반으로 container 상대 위치 계산 (offsetParent 체인 문제 회피)
-            const nodeRect = (nodeElement as HTMLElement).getBoundingClientRect()
-            const containerRect = containerElement.getBoundingClientRect()
-            const nodeTop = nodeRect.top - containerRect.top + containerElement.scrollTop
-            const nodeBottom = nodeTop + (nodeElement as HTMLElement).clientHeight
-            const visibleTop = containerElement.scrollTop
-            const visibleBottom = visibleTop + containerElement.clientHeight
+                // getBoundingClientRect 기반으로 container 상대 위치 계산 (offsetParent 체인 문제 회피)
+                const nodeRect = (nodeElement as HTMLElement).getBoundingClientRect()
+                const containerRect = containerElement.getBoundingClientRect()
+                const nodeTop = nodeRect.top - containerRect.top + containerElement.scrollTop
+                const nodeBottom = nodeTop + (nodeElement as HTMLElement).clientHeight
+                const visibleTop = containerElement.scrollTop
+                const visibleBottom = visibleTop + containerElement.clientHeight
 
-            if (childNodeHeight >= containerElement.clientHeight) {
-                // 자식 높이가 컨테이너보다 크면, 노드를 컨테이너 최상단에 맞춤
-                containerElement.scrollTop = nodeTop
-            } else if (nodeBottom + childNodeHeight > visibleBottom) {
-                const requiredTop = nodeBottom + childNodeHeight - containerElement.clientHeight
-                const candidate = visibleTop + childNodeHeight
-                containerElement.scrollTop = Math.min(candidate, requiredTop)
-            } else if (nodeTop < visibleTop) {
-                containerElement.scrollTop = nodeTop
-            }
+                if (childNodeHeight >= containerElement.clientHeight) {
+                    // 자식 높이가 컨테이너보다 크면, 노드를 컨테이너 최상단에 맞춤
+                    containerElement.scrollTop = nodeTop
+                } else if (nodeBottom + childNodeHeight > visibleBottom) {
+                    const requiredTop = nodeBottom + childNodeHeight - containerElement.clientHeight
+                    const candidate = visibleTop + childNodeHeight
+                    containerElement.scrollTop = Math.min(candidate, requiredTop)
+                } else if (nodeTop < visibleTop) {
+                    containerElement.scrollTop = nodeTop
+                }
+            })
         }
     }
 
@@ -504,22 +507,24 @@ export class TreeNodeInfo implements TreeNode {
  */
 function setScrollTop(mainElement: HTMLElement, nodeElement: Element | null) {
     if (!nodeElement) return
+    // Defer measurements to rAF to avoid forcing layout synchronously
+    requestAnimationFrame(() => {
+        //nodeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    //nodeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const containerRect = mainElement.getBoundingClientRect()
+        const nodeRect = (nodeElement as HTMLElement).getBoundingClientRect()
+        const offsetTop = nodeRect.top - containerRect.top + mainElement.scrollTop
+        const containerHeight = mainElement.clientHeight
+        const nodeTitle = nodeElement.querySelector('.dt-node') as HTMLElement | null
+        const eleHeight = nodeTitle ? nodeTitle.clientHeight : (nodeElement as HTMLElement).clientHeight
 
-    const containerRect = mainElement.getBoundingClientRect()
-    const nodeRect = (nodeElement as HTMLElement).getBoundingClientRect()
-    const offsetTop = nodeRect.top - containerRect.top + mainElement.scrollTop
-    const containerHeight = mainElement.clientHeight
-    const nodeTitle = nodeElement.querySelector('.dt-node') as HTMLElement | null
-    const eleHeight = nodeTitle ? nodeTitle.clientHeight : (nodeElement as HTMLElement).clientHeight
+        const visibleTop = mainElement.scrollTop
+        const visibleBottom = visibleTop + containerHeight
 
-    const visibleTop = mainElement.scrollTop
-    const visibleBottom = visibleTop + containerHeight
-
-    if (offsetTop + eleHeight > visibleBottom) {
-        mainElement.scrollTop = offsetTop + eleHeight - containerHeight
-    } else if (visibleTop > offsetTop) {
-        mainElement.scrollTop = offsetTop
-    }
+        if (offsetTop + eleHeight > visibleBottom) {
+            mainElement.scrollTop = offsetTop + eleHeight - containerHeight
+        } else if (visibleTop > offsetTop) {
+            mainElement.scrollTop = offsetTop
+        }
+    })
 }

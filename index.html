@@ -1,48 +1,46 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Dara tree</title>
+        <meta http-equiv="X-UA-compatible" content="IE=edge" />
+    </head>
 
-<head>
-    <meta charset="utf-8" />
-    <title>Dara tree</title>
-    <meta http-equiv="X-UA-compatible" content="IE=edge" />
-</head>
+    <body>
+        <div class="daracl-main" style="height: 700px">
+            <h2 class="page-header">트리</h2>
+            <div>
+                <table style="width: 100%; height: 100%; table-layout: fixed; border: 1px solid #dddddd">
+                    <tr valign="top">
+                        <td style="width: 50%">
+                            <div class="button-area">
+                                <button type="button" onclick="init()">init</button>
+                                ||
+                                <button type="button" onclick="treeOpen()">오픈</button>
+                                ||
+                                <button type="button" onclick="treeClose()">닫기</button>
+                                ||
+                                <button type="button" onclick="removeSelectNode()">선택 노드 삭제</button>
+                                ||
+                                <button type="button" onclick="addChildNode()">선택 노드에 하위 노드 추가</button>
+                            </div>
+                            <div>
+                                <input type="text" placeholder="Search" class="node-search" />
+                            </div>
+                            <div id="treeDiv" style="overflow: auto; height: 500px"></div>
 
-<body>
-    <div class="daracl-main" style="height: 700px">
-        <h2 class="page-header">트리</h2>
-        <div>
-            <table style="width: 100%; height: 100%; table-layout: fixed; border: 1px solid #dddddd">
-                <tr valign="top">
-                    <td style="width: 50%">
-                        <div class="button-area">
-                            <button type="button" onclick="init()">init</button>
-                            ||
-                            <button type="button" onclick="treeOpen()">오픈</button>
-                            ||
-                            <button type="button" onclick="treeClose()">닫기</button>
-                            ||
-                            <button type="button" onclick="removeSelectNode()">선택 노드 삭제</button>
-                            ||
-                            <button type="button" onclick="addChildNode()">선택 노드에 하위 노드 추가</button>
-                        </div>
-                        <div>
-                            <input type="text" placeholder="Search" class="node-search" />
-                        </div>
-                        <div id="treeDiv" style="overflow: auto; height: 500px"></div>
-
-                        <br />
-                    </td>
-                    <td style="width: 50%">
-                        <div id="logView" style="height: 100%; overflow: auto"></div>
-                    </td>
-                </tr>
-            </table>
+                            <br />
+                        </td>
+                        <td style="width: 50%">
+                            <div id="logView" style="height: 100%; overflow: auto"></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
-    </div>
 
-    <script type="module" src="/src/index.ts"></script>
-</body>
-
+        <script type="module" src="/src/index.ts"></script>
+    </body>
 </html>
 <style>
     .form-button {
@@ -141,7 +139,10 @@
     var treeObj
 
     function init() {
-        var treeItem = JSON.parse(document.getElementById('sourceSample').textContent)
+        var treeItem = generateJsonTree(500, 5) //JSON.parse(document.getElementById('sourceSample').textContent)
+
+        //console.log(treeItem)
+        //var treeItem = JSON.parse(document.getElementById('sourceSample').textContent)
 
         treeObj = Daracl.tree.create('#treeDiv', {
             items: treeItem,
@@ -160,7 +161,7 @@
             selectOnWholeRow1: true,
             enableRootNode1: true,
             enableIcon: true,
-            openDepth: 0,
+            openDepth: -1,
             plugins: {
                 checkbox: {},
                 keydown: {},
@@ -276,6 +277,43 @@
 
     function saveInfo() {
         // $.pubTree("#treeDiv").addNode((pubTreeConfig.allTreeItem.length + 100), pubTreeConfig.selectedNode.id, document.getElementById('name').value, document.getElementById('url').value)
+    }
+
+    function generateJsonTree(count, maxDepth) {
+        const result = []
+        let currentId = 0
+
+        // Helper to generate text
+        function makeText(id) {
+            return `node ${id}`
+        }
+
+        // Breadth-first generation of tree nodes
+        const queue = [{ id: currentId++, pid: '', depth: 0 }]
+
+        while (queue.length > 0 && result.length < count) {
+            const node = queue.shift()
+            const { id, pid, depth } = node
+
+            result.push({
+                id: id,
+                pid: pid,
+                text: makeText(id),
+                url: `detail('${id}')`,
+            })
+
+            // Add children only if depth allows and count not exceeded
+            if (depth + 1 < maxDepth) {
+                const numChildren = Math.min(3, count - result.length) // Limit children per node
+                for (let i = 0; i < numChildren; i++) {
+                    if (currentId >= count) break
+                    queue.push({ id: currentId, pid: id, depth: depth + 1 })
+                    currentId++
+                }
+            }
+        }
+
+        return result
     }
 </script>
 <script id="sourceSample" type="text/content">
