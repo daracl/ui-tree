@@ -114,25 +114,36 @@ export class TreeNodeInfo implements TreeNode {
         if (nodeElement && containerElement) {
             // Defer measurements to rAF to avoid layout thrash when many nodes open/close rapidly
             requestAnimationFrame(() => {
-                const childNodeHeight = (nodeElement.querySelector('.dt-children') as HTMLElement)?.clientHeight || 0
-
-                // getBoundingClientRect 기반으로 container 상대 위치 계산 (offsetParent 체인 문제 회피)
+                // getBoundingClientRect 기반으로 container 상대 위치 계산
                 const nodeRect = (nodeElement as HTMLElement).getBoundingClientRect()
                 const containerRect = containerElement.getBoundingClientRect()
+                const containerHeight = containerElement.clientHeight
                 const nodeTop = nodeRect.top - containerRect.top + containerElement.scrollTop
-                const nodeBottom = nodeTop + (nodeElement as HTMLElement).clientHeight
+                const nodeHeight = (nodeElement as HTMLElement).clientHeight
+                const nodeBottom = nodeTop + nodeHeight
                 const visibleTop = containerElement.scrollTop
-                const visibleBottom = visibleTop + containerElement.clientHeight
+                const visibleBottom = visibleTop + containerHeight
 
-                if (childNodeHeight >= containerElement.clientHeight) {
-                    // 자식 높이가 컨테이너보다 크면, 노드를 컨테이너 최상단에 맞춤
-                    containerElement.scrollTop = nodeTop
-                } else if (nodeBottom + childNodeHeight > visibleBottom) {
-                    const requiredTop = nodeBottom + childNodeHeight - containerElement.clientHeight
-                    const candidate = visibleTop + childNodeHeight
-                    containerElement.scrollTop = Math.min(candidate, requiredTop)
-                } else if (nodeTop < visibleTop) {
-                    containerElement.scrollTop = nodeTop
+                const maxScrollTop = Math.max(0, containerElement.scrollHeight - containerHeight)
+
+                const clamp = (v: number) => Math.max(0, Math.min(v, maxScrollTop))
+
+                // 1) 노드가 컨테이너의 위(보이지 않는 영역)에 있으면 컨테이너 최상단에 딱 맞춤 (클램프 적용)
+                if (nodeTop < visibleTop) {
+                    containerElement.scrollTop = clamp(nodeTop)
+                    return
+                }
+
+                // 2) 자식 영역이 컨테이너보다 크면 노드를 최상단에 맞춤 (클램프 적용)
+                if (nodeHeight >= containerHeight) {
+                    containerElement.scrollTop = clamp(nodeTop)
+                    return
+                }
+
+                //    자식 전체가 보이도록 필요한 경우 더 올림 (클램프 적용)
+                if (nodeBottom > visibleBottom) {
+                    const requiredTop = nodeBottom - visibleBottom
+                    containerElement.scrollTop = requiredTop + visibleTop
                 }
             })
         }
