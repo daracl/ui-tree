@@ -114,8 +114,16 @@
         height: 24px;
         overflow: hidden;
 
-        &:hover,
-        &:focus {
+
+        &.dt-open-active{
+						.dt-node-title {
+                color: var(--item-open-active-font-color);
+                background: var(--item-open-active-bg-color);
+            }
+        }
+
+        >span:hover,
+        >span:focus {
             .dt-node-title {
                 color: var(--item-hover-font-color);
                 background: var(--item-hover-bg-color);

@@ -35,8 +35,9 @@ export const eventOff = (el: Element | string | NodeList | null | Document | Ele
   for (const eventType of eventTypes) {
     if (isUndefined(evtInfo[eventType])) continue;
 
+    const event = eventType.split(".")[0];
     elements.forEach((el) => {
-      el.removeEventListener(eventType, evtInfo[eventType]);
+      el.removeEventListener(event, evtInfo[eventType]);
     });
 
     delete evtInfo[eventType];
@@ -97,8 +98,9 @@ export const eventOn = (el: Element | string | NodeList | null | Document | Elem
 
   for (const eventType of eventTypes) {
     addEventInfo(el, eventType, fn);
+    const event = eventType.split(".")[0];
     elements.forEach((el: Element) => {
-      el.addEventListener(eventType, fn, fnOpts ?? {});
+      el.addEventListener(event, fn, fnOpts ?? {});
     });
   }
 };

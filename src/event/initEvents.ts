@@ -1,7 +1,7 @@
-import { isInputField, removeClass } from 'src/util/domUtils'
+import { addClass, isInputField, removeClass } from 'src/util/domUtils'
 import nodeUtils from 'src/util/nodeUtils'
 import {Tree} from '../Tree'
-import { eventOff, eventOn } from 'src/util/eventUtils'
+import { eventOff, eventOn, getEventPosition } from 'src/util/eventUtils'
 
 
 /**
@@ -14,10 +14,31 @@ import { eventOff, eventOn } from 'src/util/eventUtils'
 export function expanderClick(treeContext: Tree, el: Element | string | NodeList) {
 	eventOn(
 			el,
-			'click',
+			'click touchstart',
 			(e: Event, ele: Element) => {
-					nodeUtils.elementToTreeNode(ele, treeContext).folderToggle()
-					return false
+				const expandNode = nodeUtils.elementToTreeNode(ele, treeContext);
+				const nodeElement = nodeUtils.nodeLiElement(ele)?.querySelector(".dt-node");
+
+				expandNode.folderToggle();
+
+				if(expandNode.isOpen){
+					const position = getEventPosition(e);
+					  eventOff(document, 'touchmove.expander mousemove.expander');
+						eventOn(document, 'touchmove.expander mousemove.expander', (e: Event) => {
+							const movePosition = getEventPosition(e);
+
+							if(Math.abs(movePosition.x - position.x) + Math.abs(movePosition.y - position.y) > 3){
+								removeClass(nodeElement, "dt-open-active");
+								eventOff(document, 'touchmove.expander mousemove.expander')
+							}
+						})
+						addClass(nodeElement, "dt-open-active");
+				}else{
+					removeClass(nodeElement, "dt-open-active");	
+				}
+				
+				
+				return false
 			},
 			'.dt-expander.dt-visible',
 	)
