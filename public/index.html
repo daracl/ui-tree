@@ -235,7 +235,7 @@
     window.treeObj = treeObj
 
     function addChildNode() {
-        const selectNode = treeObj.getSelectNode()
+        const selectNode = treeObj.getSelectNodes()
 
         if (selectNode) {
             const addItems = getAddItem(selectNode.id)
@@ -262,7 +262,7 @@
     }
 
     function removeSelectNode(obj) {
-        const selectNode = treeObj.getSelectNode()
+        const selectNode = treeObj.getSelectNodes()
         if (selectNode) treeObj.remove(selectNode.id)
     }
 

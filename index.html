@@ -139,10 +139,8 @@
     var treeObj
 
     function init() {
-        var treeItem = generateJsonTree(500, 5) //JSON.parse(document.getElementById('sourceSample').textContent)
-
-        //console.log(treeItem)
-        //var treeItem = JSON.parse(document.getElementById('sourceSample').textContent)
+        //var treeItem = generateJsonTree(500, 5) //JSON.parse(document.getElementById('sourceSample').textContent)
+        var treeItem = JSON.parse(document.getElementById('sourceSample').textContent)
 
         treeObj = Daracl.tree.create('#treeDiv', {
             items: treeItem,
@@ -158,7 +156,7 @@
                 //console.log(node);
                 return node.id == '1' ? 'id-1' : '222'
             },
-            selectOnWholeRow: true,
+            selectOnWholeRow1: true,
             enableRootNode1: true,
             enableIcon: true,
             openDepth: -1,
@@ -240,7 +238,7 @@
     window.treeObj = treeObj
 
     function addChildNode() {
-        const selectNode = treeObj.getSelectNode()
+        const selectNode = treeObj.getSelectNodes()
 
         if (selectNode) {
             const addItems = getAddItem(selectNode.id)
@@ -267,7 +265,7 @@
     }
 
     function removeSelectNode(obj) {
-        const selectNode = treeObj.getSelectNode()
+        const selectNode = treeObj.getSelectNodes()
         if (selectNode) treeObj.remove(selectNode.id)
     }
 
@@ -279,41 +277,51 @@
         // $.pubTree("#treeDiv").addNode((pubTreeConfig.allTreeItem.length + 100), pubTreeConfig.selectedNode.id, document.getElementById('name').value, document.getElementById('url').value)
     }
 
-    function generateJsonTree(count, maxDepth) {
-        const result = []
-        let currentId = 0
+    function generateJsonTree(totalNodes, maxDepth) {
+        const data = []
 
-        // Helper to generate text
-        function makeText(id) {
-            return `node ${id}`
+        // 유틸: 랜덤하게 부모 id 선택
+        const getRandomParent = (currentId, currentDepth) => {
+            if (currentDepth === 0) return '' // 루트는 부모 없음
+
+            // 가능한 부모 후보 (현재 깊이보다 하나 위 깊이에 있는 노드들)
+            const candidates = data.filter((d) => d.depth === currentDepth - 1)
+            if (candidates.length === 0) return '' // 부모 없음
+            const parent = candidates[Math.floor(Math.random() * candidates.length)]
+            return parent.id
         }
 
-        // Breadth-first generation of tree nodes
-        const queue = [{ id: currentId++, pid: '', depth: 0 }]
+        // 노드 생성
+        let id = 1
+        let currentDepth = 0
+        let nodesAtDepth = 1
 
-        while (queue.length > 0 && result.length < count) {
-            const node = queue.shift()
-            const { id, pid, depth } = node
+        while (id <= totalNodes) {
+            // 깊이를 순환하면서 트리 모양 유지
+            const depth = Math.min(currentDepth, maxDepth - 1)
+            const pid = getRandomParent(id, depth)
 
-            result.push({
-                id: id,
-                pid: pid,
-                text: makeText(id),
+            const node = {
+                id,
+                pid,
+                text: `Node ${id}`,
                 url: `detail('${id}')`,
-            })
+                depth,
+            }
+            data.push(node)
 
-            // Add children only if depth allows and count not exceeded
-            if (depth + 1 < maxDepth) {
-                const numChildren = Math.min(3, count - result.length) // Limit children per node
-                for (let i = 0; i < numChildren; i++) {
-                    if (currentId >= count) break
-                    queue.push({ id: currentId, pid: id, depth: depth + 1 })
-                    currentId++
-                }
+            id++
+
+            // depth 조절 (단순 랜덤 분포)
+            if (Math.random() < 0.4 && currentDepth < maxDepth - 1) {
+                currentDepth++
+            } else if (Math.random() < 0.3 && currentDepth > 0) {
+                currentDepth--
             }
         }
 
-        return result
+        // depth 속성은 내부용이므로 제거
+        return data.map(({ depth, ...rest }) => rest)
     }
 </script>
 <script id="sourceSample" type="text/content">

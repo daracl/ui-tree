@@ -36,6 +36,7 @@ export class Dnd {
 
     private dragElement: HTMLElement
     private dragNode: TreeNode
+    private selectNodes: TreeNode[] = [];
 
     private mouseOverEle: HTMLElement | null
     private enterNode: TreeNode
@@ -81,7 +82,8 @@ export class Dnd {
                 const evtPos = getEventPosition(e)
 
                 this.dragElement = ele as HTMLElement
-                this.dragNode = nodeUtils.elementToTreeNode(ele, this.tree)
+                this.dragNode = nodeUtils.elementToTreeNode(ele, this.tree);
+                this.selectNodes = this.tree.getSelectNodes();
 
                 this.overElementTop = evtPos.y
                 this.mouseOverEle = this.dragElement
@@ -108,6 +110,7 @@ export class Dnd {
                         if (
                             plugins.dnd.start({
                                 item: this.dragNode,
+                                selectNodes : this.selectNodes,
                                 evt: startEvt,
                             }) === false
                         ) {
@@ -220,23 +223,30 @@ export class Dnd {
 
         this.dragHelper.style.top = moveY + 'px'
         this.dragHelper.style.left = moveX + 'px'
-     
-        if (this.mouseOverEle == null || (this.enterNode.id === this.dragNode.id)) {
-            this.setNotAllowed()
-            return
-        }
-              
-        const dragNodeDepth = this.dragNode.depth; 
+
         
-        let parentEnterNode = this.enterNode;
-        while (parentEnterNode !== undefined && dragNodeDepth < parentEnterNode.depth) {
-            if (parentEnterNode.pid === this.dragNode.id) {
+        const selectNodes = this.selectNodes;
+        const enterNode = this.enterNode;
+
+        for (const selectNode of selectNodes) {
+            const selectNodeId = selectNode.id; 
+            if (this.mouseOverEle == null || (enterNode.id === selectNodeId)) {
                 this.setNotAllowed()
                 return
             }
-            parentEnterNode = this.tree.config.allNode[parentEnterNode.pid]
-        }
-        
+                
+            const selectNodeDepth = selectNode.depth; 
+            
+            let parentEnterNode = enterNode;
+            while (parentEnterNode !== undefined && selectNodeDepth < parentEnterNode.depth) {
+                if (parentEnterNode.pid === selectNodeId) {
+                    this.setNotAllowed()
+                    return
+                }
+                parentEnterNode = this.tree.config.allNode[parentEnterNode.pid]
+            }
+        }        
+                
       
         if (this.overElementTop + this.lineViewHeight >= evtPos.y) {
             if (this.dragPostion != MOVE_POSITION.PREV) {
@@ -259,8 +269,6 @@ export class Dnd {
 
     private setDragHelper(position: string): void {
         let isChild = false
-
-        console.log('position: ', position)
        
         if (position != MOVE_POSITION.CHILD) {
             const childNode = this.tree.config.allNode[this.enterNode.pid].childNodes
@@ -314,6 +322,8 @@ export class Dnd {
 
         if (this.dragPostion === MOVE_POSITION.IGNORE) return
 
+
+
         const dragNode = this.dragNode
         const dropNode = this.enterNode
         const position = this.dragPostion
@@ -331,7 +341,15 @@ export class Dnd {
             }
         }
 
-        dragNode.move(position, dropNode.id)
+        const dropNodeId = dropNode.id;
+
+        //for (let i = this.selectNodes.length - 1; i >= 0; i--) {
+        for (let i = 0; i < this.selectNodes.length; i++) {
+            const selectNode = this.selectNodes[i];
+            selectNode.move(position, dropNodeId);
+        }
+
+        //dragNode.move(position, dropNode.id)
         this.setNotAllowed()
     }
 

@@ -533,7 +533,7 @@ export class Tree {
      *
      * @returns {TreeNode} 선택된 tree node
      */
-    public getSelectNode(): TreeNode[] {
+    public getSelectNodes(): TreeNode[] {
         const selectNodeList = this.rootElement.querySelectorAll('.dt-selected')
         if (selectNodeList) {
             const result: TreeNode[] = []

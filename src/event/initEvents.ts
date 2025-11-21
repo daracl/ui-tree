@@ -52,6 +52,13 @@ export function expanderClick(treeContext: Tree, el: Element | string | NodeList
 	})
 }
 
+/** 
+ * 노드 텍스트 클릭 이벤트
+ *
+ * @export
+ * @param {Tree} treeContext
+ * @param {(Element | string | NodeList)} el
+ */
 export function textClick(treeContext: Tree, el: Element | string | NodeList) {
 	let clickCount = 0
 	let clickTimer: any
@@ -62,16 +69,16 @@ export function textClick(treeContext: Tree, el: Element | string | NodeList) {
 			clickNode = null
 	}
 
-	// Function to wait for the next click
 	const conserveClick = (node: any) => {
 			clickNode = node
 			clearTimeout(clickTimer)
 			clickTimer = setTimeout(resetClick, clickDelay)
 	}
 
+	// node click event
 	eventOn(
 			el,
-			'mousedown touchstart',
+			'mouseup touchend',
 			(e: MouseEvent, ele: Element) => {
 					if (e.button === 2 || e.which === 3) {
 							clickTimer = null
@@ -98,5 +105,8 @@ export function textClick(treeContext: Tree, el: Element | string | NodeList) {
 			},
 			'.dt-node-title',
 	)
+
+
+	
 }
 
