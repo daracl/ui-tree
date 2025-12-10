@@ -79,7 +79,10 @@
     },
     "scripts": {
         "prepack": "yarn build",
-        "build": "vite build --mode production && vite build --mode development && yarn copy-dts && yarn build:tsc && yarn copy-unmin && yarn clean:unmin && yarn copy-html",
+        "build": "yarn build:escjs && yarn build:umd && yarn mergenclean",
+        "build:umd": "vite build --config vite.config.umd.js --mode production && vite build --config vite.config.umd.js --mode development",
+        "build:escjs": "vite build --config vite.config.js --mode production && vite build --config vite.config.js --mode development",
+        "mergenclean": "yarn copy-dts && yarn build:tsc && yarn copy-unmin && yarn clean:unmin && yarn copy-html",
         "build:tsc": "tsc --emitDeclarationOnly",
         "dev": "vite",
         "preview": "vite preview",

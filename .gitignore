@@ -18,3 +18,5 @@ template.zip
 # test result 
 test-results/*
 /test-results
+
+bundle-report.html
