@@ -1,7 +1,7 @@
-import { addClass, isInputField, removeClass } from 'src/util/domUtils'
-import nodeUtils from 'src/util/nodeUtils'
+import { addClass, isInputField, removeClass } from '@/util/domUtils'
+import nodeUtils from '@/util/nodeUtils'
 import {Tree} from '../Tree'
-import { eventOff, eventOn, getEventPosition } from 'src/util/eventUtils'
+import { eventOff, eventOn, getEventPosition } from '@/util/eventUtils'
 
 
 /**

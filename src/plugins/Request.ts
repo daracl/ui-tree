@@ -1,9 +1,9 @@
 import {Tree} from "../Tree";
 import { TreeNode } from "@t/TreeNode";
-import { ajax } from "src/util/ajaxUtils";
-import { append } from "src/util/domUtils";
-import nodeUtils from "src/util/nodeUtils";
-import { isString, isUndefined, objectMerge } from "src/util/utils";
+import { ajax } from "@/util/ajaxUtils";
+import { append } from "@/util/domUtils";
+import nodeUtils from "@/util/nodeUtils";
+import { isString, isUndefined, objectMerge } from "@/util/utils";
 
 const REQUEST_DEFAULT_OPTIONS = {
   url: { search: "" },

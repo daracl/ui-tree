@@ -1,5 +1,5 @@
 import { TreeNode } from '@t/TreeNode'
-import { Tree } from 'src/Tree'
+import { Tree } from '@/Tree'
 import { isBlank } from './utils'
 
 export default {

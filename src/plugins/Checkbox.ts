@@ -1,9 +1,9 @@
-import nodeUtils from "src/util/nodeUtils";
+import nodeUtils from "@/util/nodeUtils";
 import {Tree} from "../Tree";
 import { addClass, removeClass } from "../util/domUtils";
 import { TreeNode } from "@t/TreeNode";
 import { CHECK_STATE } from "../constants";
-import { eventOn } from "src/util/eventUtils";
+import { eventOn } from "@/util/eventUtils";
 
 /**
  * tree node Checkbox

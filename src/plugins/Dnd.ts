@@ -1,10 +1,10 @@
-import nodeUtils from 'src/util/nodeUtils'
+import nodeUtils from '@/util/nodeUtils'
 import { Tree } from '../Tree'
 import { addClass, getWinScrollTop, removeClass, setAttribute } from '../util/domUtils'
 import { TreeNode } from '@t/TreeNode'
-import { MOVE_POSITION } from 'src/constants'
-import { eventOff, eventOn, getEventPosition } from 'src/util/eventUtils'
-import { objectMerge } from 'src/util/utils'
+import { MOVE_POSITION } from '@/constants'
+import { eventOff, eventOn, getEventPosition } from '@/util/eventUtils'
+import { objectMerge } from '@/util/utils'
 import { DndOptions } from '@t/Options'
 
 // dnd default option

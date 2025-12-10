@@ -1,6 +1,7 @@
 import { Options } from '@t/Options'
 import { ConfigInfo } from '@t/ConfigInfo'
-import { generateUUID, hasOwnProp, isArray, isBlank, isNumber, isString, isUndefined, objectMerge } from './util/utils'
+import {isArray} from '@daracl/core'
+import { generateUUID, hasOwnProp, isBlank, isNumber, isString, isUndefined, objectMerge } from './util/utils'
 import { expanderClick, textClick } from './event/initEvents'
 import { addClass, hasClass, removeClass, setAttribute } from './util/domUtils'
 import { TreeNode } from '@t/TreeNode'

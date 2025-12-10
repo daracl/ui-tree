@@ -1,10 +1,10 @@
 import { KeydownOptions } from "@t/Options";
 import {Tree} from "../Tree";
 import { TreeNode } from "@t/TreeNode";
-import { eventOff, eventOn, getEventKey } from "src/util/eventUtils";
+import { eventOff, eventOn, getEventKey } from "@/util/eventUtils";
 
-import nodeUtils from "src/util/nodeUtils";
-import { objectMerge } from "src/util/utils";
+import nodeUtils from "@/util/nodeUtils";
+import { objectMerge } from "@/util/utils";
 
 // keydown default option
 const KEYDOWN_DEFAULT_OPTIONS = {};

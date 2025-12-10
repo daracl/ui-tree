@@ -1,9 +1,9 @@
-import Checkbox from "src/plugins/Checkbox";
-import Dnd from "src/plugins/Dnd";
-import Keydown from "src/plugins/Keydown";
+import Checkbox from "@/plugins/Checkbox";
+import Dnd from "@/plugins/Dnd";
+import Keydown from "@/plugins/Keydown";
 import { TreeNode } from "./TreeNode";
-import Request from "src/plugins/Request";
-import { Search } from "src/plugins/Search";
+import Request from "@/plugins/Request";
+import { Search } from "@/plugins/Search";
 
 export interface OptionCallback {
   (...params: any[]): any;

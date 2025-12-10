@@ -2,10 +2,10 @@ import { SearchOptions } from "@t/Options";
 import {Tree} from "../Tree";
 import { TreeNode } from "@t/TreeNode";
 
-import nodeUtils from "src/util/nodeUtils";
-import { isFunction, objectMerge } from "src/util/utils";
-import { escapeRegExp, findText, normalizeText } from "src/util/searchUtil";
-import { addClass, removeClass } from "src/util/domUtils";
+import nodeUtils from "@/util/nodeUtils";
+import { isFunction, objectMerge } from "@/util/utils";
+import { escapeRegExp, findText, normalizeText } from "@/util/searchUtil";
+import { addClass, removeClass } from "@/util/domUtils";
 import { SearchCallback } from '../types/Options';
 
 // default option

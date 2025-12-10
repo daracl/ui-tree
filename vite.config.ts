@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
   return {
     resolve: {
       alias: {
-        src: path.resolve(__dirname, 'src'),
+        '@': path.resolve(__dirname, 'src'),
         '@t': path.resolve(__dirname, 'src/types'),
       },
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
@@ -33,16 +33,34 @@ export default defineConfig(({ mode }) => {
       lib: {
         entry: path.resolve(__dirname, 'src/index.ts'),
         name: 'Daracl.tree',
-        fileName: (format) =>
-          isProd ? `${moduleName}.min.${format}.js` : `${moduleName}.${format}.js`,
-       // formats: ['es','umd'],
+        formats: ['es', 'cjs', 'umd'],
+        fileName: (format) => {
+          if (format === 'umd') {
+            return isProd ? `${moduleName}.min.umd.js` : `${moduleName}.umd.js`;
+          }
+
+          if (format === 'es') {
+            return isProd ? `index.min.js` : `index.js`;  
+          }
+
+          if (format === 'cjs') {
+            return isProd ? `index.min.cjs` : `index.cjs`;  
+          }
+
+          // es / cjs
+          return isProd ? `index.min.${format}.js` : `index.${format}.js`;
+        }
       },
       rollupOptions: {
-       
+        external: [
+          "@daracl/core"
+        ],
         output: {
-            
+          globals: {
+            "@daracl/core": "Daracl"
+          },
           assetFileNames: (assetInfo) => {
-              if (assetInfo.name.endsWith('.css')) {
+              if ((assetInfo.name||'').endsWith('.css')) {
               return isProd ? `${moduleName}.min.[ext]` : `${moduleName}.[ext]`;
               }
               return 'assets/[name].[ext]';

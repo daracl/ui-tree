@@ -80,10 +80,6 @@ export function isNumber(value: any): value is number {
   return !isNaN(value);
 }
 
-export function isArray(value: any): value is Array<any> {
-  return Array.isArray(value);
-}
-
 export function replaceXss(text: string): string {
   return replace(text);
 }
