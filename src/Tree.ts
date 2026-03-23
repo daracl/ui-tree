@@ -6,7 +6,7 @@ import { expanderClick, textClick } from './event/initEvents'
 import { addClass, hasClass, removeClass, setAttribute } from './util/domUtils'
 import { TreeNode } from '@t/TreeNode'
 import { Checkbox } from './plugins/Checkbox'
-import { CHECK_STATE } from './constants'
+import { CHECK_STATE, DEFAULT_ROOT_NODE_ID } from './constants'
 import { TreeNodeInfo } from './TreeNodeInfo'
 import nodeUtils from './util/nodeUtils'
 import { Dnd } from './plugins/Dnd'
@@ -222,7 +222,7 @@ export class Tree {
             isRequest: false,
         } as ConfigInfo
 
-        this.config.rootNode = new TreeNodeInfo(objectMerge({}, this.options.rootNode), '$$root$$', this)
+        this.config.rootNode = new TreeNodeInfo(objectMerge({}, this.options.rootNode), DEFAULT_ROOT_NODE_ID, this)
         this.config.allNode[this.config.rootNode.id] = this.config.rootNode
         this.config.selectedNode = this.config.rootNode
 
@@ -342,13 +342,15 @@ export class Tree {
             this.config.rootNode.addChild(addNodeItem)
         }
 
+        this.config.allNode[id] = addNodeItem;
+
         if (node.children && node.children.length > 0) {
             for (const childNode of node.children) {
-                this.addNode(childNode)
+                this.treeGrid(childNode);
             }
         }
 
-        this.config.allNode[id] = addNodeItem
+        
     }
 
     private render(id: any) {
@@ -371,7 +373,7 @@ export class Tree {
                 return
             }
 
-            renderNode = this.config.allNode[id]
+            renderNode = this.config.allNode[id];
 
             const renderNodeElement = nodeUtils.nodeIdToElement(this.rootElement, renderNode.id) as HTMLElement
 

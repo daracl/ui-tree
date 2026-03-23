@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Dara tree</title>
+        <meta http-equiv="X-UA-compatible" content="IE=edge" />
+    </head>
+
+    <body>
+        <div class="daracl-main" style="height: 700px">
+            <h2 class="page-header">트리</h2>
+            <div>
+                <table style="width: 100%; height: 100%; table-layout: fixed; border: 1px solid #dddddd">
+                    <tr valign="top">
+                        <td style="width: 50%">
+                            <div class="button-area">
+                                <button type="button" onclick="init()">init</button>
+                                ||
+                                <button type="button" onclick="treeOpen()">오픈</button>
+                                ||
+                                <button type="button" onclick="treeClose()">닫기</button>
+                                ||
+                                <button type="button" onclick="removeSelectNode()">선택 노드 삭제</button>
+                                ||
+                                <button type="button" onclick="addChildNode()">선택 노드에 하위 노드 추가</button>
+                            </div>
+                            <div>
+                                <input type="text" placeholder="Search" class="node-search" />
+                            </div>
+                            <div id="treeDiv" style="overflow: auto; height: 500px"></div>
+
+                            <br />
+                        </td>
+                        <td style="width: 50%">
+                            <div id="logView" style="height: 100%; overflow: auto"></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <script type="module" src="/src/index.ts"></script>
+    </body>
+</html>
+<style>
+    .form-button {
+        text-align: center;
+    }
+
+    :root {
+        --bg: #ffffff;
+        --bg-color: #070d19;
+    }
+
+    body.dark {
+        --bg: #070d19;
+        --bg-color: #ffffff;
+    }
+
+    body {
+        background-color: var(--bg);
+    }
+
+    .header {
+        color: var(--bg-color);
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        load()
+    })
+
+    const THEME_KEY = 'form-theme'
+    const theme = localStorage.getItem(THEME_KEY)
+
+    if (theme) setMainTheme(theme)
+
+    function setMainTheme(theme, persist) {
+        const classList = document.body.classList
+
+        classList.remove('light', 'dark')
+
+        classList.add(theme)
+
+        if (persist) {
+            localStorage.setItem(THEME_KEY, theme)
+        }
+    }
+
+    function load() {
+        // theme
+        const toggler = document.querySelectorAll('[name="theme-toggle"]')
+        const theme = localStorage.getItem(THEME_KEY)
+
+        if (toggler) {
+            if (theme === 'dark') {
+                document.querySelector('[name="theme-toggle"][value="dark"]').checked = true
+            }
+        }
+
+        document.querySelectorAll('.node-search').forEach((input) => {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    const value = this.value.trim()
+                    treeObj.search(value)
+                }
+            })
+        })
+
+        init()
+    }
+    var logViewElement = document.getElementById('logView')
+    function logView() {
+        console.log(arguments)
+
+        return
+        const pElement = document.createElement('p') // 새로운 <p> 요소 생성
+
+        var logText = []
+
+        for (var idx in arguments) {
+            var log = arguments[idx]
+            logText.push(
+                JSON.stringify(log, function (key, value) {
+                    if (key === 'config') {
+                        return undefined // 부모 객체를 제외
+                    }
+                    return value
+                }),
+            )
+        }
+
+        pElement.textContent = logText.join(' ') // 텍스트 내용 설정
+        logViewElement.appendChild(pElement)
+
+        //logViewElement.insertAdjacentHTML('beforeend', `<div>${}</div>`);
+    }
+
+    var treeObj
+
+    function init() {
+        //var treeItem = generateJsonTree(500, 5) //JSON.parse(document.getElementById('sourceSample').textContent)
+        var treeItem = JSON.parse(document.getElementById('sourceSample').textContent)
+
+        treeObj = Daracl.tree.create('#treeDiv', {
+            items: treeItem,
+            style: {
+                height: 300,
+            },
+            //"root"
+            rootNode: {
+                id: null,
+                text: 'root node',
+            },
+            itemKey: {
+                text: 'name',
+            },
+            nodeStyleClass(node) {
+                //console.log(node);
+                return node.id == '1' ? 'id-1' : '222'
+            },
+            selectOnWholeRow1: true,
+            enableRootNode: false,
+            enableIcon: true,
+            openDepth: -1,
+            plugins: {
+                keydown: {},
+                search: {},
+                dnd: {
+                    drop: function (item) {
+                        console.log('drop item ', item)
+                    },
+                },
+            },
+            click: function (nodeInfo) {
+                console.log('click', nodeInfo)
+            },
+            dblclick: function (nodeInfo) {
+                console.log('dblclick', nodeInfo)
+                //return false;
+            },
+            selectNode: function (nodeInfo) {
+                console.log('selectNode', nodeInfo)
+            },
+        })
+    }
+
+    window.treeObj = treeObj
+
+    function addChildNode() {
+        const selectNode = treeObj.getSelectNodes()
+
+        if (selectNode) {
+            const addItems = getAddItem(selectNode.id)
+            treeObj.addNode(addItems)
+        }
+    }
+
+    let addNodeIdx = 0
+    const addNodePrefix = 'addNode_'
+    function getAddItem(nodeId, depth) {
+        depth = depth || 1
+        let addItems = []
+        addItems.push({ id: addNodePrefix + ++addNodeIdx, pid: nodeId, text: nodeId + ' new item ' + addNodeIdx, url: "detail('2')" })
+
+        return addItems
+    }
+
+    function treeOpen() {
+        window.treeObj.allOpen()
+    }
+
+    function treeClose() {
+        window.treeObj.allClose()
+    }
+
+    function removeSelectNode(obj) {
+        const selectNode = treeObj.getSelectNodes()
+        if (selectNode) treeObj.remove(selectNode.id)
+    }
+
+    function createNode() {
+        treeObj.createNode()
+    }
+
+    function saveInfo() {
+        // $.pubTree("#treeDiv").addNode((pubTreeConfig.allTreeItem.length + 100), pubTreeConfig.selectedNode.id, document.getElementById('name').value, document.getElementById('url').value)
+    }
+
+    function generateJsonTree(totalNodes, maxDepth) {
+        const data = []
+
+        // 유틸: 랜덤하게 부모 id 선택
+        const getRandomParent = (currentId, currentDepth) => {
+            if (currentDepth === 0) return '' // 루트는 부모 없음
+
+            // 가능한 부모 후보 (현재 깊이보다 하나 위 깊이에 있는 노드들)
+            const candidates = data.filter((d) => d.depth === currentDepth - 1)
+            if (candidates.length === 0) return '' // 부모 없음
+            const parent = candidates[Math.floor(Math.random() * candidates.length)]
+            return parent.id
+        }
+
+        // 노드 생성
+        let id = 1
+        let currentDepth = 0
+        let nodesAtDepth = 1
+
+        while (id <= totalNodes) {
+            // 깊이를 순환하면서 트리 모양 유지
+            const depth = Math.min(currentDepth, maxDepth - 1)
+            const pid = getRandomParent(id, depth)
+
+            const node = {
+                id,
+                pid,
+                text: `Node ${id}`,
+                url: `detail('${id}')`,
+                depth,
+            }
+            data.push(node)
+
+            id++
+
+            // depth 조절 (단순 랜덤 분포)
+            if (Math.random() < 0.4 && currentDepth < maxDepth - 1) {
+                currentDepth++
+            } else if (Math.random() < 0.3 && currentDepth > 0) {
+                currentDepth--
+            }
+        }
+
+        // depth 속성은 내부용이므로 제거
+        return data.map(({ depth, ...rest }) => rest)
+    }
+</script>
+<script id="sourceSample" type="text/content">
+    [
+        {
+        "id": "1",
+        "pid": null,
+        "name": "root",
+        "children": [
+            {
+            "id": "1-1",
+            "pid": "1",
+            "name": "biz",
+            "children": [
+                {
+                "id": "1-1-1",
+                "pid": "1-1",
+                "name": "link",
+                "children": [
+                    {
+                    "id": "1-1-1-1",
+                    "pid": "1-1-1",
+                    "name": "메일",
+                    "browser": "chrome",
+                    "enableTextCopy": true,
+                    "method": "post",
+                    "url": "https://localhost.com",
+                    "text": "메일메일메일\nlocalhost\nasd\nfloatasdf\na\nsdf\na\ns\ndf\nasf\n                "
+                    }
+                ]
+                }
+            ]
+            },
+            {
+            "id": "1-2",
+            "pid": "1",
+            "name": "local",
+            "children": [
+                {
+                "id": "1-2-1",
+                "pid": "1-2",
+                "name": "link",
+                "children": [
+                    {
+                    "id": "1-2-1-1",
+                    "pid": "1-2-1",
+                    "name": "로컬 테스트",
+                    "browser": "chrome",
+                    "method": "get",
+                    "url": "http://localhost:8081/login"
+                    }
+                ]
+                }
+            ]
+            },
+            {
+            "id": "1-3",
+            "pid": "1",
+            "name": "dev",
+            "children": [
+                {
+                "id": "1-3-1",
+                "pid": "1-3",
+                "name": "link",
+                "children": [
+                    {
+                    "id": "1-3-1-1",
+                    "pid": "1-3-1",
+                    "name": "로컬 테스트",
+                    "browser": "chrome",
+                    "method": "get",
+                    "url": "http://localhost:8081/login"
+                    }
+                ]
+                },
+                {
+                "id": "1-3-2",
+                "pid": "1-3",
+                "name": "utilLink",
+                "children": [
+                    {
+                    "id": "1-3-2-1",
+                    "pid": "1-3-2",
+                    "name": "vtool",
+                    "browser": "chrome",
+                    "enableTextCopy": true,
+                    "url": "http://165.186.170.189:12312/vtool",
+                    "hidden": {
+                        "aaa": "asdf",
+                        "bbb": "pbbbbb"
+                    }
+                    },
+                    {
+                    "id": "1-3-2-2",
+                    "pid": "1-3-2",
+                    "name": "varsql",
+                    "browser": "chrome",
+                    "url": "http://165.186.170.189:12312/vsql"
+                    },
+                    {
+                    "id": "1-3-2-3",
+                    "pid": "1-3-2",
+                    "name": "형상관리 yona",
+                    "browser": "chrome",
+                    "url": "http://165.186.170.189:12311/"
+                    }
+                ]
+                }
+            ]
+            },
+            {
+            "id": "1-4",
+            "pid": "1",
+            "name": "prod",
+            "children": []
+            },
+            {
+            "id": "1-5",
+            "pid": "1",
+            "name": "memo",
+            "children": [
+                {
+                "id": "1-5-1",
+                "pid": "1-5",
+                "name": "login",
+                "children": [
+                    {
+                    "id": "1-5-1-1",
+                    "pid": "1-5-1",
+                    "name": "로그인 메모",
+                    "text": ""
+                    }
+                ]
+                }
+            ]
+            }
+        ]
+        }
+    ]
+</script>

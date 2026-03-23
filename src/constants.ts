@@ -12,3 +12,6 @@ export const MOVE_POSITION = {
   NEXT: "next",
   IGNORE: "",
 } as const;
+
+
+export const DEFAULT_ROOT_NODE_ID = "$$root$$";

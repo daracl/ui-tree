@@ -83,7 +83,9 @@ export class Dnd {
 
                 this.dragElement = ele as HTMLElement
                 this.dragNode = nodeUtils.elementToTreeNode(ele, this.tree);
-                this.selectNodes = this.tree.getSelectNodes();
+
+                
+                this.selectNodes = [this.dragNode, ...this.tree.getSelectNodes()];
 
                 this.overElementTop = evtPos.y
                 this.mouseOverEle = this.dragElement
@@ -297,7 +299,7 @@ export class Dnd {
         } else {
             isChild = true;
 
-            console.log('position: ', this.enterNode.id, this.dragNode.pid)
+            //console.log('position: ', this.enterNode.id, this.dragNode.pid)
 
             if (this.enterNode.id === this.dragNode.pid) {
                 this.dragPostion = MOVE_POSITION.IGNORE
@@ -342,6 +344,7 @@ export class Dnd {
         }
 
         const dropNodeId = dropNode.id;
+
 
         //for (let i = this.selectNodes.length - 1; i >= 0; i--) {
         for (let i = 0; i < this.selectNodes.length; i++) {
