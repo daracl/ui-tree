@@ -1,35 +1,34 @@
-import { TreeNode } from "./TreeNode";
+import { TreeNode } from './TreeNode';
 
 export interface OptionCallback {
   (...params: any[]): any;
 }
-
 
 /**
  * options
  */
 export interface Options {
   style: {
-    width: string|number;
-    height: string|number;
+    width: string | number;
+    height: string | number;
     paddingLeft: number;
   };
 
   /**
    * 노드 행 선택할지 여부 default false
-   * 
+   *
    * false : node name select
    * true : node row select
    */
-  selectOnWholeRow:boolean; 
-  
+  selectOnWholeRow: boolean;
+
   /**
    * 다중선택 여부
    *
    * @type {boolean}
    */
   multiple?: boolean;
-  
+
   /**
    * root node info
    *
@@ -42,8 +41,8 @@ export interface Options {
    */
   enableRootNode?: boolean;
   // node style class
-  nodeStyleClass?:OptionCallback;
-  
+  nodeStyleClass?: OptionCallback;
+
   /**
    * tree item key
    *
@@ -70,7 +69,6 @@ export interface Options {
   focusNode: OptionCallback | undefined; // node focus 이벤트
 }
 
-
 /**
  * tree plugin option
  *
@@ -84,15 +82,15 @@ export interface Plugins {
   edit?: EditOptions;
   contextmenu?: any;
   keydown?: KeydownOptions;
-  search?:SearchOptions;
+  search?: SearchOptions;
   request: {
     url:
       | string
       | {
-          create: ""; // 생성시 url
-          search: ""; // 목록 url
-          modify: ""; // 수정 url
-          delete: ""; // 삭제 url
+          create: ''; // 생성시 url
+          search: ''; // 목록 url
+          modify: ''; // 수정 url
+          delete: ''; // 삭제 url
         };
     headers: any; // header 값
     success: OptionCallback; // success 메소드
@@ -104,11 +102,10 @@ export interface Plugins {
 /**
  * edit plugin options
  */
-export interface EditOptions{
-
+export interface EditOptions {
   width: string;
   before: OptionCallback;
-  after: OptionCallback;  
+  after: OptionCallback;
 }
 
 /**
@@ -118,9 +115,7 @@ export interface EditOptions{
  * @interface CheckboxOption
  * @typedef {CheckboxOption}
  */
-export interface CheckboxOptions{
-
-}
+export interface CheckboxOptions {}
 
 /**
  * drag and drop option
@@ -129,45 +124,42 @@ export interface CheckboxOptions{
  * @interface DndOptions
  * @typedef {DndOptions}
  */
-export interface DndOptions{
-  
+export interface DndOptions {
   /**
    * drag helper margin top
    *
    * @type {number}
    */
-  marginTop :number;
+  marginTop: number;
 
   /**
    * drag helper margin left
    *
    * @type {number}
    */
-  marginLeft: 10,
-  
+  marginLeft: 10;
+
   /**
    * add postion
    *
-   * @type {('last'|'first')} 
+   * @type {('last'|'first')}
    */
-  inside: 'last'|'first',
+  inside: 'last' | 'first';
 
   /**
-   * drag object drop callback 
+   * drag object drop callback
    *
    * @type {(item: any) => {}}
    */
   drop: OptionCallback;
 
-  
   /**
    * drag start callback
    *
    * @type {OptionCallback}
    */
-  start:OptionCallback;
+  start: OptionCallback;
 }
-
 
 /**
  * keydown option
@@ -176,9 +168,7 @@ export interface DndOptions{
  * @interface KeydownOption
  * @typedef {KeydownOption}
  */
-export interface KeydownOptions{
-
-}
+export interface KeydownOptions {}
 
 /**
  * search option
@@ -187,11 +177,10 @@ export interface KeydownOptions{
  * @interface SearchOptions
  * @typedef {SearchOptions}
  */
-export interface SearchOptions{
+export interface SearchOptions {
   callback: SearchCallback;
 }
 
-
 export interface SearchCallback {
-  (searchText:string, node:TreeNode): boolean;
+  (searchText: string, node: TreeNode): boolean;
 }

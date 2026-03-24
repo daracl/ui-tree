@@ -1,9 +1,9 @@
-import nodeUtils from "@/util/nodeUtils";
-import {Tree} from "../Tree";
-import { addClass, removeClass } from "../util/domUtils";
-import { TreeNode } from "@t/TreeNode";
-import { CHECK_STATE } from "../constants";
-import { eventOn } from "@/util/eventUtils";
+import nodeUtils from '@/util/nodeUtils';
+import { Tree } from '../Tree';
+import { addClass, removeClass } from '../util/domUtils';
+import { TreeNode } from '@t/TreeNode';
+import { CHECK_STATE } from '../constants';
+import { eventOn } from '@/util/eventUtils';
 
 /**
  * tree node Checkbox
@@ -18,10 +18,10 @@ export class Checkbox {
   constructor(tree: Tree) {
     this.tree = tree;
 
-    const plugins = this.tree.options.plugins; 
+    const plugins = this.tree.options.plugins;
 
-    if(!plugins?.checkbox){
-      return; 
+    if (!plugins?.checkbox) {
+      return;
     }
 
     tree.config.isCheckbox = true;
@@ -80,23 +80,28 @@ export class Checkbox {
 
   private initEvt() {
     const rootElement = this.tree.getRootElement();
-    
-    eventOn(rootElement, "click", (e: Event, checkboxEle: Element) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
 
-      if (checkboxEle) {
-        const nodeInfo = nodeUtils.elementToTreeNode(checkboxEle, this.tree);
+    eventOn(
+      rootElement,
+      'click',
+      (e: Event, checkboxEle: Element) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
 
-        if (nodeInfo.checkState == CHECK_STATE.CHECKED) {
-          this.childCheck(nodeInfo, CHECK_STATE.UNCHECKED);
-        } else {
-          this.childCheck(nodeInfo, CHECK_STATE.CHECKED);
+        if (checkboxEle) {
+          const nodeInfo = nodeUtils.elementToTreeNode(checkboxEle, this.tree);
+
+          if (nodeInfo.checkState == CHECK_STATE.CHECKED) {
+            this.childCheck(nodeInfo, CHECK_STATE.UNCHECKED);
+          } else {
+            this.childCheck(nodeInfo, CHECK_STATE.CHECKED);
+          }
+
+          this.parentNodeCheck(nodeInfo);
         }
-
-        this.parentNodeCheck(nodeInfo);
-      }
-    },".dt-checkbox");
+      },
+      '.dt-checkbox',
+    );
   }
 
   public childCheck(node: TreeNode, state: number) {
@@ -128,16 +133,16 @@ export class Checkbox {
 
     if (ele) {
       node.checkState = state;
-      removeClass(ele, "dt-indeterminate");
+      removeClass(ele, 'dt-indeterminate');
       switch (state) {
         case CHECK_STATE.CHECKED:
-          addClass(ele, "dt-checked");
+          addClass(ele, 'dt-checked');
           break;
         case CHECK_STATE.UNCHECKED:
-          removeClass(ele, "dt-checked");
+          removeClass(ele, 'dt-checked');
           break;
         case CHECK_STATE.INDETERMINATE:
-          addClass(ele, "dt-indeterminate");
+          addClass(ele, 'dt-indeterminate');
           break;
         default:
           return;

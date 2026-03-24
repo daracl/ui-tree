@@ -7,11 +7,10 @@ export const CHECK_STATE = {
 
 //move position
 export const MOVE_POSITION = {
-  PREV: "prev",
-  CHILD: "child",
-  NEXT: "next",
-  IGNORE: "",
+  PREV: 'prev',
+  CHILD: 'child',
+  NEXT: 'next',
+  IGNORE: '',
 } as const;
 
-
-export const DEFAULT_ROOT_NODE_ID = "$$root$$";
+export const DEFAULT_ROOT_NODE_ID = '$$root$$';

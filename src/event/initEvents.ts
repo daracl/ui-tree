@@ -1,58 +1,56 @@
-import { addClass, isInputField, removeClass } from '@/util/domUtils'
-import nodeUtils from '@/util/nodeUtils'
-import {Tree} from '../Tree'
-import { eventOff, eventOn, getEventPosition } from '@/util/eventUtils'
-
+import { addClass, isInputField, removeClass } from '@/util/domUtils';
+import nodeUtils from '@/util/nodeUtils';
+import { Tree } from '../Tree';
+import { eventOff, eventOn, getEventPosition } from '@/util/eventUtils';
 
 /**
  * 접기 펼치기 클릭 이벤트
  *
  * @export
- * @param {Tree} treeContext 
- * @param {(Element | string | NodeList)} el 
+ * @param {Tree} treeContext
+ * @param {(Element | string | NodeList)} el
  */
 export function expanderClick(treeContext: Tree, el: Element | string | NodeList) {
-	eventOn(
-			el,
-			'click touchstart',
-			(e: Event, ele: Element) => {
-				const expandNode = nodeUtils.elementToTreeNode(ele, treeContext);
-				const nodeElement = nodeUtils.nodeLiElement(ele)?.querySelector(".dt-node");
+  eventOn(
+    el,
+    'click touchstart',
+    (e: Event, ele: Element) => {
+      const expandNode = nodeUtils.elementToTreeNode(ele, treeContext);
+      const nodeElement = nodeUtils.nodeLiElement(ele)?.querySelector('.dt-node');
 
-				expandNode.folderToggle();
+      expandNode.folderToggle();
 
-				if(expandNode.isOpen){
-					const position = getEventPosition(e);
-					  eventOff(document, 'touchmove.expander mousemove.expander');
-						eventOn(document, 'touchmove.expander mousemove.expander', (e: Event) => {
-							const movePosition = getEventPosition(e);
+      if (expandNode.isOpen) {
+        const position = getEventPosition(e);
+        eventOff(document, 'touchmove.expander mousemove.expander');
+        eventOn(document, 'touchmove.expander mousemove.expander', (e: Event) => {
+          const movePosition = getEventPosition(e);
 
-							if(Math.abs(movePosition.x - position.x) + Math.abs(movePosition.y - position.y) > 3){
-								removeClass(nodeElement, "dt-open-active");
-								eventOff(document, 'touchmove.expander mousemove.expander')
-							}
-						})
-						addClass(nodeElement, "dt-open-active");
-				}else{
-					removeClass(nodeElement, "dt-open-active");	
-				}
-				
-				
-				return false
-			},
-			'.dt-expander.dt-visible',
-	)
+          if (Math.abs(movePosition.x - position.x) + Math.abs(movePosition.y - position.y) > 3) {
+            removeClass(nodeElement, 'dt-open-active');
+            eventOff(document, 'touchmove.expander mousemove.expander');
+          }
+        });
+        addClass(nodeElement, 'dt-open-active');
+      } else {
+        removeClass(nodeElement, 'dt-open-active');
+      }
 
-	const treeElement = treeContext.getRootElement()
+      return false;
+    },
+    '.dt-expander.dt-visible',
+  );
 
-	eventOff(treeElement, 'focusout')
-	eventOn(treeElement, 'focusout', (e: Event, ele: Element) => {
-			removeClass(treeElement.querySelectorAll('.dt-node.dt-focus'), 'dt-focus')
-			treeContext.config.focusNode = null
-	})
+  const treeElement = treeContext.getRootElement();
+
+  eventOff(treeElement, 'focusout');
+  eventOn(treeElement, 'focusout', (e: Event, ele: Element) => {
+    removeClass(treeElement.querySelectorAll('.dt-node.dt-focus'), 'dt-focus');
+    treeContext.config.focusNode = null;
+  });
 }
 
-/** 
+/**
  * 노드 텍스트 클릭 이벤트
  *
  * @export
@@ -60,53 +58,49 @@ export function expanderClick(treeContext: Tree, el: Element | string | NodeList
  * @param {(Element | string | NodeList)} el
  */
 export function textClick(treeContext: Tree, el: Element | string | NodeList) {
-	let clickCount = 0
-	let clickTimer: any
-	let clickDelay = 300
-	let clickNode: any = {}
-	const resetClick = () => {
-			clickCount = 0
-			clickNode = null
-	}
+  let clickCount = 0;
+  let clickTimer: any;
+  let clickDelay = 300;
+  let clickNode: any = {};
+  const resetClick = () => {
+    clickCount = 0;
+    clickNode = null;
+  };
 
-	const conserveClick = (node: any) => {
-			clickNode = node
-			clearTimeout(clickTimer)
-			clickTimer = setTimeout(resetClick, clickDelay)
-	}
+  const conserveClick = (node: any) => {
+    clickNode = node;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(resetClick, clickDelay);
+  };
 
-	// node click event
-	eventOn(
-			el,
-			'mouseup touchend',
-			(e: MouseEvent, ele: Element) => {
-					if (e.button === 2 || e.which === 3) {
-							clickTimer = null
-							return true
-					}
+  // node click event
+  eventOn(
+    el,
+    'mouseup touchend',
+    (e: MouseEvent, ele: Element) => {
+      if (e.button === 2 || e.which === 3) {
+        clickTimer = null;
+        return true;
+      }
 
-					if (isInputField((e.target as HTMLElement).tagName)) {
-							return true
-					}
+      if (isInputField((e.target as HTMLElement).tagName)) {
+        return true;
+      }
 
-					const nodeInfo = nodeUtils.elementToTreeNode(ele, treeContext)
+      const nodeInfo = nodeUtils.elementToTreeNode(ele, treeContext);
 
-					if (!nodeInfo) return
+      if (!nodeInfo) return;
 
-					if (clickCount > 0 && clickNode.id == nodeInfo.id) {
-							nodeInfo.doubleClick(e)
-							clearTimeout(clickTimer)
-							resetClick()
-					} else {
-							++clickCount
-							conserveClick(nodeInfo)
-							nodeInfo.click(e)
-					}
-			},
-			'.dt-node-title',
-	)
-
-
-	
+      if (clickCount > 0 && clickNode.id == nodeInfo.id) {
+        nodeInfo.doubleClick(e);
+        clearTimeout(clickTimer);
+        resetClick();
+      } else {
+        ++clickCount;
+        conserveClick(nodeInfo);
+        nodeInfo.click(e);
+      }
+    },
+    '.dt-node-title',
+  );
 }
-

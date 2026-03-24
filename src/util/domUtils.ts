@@ -1,23 +1,21 @@
-import { isString } from "./utils";
+import { isString } from './utils';
 
 type ElementType = Element | string | NodeList | Document | null | undefined;
 
-
-
 export function before(el: ElementType, renderElements: Element | string) {
-  insertAdjacentHTML($querySelector(el), "beforebegin", renderElements);
+  insertAdjacentHTML($querySelector(el), 'beforebegin', renderElements);
 }
 
 export function after(el: ElementType, renderElements: Element | string) {
-  insertAdjacentHTML($querySelector(el), "afterend", renderElements);
+  insertAdjacentHTML($querySelector(el), 'afterend', renderElements);
 }
 
 export function prepend(el: ElementType, renderElements: Element | string) {
-  insertAdjacentHTML($querySelector(el), "afterbegin", renderElements);
+  insertAdjacentHTML($querySelector(el), 'afterbegin', renderElements);
 }
 
 export function append(el: ElementType, renderElements: Element | string) {
-  insertAdjacentHTML($querySelector(el), "beforeend", renderElements);
+  insertAdjacentHTML($querySelector(el), 'beforeend', renderElements);
 }
 
 export function hasClass(el: ElementType, styleClassName: string) {
@@ -46,7 +44,7 @@ export function toggleClass(el: ElementType, styleClassName: string) {
 export function addClass(el: ElementType, styleClassName: string) {
   if (!el) return el;
 
-  const classNames = styleClassName.replaceAll(/\s+/g, " ").split(" ");
+  const classNames = styleClassName.replaceAll(/\s+/g, ' ').split(' ');
 
   $querySelector(el).forEach((el1) => {
     let classList = el1.classList;
@@ -61,28 +59,27 @@ export function addClass(el: ElementType, styleClassName: string) {
 export function removeClass(el: ElementType, styleClassName: string) {
   if (el == null) return el;
 
-  const classNames = styleClassName.replaceAll(/\s+/g, " ").split(" ");
+  const classNames = styleClassName.replaceAll(/\s+/g, ' ').split(' ');
   for (let className of classNames) {
     $querySelector(el).forEach((el1) => {
       el1.classList.remove(className);
     });
   }
 }
-  
-export function  isInputField(tagName: string): boolean {
+
+export function isInputField(tagName: string): boolean {
   return tagName.search(/(input|select|textarea)/i) > -1;
 }
 
-export function  setAttribute(el: Element, attrs: any) {
+export function setAttribute(el: Element, attrs: any) {
   for (let key in attrs) {
     el.setAttribute(key, attrs[key]);
   }
 }
 
-export function  getWinScrollTop(){
-    return window.pageYOffset || document.documentElement.scrollTop;
-  }
-
+export function getWinScrollTop() {
+  return window.pageYOffset || document.documentElement.scrollTop;
+}
 
 /**
  * 주어진 요소의 위치 및 크기를 반환합니다.
@@ -93,7 +90,7 @@ export function  getWinScrollTop(){
  */
 export function getElementRect(
   el: Element,
-  includeScroll: boolean = false
+  includeScroll: boolean = false,
 ): {
   top: number;
   left: number;
@@ -103,7 +100,7 @@ export function getElementRect(
   height: number;
 } {
   if (!el) {
-    throw new Error("유효하지 않은 요소입니다.");
+    throw new Error('유효하지 않은 요소입니다.');
   }
 
   const rect = el.getBoundingClientRect();
@@ -120,7 +117,6 @@ export function getElementRect(
   };
 }
 
-
 function $querySelector(el: ElementType): any[] {
   if (!el) [];
 
@@ -134,7 +130,7 @@ function $querySelector(el: ElementType): any[] {
   let nodeList;
   if (el instanceof NodeList) {
     nodeList = el;
-  } else if (typeof el === "string") {
+  } else if (typeof el === 'string') {
     nodeList = document.querySelectorAll(el);
   }
 

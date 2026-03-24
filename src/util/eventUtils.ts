@@ -1,5 +1,5 @@
-import {isArray} from '@daracl/core'
-import { isBlank, isEmpty, isString, isUndefined } from "./utils";
+import { isArray } from '@daracl/core';
+import { isBlank, isEmpty, isString, isUndefined } from './utils';
 
 const EVENT_KEY_CODE = {
   Enter: 13,
@@ -23,7 +23,7 @@ const EVENT_HANDLER_MAP = new Map();
 export const eventOff = (el: Element | string | NodeList | null | Document | Element[], type: string) => {
   if (el == null) return el;
 
-  const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
+  const eventTypes = type.replaceAll(/\s+/g, ' ').split(' ');
 
   const elements = $querySelector(el);
 
@@ -36,7 +36,7 @@ export const eventOff = (el: Element | string | NodeList | null | Document | Ele
   for (const eventType of eventTypes) {
     if (isUndefined(evtInfo[eventType])) continue;
 
-    const event = eventType.split(".")[0];
+    const event = eventType.split('.')[0];
     elements.forEach((el) => {
       el.removeEventListener(event, evtInfo[eventType]);
     });
@@ -59,10 +59,16 @@ export const eventOff = (el: Element | string | NodeList | null | Document | Ele
  * @param {?*} [fnOpts] listener option
  * @returns {*}
  */
-export const eventOn = (el: Element | string | NodeList | null | Document | Element[], type: string, listener?: any, selector?: any, fnOpts?: any) => {
+export const eventOn = (
+  el: Element | string | NodeList | null | Document | Element[],
+  type: string,
+  listener?: any,
+  selector?: any,
+  fnOpts?: any,
+) => {
   if (el == null) return;
 
-  const eventTypes = type.replaceAll(/\s+/g, " ").split(" ");
+  const eventTypes = type.replaceAll(/\s+/g, ' ').split(' ');
 
   const elements = $querySelector(el);
 
@@ -99,17 +105,16 @@ export const eventOn = (el: Element | string | NodeList | null | Document | Elem
 
   for (const eventType of eventTypes) {
     addEventInfo(el, eventType, fn);
-    const event = eventType.split(".")[0];
+    const event = eventType.split('.')[0];
     elements.forEach((el: Element) => {
       el.addEventListener(event, fn, fnOpts ?? {});
     });
   }
 };
 
-
-export function  getEventPosition(e: Event) {
+export function getEventPosition(e: Event) {
   let evt;
-  if (typeof TouchEvent !== "undefined" && e instanceof TouchEvent && e.touches.length > 0) {
+  if (typeof TouchEvent !== 'undefined' && e instanceof TouchEvent && e.touches.length > 0) {
     evt = e.touches[0];
   } else if (e instanceof MouseEvent) {
     evt = e;
@@ -122,10 +127,9 @@ export function  getEventPosition(e: Event) {
   };
 }
 
-export function   getEventKey(e: any) {
-  return (e.key || "").toLowerCase();
+export function getEventKey(e: any) {
+  return (e.key || '').toLowerCase();
 }
-
 
 function addEventInfo(el: any, eventType: string, listener: any) {
   if (!EVENT_HANDLER_MAP.has(el)) {

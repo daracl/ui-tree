@@ -1,9 +1,9 @@
-import Checkbox from "@/plugins/Checkbox";
-import Dnd from "@/plugins/Dnd";
-import Keydown from "@/plugins/Keydown";
-import { TreeNode } from "./TreeNode";
-import Request from "@/plugins/Request";
-import { Search } from "@/plugins/Search";
+import Checkbox from '@/plugins/Checkbox';
+import Dnd from '@/plugins/Dnd';
+import Keydown from '@/plugins/Keydown';
+import { TreeNode } from './TreeNode';
+import Request from '@/plugins/Request';
+import { Search } from '@/plugins/Search';
 
 export interface OptionCallback {
   (...params: any[]): any;
@@ -24,35 +24,34 @@ export interface ConfigInfo {
   focusNode: any;
   completed: false;
 
-  
   /**
    * root depth
    *
    * @type {number}
    */
   rootDepth: number;
-  
+
   /**
    * root node info
    *
    * @type {TreeNode}
    */
   rootNode: TreeNode;
-  
+
   /**
    * checkbox object
    *
    * @type {Checkbox}
    */
   checkbox: Checkbox;
-  
+
   /**
    * dnd object
    *
    * @type {Dnd}
    */
   dnd: Dnd;
-  
+
   /**
    * keydown object
    *
@@ -60,21 +59,20 @@ export interface ConfigInfo {
    */
   keydown: Keydown;
 
-  
   /**
    * search object
    *
    * @type {Search}
    */
-  search:Search;
-  
+  search: Search;
+
   /**
    * request object
    *
    * @type {Request}
    */
   request: Request;
-  
+
   /**
    * tree focus in 중인지
    *
@@ -82,7 +80,6 @@ export interface ConfigInfo {
    */
   isFocus: boolean;
 
-  
   /**
    * keydown plugin 활성화 여부
    *
@@ -90,28 +87,27 @@ export interface ConfigInfo {
    */
   isKeydown: boolean;
 
-  
   /**
    * checkbox plugin 활성화 여부
    *
    * @type {boolean}
    */
   isCheckbox: boolean;
-  
+
   /**
    * drag & drop plugin 활성화 여부
    *
    * @type {boolean}
    */
   isDnd: boolean;
-  
+
   /**
    * 컨텍스트 메뉴 plugin 활성화 여부
    *
    * @type {boolean}
    */
   isContextmenu: boolean;
-  
+
   /**
    * edit plugin 활성화 여부
    *
@@ -121,21 +117,21 @@ export interface ConfigInfo {
   /**
    * 검색 plugin 활성화 여부
    */
-  isSearch :boolean;
-  
+  isSearch: boolean;
+
   /**
    * drag 중인지 여부
    *
    * @type {boolean}
    */
   isNodeDrag: boolean;
-  
+
   isRequest: boolean;
-  
+
   /**
-   * drag & drop mousedown 
+   * drag & drop mousedown
    *
    * @type {boolean}
    */
-  isDndMouseDown:boolean;
+  isDndMouseDown: boolean;
 }

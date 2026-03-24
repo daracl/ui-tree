@@ -1,10 +1,10 @@
-import { KeydownOptions } from "@t/Options";
-import {Tree} from "../Tree";
-import { TreeNode } from "@t/TreeNode";
-import { eventOff, eventOn, getEventKey } from "@/util/eventUtils";
+import { KeydownOptions } from '@t/Options';
+import { Tree } from '../Tree';
+import { TreeNode } from '@t/TreeNode';
+import { eventOff, eventOn, getEventKey } from '@/util/eventUtils';
 
-import nodeUtils from "@/util/nodeUtils";
-import { objectMerge } from "@/util/utils";
+import nodeUtils from '@/util/nodeUtils';
+import { objectMerge } from '@/util/utils';
 
 // keydown default option
 const KEYDOWN_DEFAULT_OPTIONS = {};
@@ -23,49 +23,48 @@ export class Keydown {
     this.tree = tree;
     const plugins = tree.options.plugins;
 
-     if(!plugins?.keydown){
-      return; 
+    if (!plugins?.keydown) {
+      return;
     }
 
     tree.config.isKeydown = true;
     plugins.keydown = objectMerge({}, KEYDOWN_DEFAULT_OPTIONS, plugins.keydown) as KeydownOptions;
-  
 
     this.initEvt();
   }
 
   initEvt() {
-    eventOff(this.tree.getContainerElement(), "keydown");
-    eventOn(this.tree.getContainerElement(), "keydown", (e: any) => {
+    eventOff(this.tree.getContainerElement(), 'keydown');
+    eventOn(this.tree.getContainerElement(), 'keydown', (e: any) => {
       const focusNode = this.tree.config.focusNode || this.tree.config.selectedNode;
 
       if (focusNode == null) return;
 
       const key = getEventKey(e);
 
-      if (key == "f2") {
+      if (key == 'f2') {
         focusNode.setEdit();
         return;
       }
 
-      if (key == "delete") {
+      if (key == 'delete') {
         focusNode.remove();
         return;
       }
 
-      if (key == "enter") {
+      if (key == 'enter') {
         focusNode.select();
         return;
       }
 
-      if (key.startsWith("arrow")) {
-        if (key == "arrowdown") {
+      if (key.startsWith('arrow')) {
+        if (key == 'arrowdown') {
           this.arrowDown(focusNode);
-        } else if (key == "arrowup") {
+        } else if (key == 'arrowup') {
           this.arrowUp(focusNode);
-        } else if (key == "arrowleft") {
+        } else if (key == 'arrowleft') {
           this.arrowLeft(focusNode);
-        } else if (key == "arrowright") {
+        } else if (key == 'arrowright') {
           this.arrowRight(focusNode);
         }
 
@@ -198,28 +197,28 @@ function findPrevNode(focusNode: TreeNode) {
  * @param firstFlag {boolean} 첫번째 호출 여부.
  * @returns
  */
-function findNextNode(focusNode: TreeNode, tree: Tree, firstFlag: boolean):TreeNode|undefined {
+function findNextNode(focusNode: TreeNode, tree: Tree, firstFlag: boolean): TreeNode | undefined {
   if (firstFlag && focusNode.isOpen && focusNode.getChildLength() > 0) {
     return focusNode.childNodes[0];
   } else {
     const parentNode = focusNode.getParentNode();
 
-    if(!parentNode){
-      return ;
+    if (!parentNode) {
+      return;
     }
     const childNodes = parentNode.childNodes;
-  
+
     let focusNodeIdx = nodeUtils.getNodeIdx(childNodes, focusNode.id);
-    const maxChildIdx = parentNode.getChildLength()-1;
+    const maxChildIdx = parentNode.getChildLength() - 1;
 
     if (maxChildIdx > focusNodeIdx) {
       return childNodes[focusNodeIdx + 1];
     }
 
-    if(maxChildIdx == focusNodeIdx){
+    if (maxChildIdx == focusNodeIdx) {
       return findNextNode(parentNode, tree, false);
     }
 
-    return ;     
+    return;
   }
 }

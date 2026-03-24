@@ -1,12 +1,12 @@
-import {Tree} from "../Tree";
-import { TreeNode } from "@t/TreeNode";
-import { ajax } from "@/util/ajaxUtils";
-import { append } from "@/util/domUtils";
-import nodeUtils from "@/util/nodeUtils";
-import { isString, isUndefined, objectMerge } from "@/util/utils";
+import { Tree } from '../Tree';
+import { TreeNode } from '@t/TreeNode';
+import { ajax } from '@/util/ajaxUtils';
+import { append } from '@/util/domUtils';
+import nodeUtils from '@/util/nodeUtils';
+import { isString, isUndefined, objectMerge } from '@/util/utils';
 
 const REQUEST_DEFAULT_OPTIONS = {
-  url: { search: "" },
+  url: { search: '' },
   beforesend: _beforesend,
   completed: _completed,
 };
@@ -40,7 +40,7 @@ function _completed(result: any) {
     nodeElement = opts.$rootElement;
   }
 
-  nodeElement.querySelector(".dt-loader")?.remove();
+  nodeElement.querySelector('.dt-loader')?.remove();
 }
 
 /**
@@ -102,14 +102,14 @@ export class Request {
     }
 
     this.opts.$node = node;
-    this.opts.data = this.getParameters(paramNode, "search");
+    this.opts.data = this.getParameters(paramNode, 'search');
 
     ajax(this.url.search, this.opts)
       .then((response) => {
-        this.successCallback(response, "search");
+        this.successCallback(response, 'search');
       })
       .catch((error) => {
-        this.errorCallback(error, "search");
+        this.errorCallback(error, 'search');
       });
   }
 
@@ -123,13 +123,13 @@ export class Request {
     }
 
     this.opts.$node = node;
-    this.opts.data = this.getParameters(paramNode, "create");
+    this.opts.data = this.getParameters(paramNode, 'create');
     ajax(this.url.create, this.opts)
       .then((response) => {
-        this.successCallback(response, "create");
+        this.successCallback(response, 'create');
       })
       .catch((error) => {
-        this.errorCallback(error, "create");
+        this.errorCallback(error, 'create');
       });
   }
 
@@ -143,13 +143,13 @@ export class Request {
     }
 
     this.opts.$node = node;
-    this.opts.data = this.getParameters(paramNode, "modify");
+    this.opts.data = this.getParameters(paramNode, 'modify');
     ajax(this.url.modify, this.opts)
       .then((response) => {
-        this.successCallback(response, "modify");
+        this.successCallback(response, 'modify');
       })
       .catch((error) => {
-        this.errorCallback(error, "modify");
+        this.errorCallback(error, 'modify');
       });
   }
 
@@ -157,7 +157,7 @@ export class Request {
     const paramNode = nodeUtils.getParameterNode(node);
 
     if (this.opts.removeNode) {
-      return this.opts.removeNode(paramNode, "remove");
+      return this.opts.removeNode(paramNode, 'remove');
     }
 
     if (!this.initFlag || isUndefined(this.url.remove)) return;
@@ -166,10 +166,10 @@ export class Request {
     this.opts.data = this.getParameters(paramNode);
     ajax(this.url.remove, this.opts)
       .then((response) => {
-        this.successCallback(response, "remove");
+        this.successCallback(response, 'remove');
       })
       .catch((error) => {
-        this.errorCallback(error, "remove");
+        this.errorCallback(error, 'remove');
       });
   }
 
@@ -178,7 +178,7 @@ export class Request {
   }
 
   private defaultErrorCallback(response: any) {
-    console.log("tree ajax error : ", response);
+    console.log('tree ajax error : ', response);
   }
 
   private defaultGetParameters(node: TreeNode, mode: string) {

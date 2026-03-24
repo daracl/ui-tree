@@ -1,12 +1,10 @@
 const xssFilter = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;",
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
 } as any;
-
-
 
 export function replace(inputText: string): string {
   let returnText = inputText;
@@ -18,25 +16,24 @@ export function replace(inputText: string): string {
   return returnText;
 }
 
-
 export function generateUUID(dashRemoveFlag: boolean | undefined = true): string {
   let d = new Date().getTime();
 
-  const reval = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+  const reval = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (d + Math.random() * 16) % 16 | 0;
     d = Math.floor(d / 16);
 
-    return (c === "x" ? r : (r & 0x7) | 0x8).toString(16);
+    return (c === 'x' ? r : (r & 0x7) | 0x8).toString(16);
   });
 
-  return dashRemoveFlag ? reval.replace(/-/g, "") : reval;
+  return dashRemoveFlag ? reval.replace(/-/g, '') : reval;
 }
 
 export function hasOwnProp<T extends object, K extends keyof T>(obj: T, key: string | K): key is K {
   return obj.hasOwnProperty(key);
 }
 
-export function  unReplace(inputText: string): string {
+export function unReplace(inputText: string): string {
   let returnText = inputText;
 
   if (returnText) {
@@ -47,30 +44,29 @@ export function  unReplace(inputText: string): string {
   return returnText;
 }
 
-
-export function  isEmpty (value: any): boolean{
-    return isUndefined(value) || value == null;
+export function isEmpty(value: any): boolean {
+  return isUndefined(value) || value == null;
 }
 
-export function   isBlank(value: any): boolean {
+export function isBlank(value: any): boolean {
   if (value === null) return true;
-  if (value === "") return true;
-  if (typeof value === "undefined") return true;
-  if (typeof value === "string" && (value === "" || value.replace(/\s/g, "") === "")) return true;
+  if (value === '') return true;
+  if (typeof value === 'undefined') return true;
+  if (typeof value === 'string' && (value === '' || value.replace(/\s/g, '') === '')) return true;
 
   return false;
 }
 
-export function   isUndefined(value: any): value is undefined {
-  return typeof value === "undefined";
+export function isUndefined(value: any): value is undefined {
+  return typeof value === 'undefined';
 }
 
-export function   isFunction(value: any): value is Function {
-  return typeof value === "function";
+export function isFunction(value: any): value is Function {
+  return typeof value === 'function';
 }
 
 export function isString(value: any): value is string {
-  return typeof value === "string";
+  return typeof value === 'string';
 }
 export function isNumber(value: any): value is number {
   if (isBlank(value)) {
@@ -92,7 +88,7 @@ export function getHashCode(str: string) {
     hash = (hash << 5) - hash + tmpChar;
     hash = hash & hash;
   }
-  return String(hash).replaceAll(/-/g, "_");
+  return String(hash).replaceAll(/-/g, '_');
 }
 
 export function objectMerge(...value: any[]): any {
@@ -104,10 +100,10 @@ export function objectMerge(...value: any[]): any {
 
   while (args.length > 0) {
     src = args.splice(0, 1)[0];
-    if (Object.prototype.toString.call(src) == "[object Object]") {
+    if (Object.prototype.toString.call(src) == '[object Object]') {
       for (p in src) {
         if (src.hasOwnProperty(p)) {
-          if (Object.prototype.toString.call(src[p]) == "[object Object]") {
+          if (Object.prototype.toString.call(src[p]) == '[object Object]') {
             dst[p] = objectMerge(dst[p] || {}, src[p]);
           } else {
             dst[p] = src[p];
@@ -119,4 +115,3 @@ export function objectMerge(...value: any[]): any {
 
   return dst;
 }
-

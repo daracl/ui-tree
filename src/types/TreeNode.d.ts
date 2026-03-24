@@ -14,7 +14,7 @@ export interface TreeNode {
   renderChildLength: number;
   childNodes: TreeNode[];
   orgin: any;
-  _cud: "C" | "U" | "D";
+  _cud: 'C' | 'U' | 'D';
 
   isOpen: boolean;
   isLoaded: boolean;
@@ -37,5 +37,5 @@ export interface TreeNode {
   focus: OptionCallback;
 
   folderToggle: OptionCallback;
-  getParentNode : OptionCallback;
+  getParentNode: OptionCallback;
 }
