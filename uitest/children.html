@@ -162,7 +162,7 @@
             selectOnWholeRow1: true,
             enableRootNode: false,
             enableIcon: true,
-            openDepth: -1,
+            openDepth: 1,
             plugins: {
                 keydown: {},
                 search: {},
@@ -220,7 +220,8 @@
     }
 
     function createNode() {
-        treeObj.createNode()
+        const node  = treeObj.createNode();
+        //treeObj.setSelectNode(node.id);
     }
 
     function saveInfo() {

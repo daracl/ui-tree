@@ -24,7 +24,7 @@ let defaultOptions = {
     paddingLeft: 12,
   },
   selectOnWholeRow: false,
-  multiple: true,
+  multiple: false,
   rootNode: {
     id: '',
     text: 'Root',
@@ -82,6 +82,8 @@ export class Tree {
   private rootElement: HTMLElement;
 
   public config: ConfigInfo;
+
+  private isInit:boolean = false; 
 
   private treeNodeRenderer: TreeNodeRenderer;
 
@@ -282,12 +284,7 @@ export class Tree {
    * @param options {Object} add options
    */
   public addNode(nodeItem: any[] | any, parentId?: any, options?: any) {
-    let nodeArr = [];
-    if (isArray(nodeItem)) {
-      nodeArr = nodeItem;
-    } else {
-      nodeArr.push(nodeItem);
-    }
+    let nodeArr = isArray(nodeItem) ? [...nodeItem] : [nodeItem];
 
     const rootNodeId = this.config.rootNode.id;
     for (const node of nodeArr) {
@@ -316,14 +313,24 @@ export class Tree {
     this.addNode(nodeInfo);
 
     this.config.request.create(nodeInfo);
+
+    return nodeInfo; 
   }
 
   private treeGrid(node: any, parentId?: any) {
     const pid = parentId ?? node[this.options.itemKey.pid];
     const id = node[this.options.itemKey.id];
 
+
     if (this.config.rootNode.id === id) {
+      this.config.rootNode.text = node[this.options.itemKey.text];
       this.config.rootNode.orgin = node;
+
+      if (node.children && node.children.length > 0) {
+        for (const childNode of node.children) {
+          this.treeGrid(childNode);
+        }
+      }
       return;
     }
 
@@ -360,7 +367,8 @@ export class Tree {
   private render(id: any) {
     let renderNode: TreeNode;
 
-    if (id === this.config.rootNode.id) {
+    if (id === this.config.rootNode.id && !this.isInit) {
+      this.isInit = true; 
       renderNode = this.config.rootNode;
 
       const liElement = this.treeNodeRenderer.createNodeElement(
@@ -490,7 +498,9 @@ export class Tree {
   };
 
   public getNodeList = (id: string | number, options: any): TreeNode[] => {
-    const nodeInfo = this.config.allNode[id];
+    const nodeId = id ?? this.config.rootNode.id;
+    
+    const nodeInfo = this.config.allNode[nodeId];
 
     const result: TreeNode[] = [];
 

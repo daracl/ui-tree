@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Virtual Tree with Drag & Drop (Pure JS)</title>
+<style>
+body { font-family: sans-serif; }
+
+.tree-container {
+  height: 500px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  position: relative;
+  margin: 20px;
+}
+
+.tree-item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 30px;
+  line-height: 30px;
+  cursor: pointer;
+  padding-right: 10px;
+  white-space: nowrap;
+  background: #fff;
+}
+
+.tree-item:hover { background: #f5f5f5; }
+
+.icon { display: inline-block; width: 20px; }
+
+.dragging {
+  opacity: 0.5;
+  background: #d0ebff;
+}
+</style>
+</head>
+<body>
+
+<h3 style="margin:20px;">🌳 Virtual Tree with Drag & Drop</h3>
+<div id="treeContainer" class="tree-container"></div>
+
+<script>
+/* ------------------------------
+  1. 대량 트리 데이터 생성
+------------------------------ */
+function generateLargeTree(totalCount = 100, maxDepth = 4, maxChildren = 3) {
+  let idCounter = 1;
+  function createNode(depth, parentId) {
+    if (idCounter > totalCount) return null;
+    const id = idCounter++;
+    const node = { id: String(id), pid: parentId, name: "node-" + id };
+    const isLeaf = depth >= maxDepth || idCounter > totalCount;
+    if (!isLeaf) {
+      const childCount = Math.floor(Math.random() * maxChildren) + 1;
+      const children = [];
+      for (let i = 0; i < childCount; i++) {
+        if (idCounter > totalCount) break;
+        const child = createNode(depth + 1, node.id);
+        if (child) children.push(child);
+      }
+      if (children.length) node.children = children;
+    } else {
+      node.url = "https://example.com/" + id;
+    }
+    return node;
+  }
+
+  const result = [];
+  while (idCounter <= totalCount) {
+    const root = createNode(1, null);
+    if (root) result.push(root);
+  }
+  return result;
+}
+
+/* ------------------------------
+  2. Virtual Tree with Drag & Drop
+------------------------------ */
+function createVirtualTree(container, treeData) {
+  const itemHeight = 30;
+  const buffer = 5;
+  let expandedMap = {};
+  let flatData = [];
+  let visibleItems = [];
+  let scrollTop = 0;
+
+  const inner = document.createElement("div");
+  inner.style.position = "relative";
+  container.appendChild(inner);
+
+  /* Flatten tree */
+  function flatten(tree, depth = 1) {
+    let result = [];
+    tree.forEach(node => {
+      result.push({ ...node, depth, isOpen: expandedMap[node.id] || false });
+      if (node.children && expandedMap[node.id]) {
+        result = result.concat(flatten(node.children, depth + 1));
+      }
+    });
+    return result;
+  }
+
+  /* 초기 DOM 생성 */
+  function initDOM(maxVisibleCount) {
+    for (let i = 0; i < maxVisibleCount; i++) {
+      const div = document.createElement("div");
+      div.className = "tree-item";
+      div.dataset.index = i;
+      const iconSpan = document.createElement("span");
+      iconSpan.className = "icon";
+      div.appendChild(iconSpan);
+      const textNode = document.createTextNode("");
+      div.appendChild(textNode);
+
+      // 클릭 이벤트 (펼치기/접기 or url 이동)
+      div.onclick = function () {
+        const idx = parseInt(this.dataset.index);
+        const item = visibleItems[idx];
+        if (!item) return;
+        if (item.children) {
+          expandedMap[item.id] = !expandedMap[item.id];
+          render();
+        } else if (item.url) {
+          window.open(item.url);
+        }
+      };
+
+      // drag & drop
+      div.draggable = true;
+
+      div.addEventListener("dragstart", e => {
+        const idx = parseInt(div.dataset.index);
+        e.dataTransfer.setData("text/plain", idx);
+        div.classList.add("dragging");
+      });
+
+      div.addEventListener("dragend", e => {
+        div.classList.remove("dragging");
+      });
+
+      div.addEventListener("dragover", e => {
+        e.preventDefault();
+        div.style.background = "#f0f8ff";
+      });
+
+      div.addEventListener("dragleave", e => {
+        div.style.background = "";
+      });
+
+      div.addEventListener("drop", e => {
+        e.preventDefault();
+        const fromIdx = parseInt(e.dataTransfer.getData("text/plain"));
+        const toIdx = parseInt(div.dataset.index);
+
+        if (fromIdx === toIdx) return;
+
+        // flatData 상에서 실제 index 계산
+        const fromItem = visibleItems[fromIdx];
+        const toItem = visibleItems[toIdx];
+
+        moveNode(treeData, fromItem.id, toItem.id);
+
+        render();
+      });
+
+      inner.appendChild(div);
+    }
+  }
+
+  /* 트리 내 노드 이동 */
+  function moveNode(tree, fromId, toId) {
+    let fromNode, fromParent;
+    let toNode;
+
+    function findNode(arr, id, parent = null) {
+      for (let i = 0; i < arr.length; i++) {
+        const n = arr[i];
+        if (n.id === id) return { node: n, parent, index: i };
+        if (n.children) {
+          const res = findNode(n.children, id, n);
+          if (res) return res;
+        }
+      }
+      return null;
+    }
+
+    const fromRes = findNode(tree, fromId);
+    const toRes = findNode(tree, toId);
+    if (!fromRes || !toRes) return;
+
+    fromNode = fromRes.node;
+    fromParent = fromRes.parent;
+    toNode = toRes.node;
+
+    // 부모 배열에서 제거
+    const siblings = fromParent ? fromParent.children : tree;
+    siblings.splice(fromRes.index, 1);
+
+    // toNode가 children 없으면 만들기
+    if (!toNode.children) toNode.children = [];
+    toNode.children.push(fromNode);
+  }
+
+  function render() {
+    flatData = flatten(treeData);
+    const totalHeight = flatData.length * itemHeight;
+    inner.style.height = totalHeight + "px";
+
+    const containerHeight = container.clientHeight;
+    const start = Math.floor(scrollTop / itemHeight);
+    const end = Math.min(start + Math.ceil(containerHeight / itemHeight) + buffer, flatData.length);
+
+    const maxVisibleCount = end - start;
+    if (visibleItems.length === 0) {
+      visibleItems = flatData.slice(start, end);
+      initDOM(maxVisibleCount);
+    } else {
+      visibleItems = flatData.slice(start, end);
+    }
+
+    const divs = inner.children;
+    for (let i = 0; i < divs.length; i++) {
+      const div = divs[i];
+      const item = visibleItems[i];
+      if (!item) { div.style.display = "none"; continue; }
+      div.style.display = "block";
+      div.style.top = ((start + i) * itemHeight) + "px";
+      div.style.paddingLeft = (item.depth * 20) + "px";
+      const iconSpan = div.querySelector(".icon");
+      iconSpan.textContent = item.children ? (item.isOpen ? "▼" : "▶") : "•";
+      div.childNodes[1].nodeValue = item.name;
+      div.dataset.index = i;
+      div.style.background = "";
+    }
+  }
+
+  container.addEventListener("scroll", () => {
+    scrollTop = container.scrollTop;
+    render();
+  });
+
+  render();
+}
+
+/* ------------------------------
+  3. 실행
+------------------------------ */
+const treeData = generateLargeTree(1000);
+const container = document.getElementById("treeContainer");
+createVirtualTree(container, treeData);
+</script>
+
+</body>
+</html>
