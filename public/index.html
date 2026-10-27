@@ -5,6 +5,7 @@
         <title>Dara tree</title>
         <meta http-equiv="X-UA-compatible" content="IE=edge" />
         <link href="./daracl.tree.min.css" rel="stylesheet" />
+        <link href="../node_modules/@daracl/ui-style/dist/theme-vars.css" rel="stylesheet" />
     </head>
 
     <body>
@@ -82,6 +83,9 @@
         classList.remove('light', 'dark')
 
         classList.add(theme)
+
+        // ui-style 테마 전환은 data-daracl-theme 속성으로 한다.
+        document.documentElement.setAttribute('data-daracl-theme', theme)
 
         if (persist) {
             localStorage.setItem(THEME_KEY, theme)
